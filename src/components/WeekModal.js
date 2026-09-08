@@ -12,8 +12,8 @@ const ALTRO_EVENTO_OPTIONS = [
     { tipo: 'congresso', label: 'Congresso' },
     { tipo: 'evento_personalizzato', label: 'Evento personalizzato' },
 ];
-export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, congregazioni, periodo, }) => {
-    const [periodoText, setPeriodoText] = useState('');
+export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, congregazioni, periodo, settimane = [], }) => {
+    const [selectedStartDate, setSelectedStartDate] = useState('');
     const [isCongregazione, setIsCongregazione] = useState(true);
     const [selectedCongregazione, setSelectedCongregazione] = useState('');
     const [altroEvento, setAltroEvento] = useState('settimana_libera');
@@ -23,7 +23,7 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
         if (!isOpen)
             return;
         if (editingWeek) {
-            setPeriodoText(abbreviateMonths(editingWeek.periodo));
+            setSelectedStartDate(editingWeek.startDate || new Date().toISOString().slice(0, 10));
             if (editingWeek.evento === 'congregazione') {
                 setIsCongregazione(true);
                 setSelectedCongregazione(editingWeek.dettagli || congregazioni[0]?.nome || '');
@@ -38,19 +38,58 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
             setNote(editingWeek.note !== '-' ? editingWeek.note : '');
         }
         else {
-            setPeriodoText('');
+            // Calculate next week based on existing weeks
+            let nextDate = new Date();
+            // Ensure default is a Tuesday (2 = Tuesday)
+            const day = nextDate.getDay();
+            const diff = nextDate.getDate() - day + (day === 0 ? -5 : 2 - day);
+            nextDate.setDate(diff);
+            if (settimane.length > 0) {
+                // Sort to find the latest week by startDate
+                const sorted = [...settimane].sort((a, b) => {
+                    if (a.startDate && b.startDate)
+                        return a.startDate.localeCompare(b.startDate);
+                    return 0;
+                });
+                const lastWeek = sorted[sorted.length - 1];
+                if (lastWeek && lastWeek.startDate) {
+                    nextDate = new Date(lastWeek.startDate);
+                    nextDate.setDate(nextDate.getDate() + 7); // Next week Tuesday
+                }
+            }
+            setSelectedStartDate(nextDate.toISOString().slice(0, 10));
             setIsCongregazione(true);
             setSelectedCongregazione(congregazioni[0]?.nome || '');
             setAltroEvento('settimana_libera');
             setExtraDettaglio('');
             setNote('');
         }
-    }, [isOpen, editingWeek, congregazioni]);
+    }, [isOpen, editingWeek, congregazioni, settimane]);
+    const computePeriodoPreview = (isoDate) => {
+        if (!isoDate)
+            return '';
+        const start = new Date(isoDate);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 5);
+        const startMonth = start.toLocaleDateString('it-IT', { month: 'short' });
+        const endMonth = end.toLocaleDateString('it-IT', { month: 'short' });
+        const year = start.getFullYear();
+        if (startMonth === endMonth) {
+            return `${start.getDate()} – ${end.getDate()} ${startMonth} ${year}`;
+        }
+        else {
+            return `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${year}`;
+        }
+    };
     if (!isOpen)
         return null;
     const handleSubmit = (e) => {
         e.preventDefault();
-        const formattedPeriodo = abbreviateMonths(periodoText.trim() || 'Data da definire');
+        const computedStr = computePeriodoPreview(selectedStartDate);
+        const formattedPeriodo = abbreviateMonths(computedStr || 'Data da definire');
+        const start = new Date(selectedStartDate);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 5);
         const evento = isCongregazione ? 'congregazione' : altroEvento;
         const dettagli = isCongregazione
             ? selectedCongregazione.trim() || 'Congregazione'
@@ -60,8 +99,8 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
             id: editingWeek ? editingWeek.id : `week_${Date.now()}`,
             numero: editingWeek ? editingWeek.numero : 0,
             periodo: formattedPeriodo,
-            startDate: editingWeek?.startDate || new Date().toISOString().slice(0, 10),
-            endDate: editingWeek?.endDate || new Date().toISOString().slice(0, 10),
+            startDate: selectedStartDate,
+            endDate: end.toISOString().slice(0, 10),
             semestre: periodo.semestre,
             anno: periodo.anno,
             evento,
@@ -72,7 +111,7 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
         onClose();
     };
     const hasExtraDetail = ['assemblea_circoscrizione', 'congresso', 'evento_personalizzato'].includes(altroEvento);
-    return (_jsxs("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", children: [_jsx("div", { className: "fixed inset-0 bg-black/50 backdrop-blur-xs", onClick: onClose }), _jsxs("div", { className: "relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-[#E0DED9] animate-in fade-in zoom-in-95 duration-150 text-[#2F3332]", children: [_jsxs("div", { className: "flex items-center justify-between px-6 py-4 border-b border-[#E0DED9] bg-[#FAF9F7]", children: [_jsx("h3", { className: "text-sm font-bold text-[#2F3332] uppercase tracking-wider", children: editingWeek ? 'Modifica Settimana' : 'Aggiungi Settimana' }), _jsx("button", { onClick: onClose, className: "p-1 rounded-lg text-[#888] hover:text-[#333] hover:bg-stone-100 cursor-pointer", children: _jsx(X, { className: "w-5 h-5" }) })] }), _jsxs("form", { onSubmit: handleSubmit, className: "p-6 space-y-4 max-h-[85vh] overflow-y-auto", children: [_jsxs("div", { children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase mb-1", children: "Periodo (Mar \u2013 Dom)" }), _jsx("input", { type: "text", value: periodoText, onChange: (e) => setPeriodoText(e.target.value), placeholder: "es. 1 \u2013 6 set 2026", required: true, className: "w-full px-3 py-2.5 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] transition-colors" })] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Tipo di Attivit\u00E0" }), _jsxs("div", { className: "grid grid-cols-2 gap-2", children: [_jsxs("button", { type: "button", onClick: () => setIsCongregazione(true), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${isCongregazione
+    return (_jsxs("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", children: [_jsx("div", { className: "fixed inset-0 bg-black/50 backdrop-blur-xs", onClick: onClose }), _jsxs("div", { className: "relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-[#E0DED9] animate-in fade-in zoom-in-95 duration-150 text-[#2F3332]", children: [_jsxs("div", { className: "flex items-center justify-between px-6 py-4 border-b border-[#E0DED9] bg-[#FAF9F7]", children: [_jsx("h3", { className: "text-sm font-bold text-[#2F3332] uppercase tracking-wider", children: editingWeek ? 'Modifica Settimana' : 'Aggiungi Settimana' }), _jsx("button", { onClick: onClose, className: "p-1 rounded-lg text-[#888] hover:text-[#333] hover:bg-stone-100 cursor-pointer", children: _jsx(X, { className: "w-5 h-5" }) })] }), _jsxs("form", { onSubmit: handleSubmit, className: "p-6 space-y-4 max-h-[85vh] overflow-y-auto", children: [_jsxs("div", { children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase mb-1", children: "Data Inizio Settimana (Marted\u00EC)" }), _jsx("input", { type: "date", value: selectedStartDate, onChange: (e) => setSelectedStartDate(e.target.value), required: true, className: "w-full px-3 py-2.5 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] transition-colors" }), selectedStartDate && (_jsxs("p", { className: "text-xs text-[#666] mt-1.5 ml-1", children: ["Periodo calcolato: ", _jsx("strong", { className: "text-[#2F3332]", children: computePeriodoPreview(selectedStartDate) })] }))] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Tipo di Attivit\u00E0" }), _jsxs("div", { className: "grid grid-cols-2 gap-2", children: [_jsxs("button", { type: "button", onClick: () => setIsCongregazione(true), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${isCongregazione
                                                     ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-1 ring-[#7C8B82]'
                                                     : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(Building2, { className: "w-4 h-4 text-[#5B6760]" }), _jsx("span", { children: "Visita Congregazione" })] }), _jsxs("button", { type: "button", onClick: () => setIsCongregazione(false), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${!isCongregazione
                                                     ? 'border-[#7C8B82] bg-[#FAF9F7] text-[#2F3332] ring-1 ring-[#7C8B82]'
