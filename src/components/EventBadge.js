@@ -14,7 +14,7 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
                 };
             case 'settimana_libera':
                 return {
-                    defaultLabel: 'Settimana libera',
+                    defaultLabel: 'SETTIMANA LIBERA',
                     icon: _jsx(Calendar, { className: iconClass }),
                     bg: 'bg-emerald-50',
                     border: 'border-emerald-200',
@@ -22,7 +22,7 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
                 };
             case 'assenza':
                 return {
-                    defaultLabel: 'Assenza',
+                    defaultLabel: 'ASSENZA',
                     icon: _jsx(Plane, { className: iconClass }),
                     bg: 'bg-sky-50',
                     border: 'border-sky-200',
@@ -30,7 +30,7 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
                 };
             case 'scuola_pionieri':
                 return {
-                    defaultLabel: 'Scuola pionieri',
+                    defaultLabel: 'SCUOLA PIONIERI',
                     icon: _jsx(BookOpen, { className: iconClass }),
                     bg: 'bg-purple-50',
                     border: 'border-purple-200',
@@ -38,7 +38,7 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
                 };
             case 'settimana_pioniere':
                 return {
-                    defaultLabel: 'Settimana pioniere',
+                    defaultLabel: 'SETTIMANA PIONIERE',
                     icon: _jsx(BookMarked, { className: iconClass }),
                     bg: 'bg-violet-50',
                     border: 'border-violet-200',
@@ -46,7 +46,7 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
                 };
             case 'assemblea_circoscrizione':
                 return {
-                    defaultLabel: 'Assemblea di circoscrizione',
+                    defaultLabel: 'ASSEMBLEA CIRCOSCRIZIONE',
                     icon: _jsx(Users, { className: iconClass }),
                     bg: 'bg-amber-50',
                     border: 'border-amber-200',
@@ -54,7 +54,7 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
                 };
             case 'congresso':
                 return {
-                    defaultLabel: 'Congresso',
+                    defaultLabel: 'CONGRESSO',
                     icon: _jsx(Users, { className: iconClass }),
                     bg: 'bg-rose-50',
                     border: 'border-rose-200',
@@ -62,7 +62,7 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
                 };
             case 'evento_personalizzato':
                 return {
-                    defaultLabel: 'Evento personalizzato',
+                    defaultLabel: 'EVENTO PERSONALIZZATO',
                     icon: _jsx(Star, { className: iconClass }),
                     bg: 'bg-stone-100',
                     border: 'border-stone-300',

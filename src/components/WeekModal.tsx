@@ -214,9 +214,9 @@ export const WeekModal: React.FC<WeekModalProps> = ({
               <select
                 value={selectedCongregazione}
                 onChange={(e) => setSelectedCongregazione(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold uppercase"
+                className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold"
               >
-                <option value="Da definire">Da definire</option>
+                <option value="Da definire">DA DEFINIRE</option>
                 {congregazioni.map((c) => (
                   <option key={c.id} value={c.nome}>
                     {c.nome} (Ultima: {c.ultimaVisita})

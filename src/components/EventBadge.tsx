@@ -29,7 +29,7 @@ export const EventBadge: React.FC<EventBadgeProps> = ({
         };
       case 'settimana_libera':
         return {
-          defaultLabel: 'Settimana libera',
+          defaultLabel: 'SETTIMANA LIBERA',
           icon: <Calendar className={iconClass} />,
           bg: 'bg-emerald-50',
           border: 'border-emerald-200',
@@ -37,7 +37,7 @@ export const EventBadge: React.FC<EventBadgeProps> = ({
         };
       case 'assenza':
         return {
-          defaultLabel: 'Assenza',
+          defaultLabel: 'ASSENZA',
           icon: <Plane className={iconClass} />,
           bg: 'bg-sky-50',
           border: 'border-sky-200',
@@ -45,7 +45,7 @@ export const EventBadge: React.FC<EventBadgeProps> = ({
         };
       case 'scuola_pionieri':
         return {
-          defaultLabel: 'Scuola pionieri',
+          defaultLabel: 'SCUOLA PIONIERI',
           icon: <BookOpen className={iconClass} />,
           bg: 'bg-purple-50',
           border: 'border-purple-200',
@@ -53,7 +53,7 @@ export const EventBadge: React.FC<EventBadgeProps> = ({
         };
       case 'settimana_pioniere':
         return {
-          defaultLabel: 'Settimana pioniere',
+          defaultLabel: 'SETTIMANA PIONIERE',
           icon: <BookMarked className={iconClass} />,
           bg: 'bg-violet-50',
           border: 'border-violet-200',
@@ -61,7 +61,7 @@ export const EventBadge: React.FC<EventBadgeProps> = ({
         };
       case 'assemblea_circoscrizione':
         return {
-          defaultLabel: 'Assemblea di circoscrizione',
+          defaultLabel: 'ASSEMBLEA CIRCOSCRIZIONE',
           icon: <Users className={iconClass} />,
           bg: 'bg-amber-50',
           border: 'border-amber-200',
@@ -69,7 +69,7 @@ export const EventBadge: React.FC<EventBadgeProps> = ({
         };
       case 'congresso':
         return {
-          defaultLabel: 'Congresso',
+          defaultLabel: 'CONGRESSO',
           icon: <Users className={iconClass} />,
           bg: 'bg-rose-50',
           border: 'border-rose-200',
@@ -77,7 +77,7 @@ export const EventBadge: React.FC<EventBadgeProps> = ({
         };
       case 'evento_personalizzato':
         return {
-          defaultLabel: 'Evento personalizzato',
+          defaultLabel: 'EVENTO PERSONALIZZATO',
           icon: <Star className={iconClass} />,
           bg: 'bg-stone-100',
           border: 'border-stone-300',
