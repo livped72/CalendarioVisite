@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #F7F6F2;
+    --bg-card: #FFFFFF;
+    --bg-card-subtle: #FAF9F7;
+    --border-color: #E0DED9;
+    --color-primary: #7C8B82;
+    --color-primary-hover: #68766E;
+    --color-primary-dark: #5B6760;
+    --color-text-main: #2F3332;
+    --color-text-muted: #7C8B82;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F7F6F2;
+    color: #2F3332;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbar in sage green style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C4CCC7;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7C8B82;
+}
+
+.transition-badge {
+  transition: all 0.15s ease-in-out;
+}
