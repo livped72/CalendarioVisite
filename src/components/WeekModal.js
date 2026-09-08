@@ -1,16 +1,71 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState, useEffect } from 'react';
-import { X, Building2, CalendarDays } from 'lucide-react';
-import { EventBadge } from './EventBadge';
+import { X, Building2, CalendarDays, Calendar, BookMarked, Plane, BookOpen, Users, Star, } from 'lucide-react';
 import { abbreviateMonths } from '../lib/dateUtils';
 const ALTRO_EVENTO_OPTIONS = [
-    { tipo: 'settimana_libera', label: 'SETTIMANA LIBERA' },
-    { tipo: 'settimana_pioniere', label: 'SETTIMANA PIONIERE' },
-    { tipo: 'assenza', label: 'ASSENZA' },
-    { tipo: 'scuola_pionieri', label: 'SCUOLA PIONIERI' },
-    { tipo: 'assemblea_circoscrizione', label: 'ASSEMBLEA DI CIRCOSCRIZIONE' },
-    { tipo: 'congresso', label: 'CONGRESSO' },
-    { tipo: 'evento_personalizzato', label: 'EVENTO PERSONALIZZATO' },
+    {
+        tipo: 'settimana_libera',
+        label: 'SETTIMANA LIBERA',
+        icon: Calendar,
+        bg: 'bg-emerald-50/70 hover:bg-emerald-100/60',
+        border: 'border-emerald-200',
+        text: 'text-emerald-800',
+        selectedStyle: 'ring-2 ring-emerald-600 border-emerald-400 bg-emerald-100 font-extrabold shadow-xs',
+    },
+    {
+        tipo: 'settimana_pioniere',
+        label: 'SETTIMANA PIONIERE',
+        icon: BookMarked,
+        bg: 'bg-violet-50/70 hover:bg-violet-100/60',
+        border: 'border-violet-200',
+        text: 'text-violet-800',
+        selectedStyle: 'ring-2 ring-violet-600 border-violet-400 bg-violet-100 font-extrabold shadow-xs',
+    },
+    {
+        tipo: 'assenza',
+        label: 'ASSENZA',
+        icon: Plane,
+        bg: 'bg-sky-50/70 hover:bg-sky-100/60',
+        border: 'border-sky-200',
+        text: 'text-sky-800',
+        selectedStyle: 'ring-2 ring-sky-600 border-sky-400 bg-sky-100 font-extrabold shadow-xs',
+    },
+    {
+        tipo: 'scuola_pionieri',
+        label: 'SCUOLA PIONIERI',
+        icon: BookOpen,
+        bg: 'bg-purple-50/70 hover:bg-purple-100/60',
+        border: 'border-purple-200',
+        text: 'text-purple-800',
+        selectedStyle: 'ring-2 ring-purple-600 border-purple-400 bg-purple-100 font-extrabold shadow-xs',
+    },
+    {
+        tipo: 'assemblea_circoscrizione',
+        label: 'ASSEMBLEA CIRCOSCRIZIONE',
+        icon: Users,
+        bg: 'bg-amber-50/70 hover:bg-amber-100/60',
+        border: 'border-amber-200',
+        text: 'text-amber-800',
+        selectedStyle: 'ring-2 ring-amber-600 border-amber-400 bg-amber-100 font-extrabold shadow-xs',
+    },
+    {
+        tipo: 'congresso',
+        label: 'CONGRESSO',
+        icon: Users,
+        bg: 'bg-rose-50/70 hover:bg-rose-100/60',
+        border: 'border-rose-200',
+        text: 'text-rose-800',
+        selectedStyle: 'ring-2 ring-rose-600 border-rose-400 bg-rose-100 font-extrabold shadow-xs',
+    },
+    {
+        tipo: 'evento_personalizzato',
+        label: 'EVENTO PERSONALIZZATO',
+        icon: Star,
+        bg: 'bg-stone-100/80 hover:bg-stone-200/60',
+        border: 'border-stone-300',
+        text: 'text-stone-800',
+        selectedStyle: 'ring-2 ring-stone-600 border-stone-400 bg-stone-200 font-extrabold shadow-xs',
+    },
 ];
 export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, congregazioni, periodo, settimane = [], }) => {
     const [selectedStartDate, setSelectedStartDate] = useState('');
@@ -111,15 +166,20 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
         onClose();
     };
     const hasExtraDetail = ['assemblea_circoscrizione', 'congresso', 'evento_personalizzato'].includes(altroEvento);
-    return (_jsxs("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", children: [_jsx("div", { className: "fixed inset-0 bg-black/50 backdrop-blur-xs", onClick: onClose }), _jsxs("div", { className: "relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-[#E0DED9] animate-in fade-in zoom-in-95 duration-150 text-[#2F3332]", children: [_jsxs("div", { className: "flex items-center justify-between px-6 py-4 border-b border-[#E0DED9] bg-[#FAF9F7]", children: [_jsx("h3", { className: "text-sm font-bold text-[#2F3332] uppercase tracking-wider", children: editingWeek ? 'Modifica Settimana' : 'Aggiungi Settimana' }), _jsx("button", { onClick: onClose, className: "p-1 rounded-lg text-[#888] hover:text-[#333] hover:bg-stone-100 cursor-pointer", children: _jsx(X, { className: "w-5 h-5" }) })] }), _jsxs("form", { onSubmit: handleSubmit, className: "p-6 space-y-4 max-h-[85vh] overflow-y-auto", children: [_jsxs("div", { children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase mb-1", children: "Data Inizio Settimana (Marted\u00EC)" }), _jsx("input", { type: "date", value: selectedStartDate, onChange: (e) => setSelectedStartDate(e.target.value), required: true, className: "w-full px-3 py-2.5 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] transition-colors" }), selectedStartDate && (_jsxs("p", { className: "text-xs text-[#666] mt-1.5 ml-1", children: ["Periodo calcolato: ", _jsx("strong", { className: "text-[#2F3332]", children: computePeriodoPreview(selectedStartDate) })] }))] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Tipo di Attivit\u00E0" }), _jsxs("div", { className: "grid grid-cols-2 gap-2", children: [_jsxs("button", { type: "button", onClick: () => setIsCongregazione(true), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${isCongregazione
-                                                    ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-1 ring-[#7C8B82]'
-                                                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(Building2, { className: "w-4 h-4 text-[#5B6760]" }), _jsx("span", { children: "Visita Congregazione" })] }), _jsxs("button", { type: "button", onClick: () => setIsCongregazione(false), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${!isCongregazione
-                                                    ? 'border-[#7C8B82] bg-[#FAF9F7] text-[#2F3332] ring-1 ring-[#7C8B82]'
-                                                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(CalendarDays, { className: "w-4 h-4 text-[#7C8B82]" }), _jsx("span", { children: "Altro Evento" })] })] })] }), isCongregazione ? (_jsxs("div", { className: "space-y-2 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Nome Congregazione" }), _jsxs("select", { value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold", children: [_jsx("option", { value: "Da definire", children: "DA DEFINIRE" }), congregazioni.map((c) => (_jsxs("option", { value: c.nome, children: [c.nome, " (Ultima: ", c.ultimaVisita, ")"] }, c.id)))] }), _jsx("input", { type: "text", placeholder: "Oppure inserisci un altro nome...", value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" })] })) : (
+    return (_jsxs("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", children: [_jsx("div", { className: "fixed inset-0 bg-black/50 backdrop-blur-xs", onClick: onClose }), _jsxs("div", { className: "relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-[#E0DED9] animate-in fade-in zoom-in-95 duration-150 text-[#2F3332]", children: [_jsxs("div", { className: "flex items-center justify-between px-6 py-4 border-b border-[#E0DED9] bg-[#FAF9F7]", children: [_jsx("h3", { className: "text-sm font-bold text-[#2F3332] uppercase tracking-wider", children: editingWeek ? 'Modifica Settimana' : 'Aggiungi Settimana' }), _jsx("button", { onClick: onClose, className: "p-1 rounded-lg text-[#888] hover:text-[#333] hover:bg-stone-100 cursor-pointer", children: _jsx(X, { className: "w-5 h-5" }) })] }), _jsxs("form", { onSubmit: handleSubmit, className: "p-6 space-y-4 max-h-[85vh] overflow-y-auto", children: [_jsxs("div", { children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase mb-1", children: "Data Inizio Settimana (Marted\u00EC)" }), _jsx("input", { type: "date", value: selectedStartDate, onChange: (e) => setSelectedStartDate(e.target.value), required: true, className: "w-full px-3 py-2.5 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] transition-colors" }), selectedStartDate && (_jsxs("p", { className: "text-xs text-[#666] mt-1.5 ml-1", children: ["Periodo calcolato: ", _jsx("strong", { className: "text-[#2F3332]", children: computePeriodoPreview(selectedStartDate) })] }))] }), _jsxs("div", { className: "space-y-2", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Tipo di Attivit\u00E0" }), _jsxs("div", { className: "grid grid-cols-2 gap-2", children: [_jsxs("button", { type: "button", onClick: () => setIsCongregazione(true), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold uppercase transition-all cursor-pointer ${isCongregazione
+                                                    ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-2 ring-[#7C8B82] shadow-xs'
+                                                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(Building2, { className: "w-4 h-4 text-[#5B6760]" }), _jsx("span", { children: "VISITA CONGREGAZIONE" })] }), _jsxs("button", { type: "button", onClick: () => setIsCongregazione(false), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold uppercase transition-all cursor-pointer ${!isCongregazione
+                                                    ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-2 ring-[#7C8B82] shadow-xs'
+                                                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(CalendarDays, { className: "w-4 h-4 text-[#7C8B82]" }), _jsx("span", { children: "ALTRO EVENTO" })] })] })] }), isCongregazione ? (_jsxs("div", { className: "space-y-2 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Nome Congregazione" }), _jsxs("select", { value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold", children: [_jsx("option", { value: "Da definire", children: "DA DEFINIRE" }), congregazioni.map((c) => (_jsxs("option", { value: c.nome, children: [c.nome, " (Ultima: ", c.ultimaVisita, ")"] }, c.id)))] }), _jsx("input", { type: "text", placeholder: "Oppure inserisci un altro nome...", value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" })] })) : (
                             /* Alternative events panel */
-                            _jsxs("div", { className: "space-y-3 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Evento Sostitutivo" }), _jsx("div", { className: "grid grid-cols-2 gap-2", children: ALTRO_EVENTO_OPTIONS.map((opt) => (_jsxs("label", { className: `flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer transition-all ${altroEvento === opt.tipo
-                                                ? 'border-[#7C8B82] bg-white ring-1 ring-[#7C8B82] font-bold'
-                                                : 'border-[#E0DED9] bg-white hover:bg-stone-50'}`, children: [_jsx("input", { type: "radio", name: "altroEvento", value: opt.tipo, checked: altroEvento === opt.tipo, onChange: () => setAltroEvento(opt.tipo), className: "sr-only" }), _jsx(EventBadge, { tipo: opt.tipo, size: "sm" })] }, opt.tipo))) }), hasExtraDetail && (_jsxs("div", { children: [_jsx("label", { className: "block text-[11px] font-semibold text-[#555] mb-1", children: "Dettaglio opzionale" }), _jsx("input", { type: "text", value: extraDettaglio, onChange: (e) => setExtraDettaglio(e.target.value), placeholder: altroEvento === 'assemblea_circoscrizione' ? 'es. Milano'
+                            _jsxs("div", { className: "space-y-3 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Evento Sostitutivo" }), _jsx("div", { className: "grid grid-cols-2 gap-2", children: ALTRO_EVENTO_OPTIONS.map((opt, idx) => {
+                                            const isSelected = altroEvento === opt.tipo;
+                                            const Icon = opt.icon;
+                                            const isLast = idx === ALTRO_EVENTO_OPTIONS.length - 1;
+                                            return (_jsxs("label", { className: `flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs cursor-pointer transition-all ${isLast ? 'col-span-2' : 'col-span-1'} ${opt.bg} ${opt.border} ${opt.text} ${isSelected
+                                                    ? opt.selectedStyle
+                                                    : 'opacity-70 hover:opacity-100 hover:shadow-2xs'}`, children: [_jsx("input", { type: "radio", name: "altroEvento", value: opt.tipo, checked: isSelected, onChange: () => setAltroEvento(opt.tipo), className: "sr-only" }), _jsx(Icon, { className: "w-4 h-4 shrink-0" }), _jsx("span", { className: "font-bold tracking-tight text-center leading-tight truncate", children: opt.label })] }, opt.tipo));
+                                        }) }), hasExtraDetail && (_jsxs("div", { children: [_jsx("label", { className: "block text-[11px] font-semibold text-[#555] mb-1", children: "Dettaglio opzionale" }), _jsx("input", { type: "text", value: extraDettaglio, onChange: (e) => setExtraDettaglio(e.target.value), placeholder: altroEvento === 'assemblea_circoscrizione' ? 'es. Milano'
                                                     : altroEvento === 'congresso' ? 'es. Congresso 2026 – Roma'
                                                         : 'es. Visita Betel', className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" })] }))] })), _jsxs("div", { children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase mb-1", children: "Note" }), _jsx("textarea", { rows: 3, value: note, onChange: (e) => setNote(e.target.value), placeholder: "es. Portare il materiale...", className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] resize-none" })] }), _jsxs("div", { className: "flex items-center justify-between pt-3 border-t border-[#E0DED9]", children: [editingWeek && onDelete ? (_jsx("button", { type: "button", onClick: () => {
                                             if (confirm('Eliminare questa settimana?')) {

@@ -6,7 +6,7 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
         switch (tipo) {
             case 'congregazione':
                 return {
-                    defaultLabel: 'Congregazione',
+                    defaultLabel: 'CONGREGAZIONE',
                     icon: _jsx(Home, { className: iconClass }),
                     bg: 'bg-[#7C8B82]/15',
                     border: 'border-[#7C8B82]/30',

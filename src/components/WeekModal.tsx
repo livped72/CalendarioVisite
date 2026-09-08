@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { X, Building2, CalendarDays } from 'lucide-react';
+import {
+  X,
+  Building2,
+  CalendarDays,
+  Calendar,
+  BookMarked,
+  Plane,
+  BookOpen,
+  Users,
+  Star,
+} from 'lucide-react';
 import { Settimana, TipoEvento, Congregazione, Semestre, AnnoSemestre } from '../types';
-import { EventBadge } from './EventBadge';
 import { abbreviateMonths } from '../lib/dateUtils';
 
 interface WeekModalProps {
@@ -15,14 +24,80 @@ interface WeekModalProps {
   settimane?: Settimana[];
 }
 
-const ALTRO_EVENTO_OPTIONS: { tipo: TipoEvento; label: string }[] = [
-  { tipo: 'settimana_libera', label: 'SETTIMANA LIBERA' },
-  { tipo: 'settimana_pioniere', label: 'SETTIMANA PIONIERE' },
-  { tipo: 'assenza', label: 'ASSENZA' },
-  { tipo: 'scuola_pionieri', label: 'SCUOLA PIONIERI' },
-  { tipo: 'assemblea_circoscrizione', label: 'ASSEMBLEA DI CIRCOSCRIZIONE' },
-  { tipo: 'congresso', label: 'CONGRESSO' },
-  { tipo: 'evento_personalizzato', label: 'EVENTO PERSONALIZZATO' },
+interface AltroEventoOption {
+  tipo: TipoEvento;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  bg: string;
+  border: string;
+  text: string;
+  selectedStyle: string;
+}
+
+const ALTRO_EVENTO_OPTIONS: AltroEventoOption[] = [
+  {
+    tipo: 'settimana_libera',
+    label: 'SETTIMANA LIBERA',
+    icon: Calendar,
+    bg: 'bg-emerald-50/70 hover:bg-emerald-100/60',
+    border: 'border-emerald-200',
+    text: 'text-emerald-800',
+    selectedStyle: 'ring-2 ring-emerald-600 border-emerald-400 bg-emerald-100 font-extrabold shadow-xs',
+  },
+  {
+    tipo: 'settimana_pioniere',
+    label: 'SETTIMANA PIONIERE',
+    icon: BookMarked,
+    bg: 'bg-violet-50/70 hover:bg-violet-100/60',
+    border: 'border-violet-200',
+    text: 'text-violet-800',
+    selectedStyle: 'ring-2 ring-violet-600 border-violet-400 bg-violet-100 font-extrabold shadow-xs',
+  },
+  {
+    tipo: 'assenza',
+    label: 'ASSENZA',
+    icon: Plane,
+    bg: 'bg-sky-50/70 hover:bg-sky-100/60',
+    border: 'border-sky-200',
+    text: 'text-sky-800',
+    selectedStyle: 'ring-2 ring-sky-600 border-sky-400 bg-sky-100 font-extrabold shadow-xs',
+  },
+  {
+    tipo: 'scuola_pionieri',
+    label: 'SCUOLA PIONIERI',
+    icon: BookOpen,
+    bg: 'bg-purple-50/70 hover:bg-purple-100/60',
+    border: 'border-purple-200',
+    text: 'text-purple-800',
+    selectedStyle: 'ring-2 ring-purple-600 border-purple-400 bg-purple-100 font-extrabold shadow-xs',
+  },
+  {
+    tipo: 'assemblea_circoscrizione',
+    label: 'ASSEMBLEA CIRCOSCRIZIONE',
+    icon: Users,
+    bg: 'bg-amber-50/70 hover:bg-amber-100/60',
+    border: 'border-amber-200',
+    text: 'text-amber-800',
+    selectedStyle: 'ring-2 ring-amber-600 border-amber-400 bg-amber-100 font-extrabold shadow-xs',
+  },
+  {
+    tipo: 'congresso',
+    label: 'CONGRESSO',
+    icon: Users,
+    bg: 'bg-rose-50/70 hover:bg-rose-100/60',
+    border: 'border-rose-200',
+    text: 'text-rose-800',
+    selectedStyle: 'ring-2 ring-rose-600 border-rose-400 bg-rose-100 font-extrabold shadow-xs',
+  },
+  {
+    tipo: 'evento_personalizzato',
+    label: 'EVENTO PERSONALIZZATO',
+    icon: Star,
+    bg: 'bg-stone-100/80 hover:bg-stone-200/60',
+    border: 'border-stone-300',
+    text: 'text-stone-800',
+    selectedStyle: 'ring-2 ring-stone-600 border-stone-400 bg-stone-200 font-extrabold shadow-xs',
+  },
 ];
 
 export const WeekModal: React.FC<WeekModalProps> = ({
@@ -183,26 +258,26 @@ export const WeekModal: React.FC<WeekModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsCongregazione(true)}
-                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold uppercase transition-all cursor-pointer ${
                   isCongregazione
-                    ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-1 ring-[#7C8B82]'
+                    ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-2 ring-[#7C8B82] shadow-xs'
                     : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'
                 }`}
               >
                 <Building2 className="w-4 h-4 text-[#5B6760]" />
-                <span>Visita Congregazione</span>
+                <span>VISITA CONGREGAZIONE</span>
               </button>
               <button
                 type="button"
                 onClick={() => setIsCongregazione(false)}
-                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold uppercase transition-all cursor-pointer ${
                   !isCongregazione
-                    ? 'border-[#7C8B82] bg-[#FAF9F7] text-[#2F3332] ring-1 ring-[#7C8B82]'
+                    ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-2 ring-[#7C8B82] shadow-xs'
                     : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'
                 }`}
               >
                 <CalendarDays className="w-4 h-4 text-[#7C8B82]" />
-                <span>Altro Evento</span>
+                <span>ALTRO EVENTO</span>
               </button>
             </div>
           </div>
@@ -236,26 +311,37 @@ export const WeekModal: React.FC<WeekModalProps> = ({
             <div className="space-y-3 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]">
               <label className="block text-xs font-bold text-[#2F3332] uppercase">Evento Sostitutivo</label>
               <div className="grid grid-cols-2 gap-2">
-                {ALTRO_EVENTO_OPTIONS.map((opt) => (
-                  <label
-                    key={opt.tipo}
-                    className={`flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer transition-all ${
-                      altroEvento === opt.tipo
-                        ? 'border-[#7C8B82] bg-white ring-1 ring-[#7C8B82] font-bold'
-                        : 'border-[#E0DED9] bg-white hover:bg-stone-50'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="altroEvento"
-                      value={opt.tipo}
-                      checked={altroEvento === opt.tipo}
-                      onChange={() => setAltroEvento(opt.tipo)}
-                      className="sr-only"
-                    />
-                    <EventBadge tipo={opt.tipo} size="sm" />
-                  </label>
-                ))}
+                {ALTRO_EVENTO_OPTIONS.map((opt, idx) => {
+                  const isSelected = altroEvento === opt.tipo;
+                  const Icon = opt.icon;
+                  const isLast = idx === ALTRO_EVENTO_OPTIONS.length - 1;
+
+                  return (
+                    <label
+                      key={opt.tipo}
+                      className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                        isLast ? 'col-span-2' : 'col-span-1'
+                      } ${opt.bg} ${opt.border} ${opt.text} ${
+                        isSelected
+                          ? opt.selectedStyle
+                          : 'opacity-70 hover:opacity-100 hover:shadow-2xs'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="altroEvento"
+                        value={opt.tipo}
+                        checked={isSelected}
+                        onChange={() => setAltroEvento(opt.tipo)}
+                        className="sr-only"
+                      />
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span className="font-bold tracking-tight text-center leading-tight truncate">
+                        {opt.label}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
 
               {hasExtraDetail && (
