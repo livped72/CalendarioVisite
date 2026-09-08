@@ -35,7 +35,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
   periodo,
   settimane = [],
 }) => {
-  const [periodoText, setPeriodoText] = useState('');
+  const [selectedStartDate, setSelectedStartDate] = useState('');
   const [isCongregazione, setIsCongregazione] = useState(true);
   const [selectedCongregazione, setSelectedCongregazione] = useState('');
   const [altroEvento, setAltroEvento] = useState<TipoEvento>('settimana_libera');
@@ -45,7 +45,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     if (editingWeek) {
-      setPeriodoText(abbreviateMonths(editingWeek.periodo));
+      setSelectedStartDate(editingWeek.startDate || new Date().toISOString().slice(0, 10));
       if (editingWeek.evento === 'congregazione') {
         setIsCongregazione(true);
         setSelectedCongregazione(editingWeek.dettagli || congregazioni[0]?.nome || '');
@@ -59,7 +59,12 @@ export const WeekModal: React.FC<WeekModalProps> = ({
       setNote(editingWeek.note !== '-' ? editingWeek.note : '');
     } else {
       // Calculate next week based on existing weeks
-      let nextPeriodo = '';
+      let nextDate = new Date();
+      // Ensure default is a Tuesday (2 = Tuesday)
+      const day = nextDate.getDay();
+      const diff = nextDate.getDate() - day + (day === 0 ? -5 : 2 - day);
+      nextDate.setDate(diff);
+
       if (settimane.length > 0) {
         // Sort to find the latest week by startDate
         const sorted = [...settimane].sort((a, b) => {
@@ -68,24 +73,12 @@ export const WeekModal: React.FC<WeekModalProps> = ({
         });
         const lastWeek = sorted[sorted.length - 1];
         if (lastWeek && lastWeek.startDate) {
-          const start = new Date(lastWeek.startDate);
-          start.setDate(start.getDate() + 7); // Next week Tuesday
-          const end = new Date(start);
-          end.setDate(end.getDate() + 5); // Sunday
-
-          const startMonth = start.toLocaleDateString('it-IT', { month: 'short' });
-          const endMonth = end.toLocaleDateString('it-IT', { month: 'short' });
-          const year = start.getFullYear();
-
-          if (startMonth === endMonth) {
-            nextPeriodo = `${start.getDate()} – ${end.getDate()} ${startMonth} ${year}`;
-          } else {
-            nextPeriodo = `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${year}`;
-          }
+          nextDate = new Date(lastWeek.startDate);
+          nextDate.setDate(nextDate.getDate() + 7); // Next week Tuesday
         }
       }
 
-      setPeriodoText(nextPeriodo);
+      setSelectedStartDate(nextDate.toISOString().slice(0, 10));
       setIsCongregazione(true);
       setSelectedCongregazione(congregazioni[0]?.nome || '');
       setAltroEvento('settimana_libera');
@@ -94,11 +87,34 @@ export const WeekModal: React.FC<WeekModalProps> = ({
     }
   }, [isOpen, editingWeek, congregazioni, settimane]);
 
+  const computePeriodoPreview = (isoDate: string) => {
+    if (!isoDate) return '';
+    const start = new Date(isoDate);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 5);
+
+    const startMonth = start.toLocaleDateString('it-IT', { month: 'short' });
+    const endMonth = end.toLocaleDateString('it-IT', { month: 'short' });
+    const year = start.getFullYear();
+
+    if (startMonth === endMonth) {
+      return `${start.getDate()} – ${end.getDate()} ${startMonth} ${year}`;
+    } else {
+      return `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${year}`;
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formattedPeriodo = abbreviateMonths(periodoText.trim() || 'Data da definire');
+    const computedStr = computePeriodoPreview(selectedStartDate);
+    const formattedPeriodo = abbreviateMonths(computedStr || 'Data da definire');
+    
+    const start = new Date(selectedStartDate);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 5);
+    
     const evento: TipoEvento = isCongregazione ? 'congregazione' : altroEvento;
     const dettagli = isCongregazione
       ? selectedCongregazione.trim() || 'Congregazione'
@@ -109,8 +125,8 @@ export const WeekModal: React.FC<WeekModalProps> = ({
       id: editingWeek ? editingWeek.id : `week_${Date.now()}`,
       numero: editingWeek ? editingWeek.numero : 0,
       periodo: formattedPeriodo,
-      startDate: editingWeek?.startDate || new Date().toISOString().slice(0, 10),
-      endDate: editingWeek?.endDate || new Date().toISOString().slice(0, 10),
+      startDate: selectedStartDate,
+      endDate: end.toISOString().slice(0, 10),
       semestre: periodo.semestre,
       anno: periodo.anno,
       evento,
@@ -144,16 +160,20 @@ export const WeekModal: React.FC<WeekModalProps> = ({
           {/* Periodo */}
           <div>
             <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
-              Periodo (Mar – Dom)
+              Data Inizio Settimana (Martedì)
             </label>
             <input
-              type="text"
-              value={periodoText}
-              onChange={(e) => setPeriodoText(e.target.value)}
-              placeholder="es. 1 – 6 set 2026"
+              type="date"
+              value={selectedStartDate}
+              onChange={(e) => setSelectedStartDate(e.target.value)}
               required
               className="w-full px-3 py-2.5 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] transition-colors"
             />
+            {selectedStartDate && (
+              <p className="text-xs text-[#666] mt-1.5 ml-1">
+                Periodo calcolato: <strong className="text-[#2F3332]">{computePeriodoPreview(selectedStartDate)}</strong>
+              </p>
+            )}
           </div>
 
           {/* Tipo attività: 2 big buttons */}
