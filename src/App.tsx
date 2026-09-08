@@ -145,6 +145,14 @@ export const App: React.FC = () => {
     scheduleAccountSync();
   };
 
+  const sortSettimane = (list: Settimana[]): Settimana[] =>
+    [...list].sort((a, b) => {
+      if (a.startDate && b.startDate) return a.startDate.localeCompare(b.startDate);
+      if (a.startDate) return -1;
+      if (b.startDate) return 1;
+      return 0;
+    });
+
   const handleSaveWeek = (saved: Settimana) => {
     const idx = settimane.findIndex((w) => w.id === saved.id);
     let updated: Settimana[];
@@ -154,7 +162,7 @@ export const App: React.FC = () => {
     } else {
       updated = [...settimane, saved];
     }
-    handleUpdateSettimane(updated);
+    handleUpdateSettimane(sortSettimane(updated));
   };
 
   const handleDeleteWeek = (id: string) => {
@@ -163,7 +171,7 @@ export const App: React.FC = () => {
 
   const handleDuplicateWeek = (item: Settimana) => {
     const dup: Settimana = { ...item, id: `week_${Date.now()}` };
-    handleUpdateSettimane([...settimane, dup]);
+    handleUpdateSettimane(sortSettimane([...settimane, dup]));
   };
 
   const handleSaveAppuntamento = (saved: Appuntamento) => {

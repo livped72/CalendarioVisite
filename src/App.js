@@ -110,6 +110,15 @@ export const App = () => {
         saveStoredAppuntamenti(newApps);
         scheduleAccountSync();
     };
+    const sortSettimane = (list) => [...list].sort((a, b) => {
+        if (a.startDate && b.startDate)
+            return a.startDate.localeCompare(b.startDate);
+        if (a.startDate)
+            return -1;
+        if (b.startDate)
+            return 1;
+        return 0;
+    });
     const handleSaveWeek = (saved) => {
         const idx = settimane.findIndex((w) => w.id === saved.id);
         let updated;
@@ -120,14 +129,14 @@ export const App = () => {
         else {
             updated = [...settimane, saved];
         }
-        handleUpdateSettimane(updated);
+        handleUpdateSettimane(sortSettimane(updated));
     };
     const handleDeleteWeek = (id) => {
         handleUpdateSettimane(settimane.filter((w) => w.id !== id));
     };
     const handleDuplicateWeek = (item) => {
         const dup = { ...item, id: `week_${Date.now()}` };
-        handleUpdateSettimane([...settimane, dup]);
+        handleUpdateSettimane(sortSettimane([...settimane, dup]));
     };
     const handleSaveAppuntamento = (saved) => {
         const idx = appuntamenti.findIndex((a) => a.id === saved.id);
