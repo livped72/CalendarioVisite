@@ -12,6 +12,7 @@ interface WeekModalProps {
   editingWeek: Settimana | null;
   congregazioni: Congregazione[];
   periodo: AnnoSemestre;
+  settimane?: Settimana[];
 }
 
 const ALTRO_EVENTO_OPTIONS: { tipo: TipoEvento; label: string }[] = [
@@ -32,6 +33,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
   editingWeek,
   congregazioni,
   periodo,
+  settimane = [],
 }) => {
   const [periodoText, setPeriodoText] = useState('');
   const [isCongregazione, setIsCongregazione] = useState(true);
@@ -56,14 +58,41 @@ export const WeekModal: React.FC<WeekModalProps> = ({
       }
       setNote(editingWeek.note !== '-' ? editingWeek.note : '');
     } else {
-      setPeriodoText('');
+      // Calculate next week based on existing weeks
+      let nextPeriodo = '';
+      if (settimane.length > 0) {
+        // Sort to find the latest week by startDate
+        const sorted = [...settimane].sort((a, b) => {
+          if (a.startDate && b.startDate) return a.startDate.localeCompare(b.startDate);
+          return 0;
+        });
+        const lastWeek = sorted[sorted.length - 1];
+        if (lastWeek && lastWeek.startDate) {
+          const start = new Date(lastWeek.startDate);
+          start.setDate(start.getDate() + 7); // Next week Tuesday
+          const end = new Date(start);
+          end.setDate(end.getDate() + 5); // Sunday
+
+          const startMonth = start.toLocaleDateString('it-IT', { month: 'short' });
+          const endMonth = end.toLocaleDateString('it-IT', { month: 'short' });
+          const year = start.getFullYear();
+
+          if (startMonth === endMonth) {
+            nextPeriodo = `${start.getDate()} – ${end.getDate()} ${startMonth} ${year}`;
+          } else {
+            nextPeriodo = `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${year}`;
+          }
+        }
+      }
+
+      setPeriodoText(nextPeriodo);
       setIsCongregazione(true);
       setSelectedCongregazione(congregazioni[0]?.nome || '');
       setAltroEvento('settimana_libera');
       setExtraDettaglio('');
       setNote('');
     }
-  }, [isOpen, editingWeek, congregazioni]);
+  }, [isOpen, editingWeek, congregazioni, settimane]);
 
   if (!isOpen) return null;
 

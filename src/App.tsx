@@ -305,6 +305,7 @@ export const App: React.FC = () => {
         editingWeek={editingWeek}
         congregazioni={congregazioni}
         periodo={periodo}
+        settimane={periodoData.settimane}
       />
 
       <AllCongregationsModal
