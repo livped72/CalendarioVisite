@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { AnnoSemestre, TabNav, Settimana, Congregazione, UserProfile } from './types';
+import { AnnoSemestre, TabNav, Settimana, Congregazione, UserProfile, Appuntamento } from './types';
 import {
   isUserLoggedIn,
   getCurrentUser,
@@ -12,6 +12,8 @@ import {
   saveStoredSettimane,
   getStoredCongregazioni,
   saveStoredCongregazioni,
+  getStoredAppuntamenti,
+  saveStoredAppuntamenti,
 } from './lib/storage';
 import {
   currentAnnoSemestre,
@@ -61,6 +63,7 @@ export const App: React.FC = () => {
   // ── Data State ──
   const [settimane, setSettimane] = useState<Settimana[]>([]);
   const [congregazioni, setCongregazioni] = useState<Congregazione[]>([]);
+  const [appuntamenti, setAppuntamenti] = useState<Appuntamento[]>([]);
 
   // ── Sync State ──
   const [isSyncing, setIsSyncing] = useState(false);
@@ -86,6 +89,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     setCongregazioni(getStoredCongregazioni());
+    setAppuntamenti(getStoredAppuntamenti());
   }, []);
 
   // ── On login success or initial load, pull latest from account cloud ──
@@ -97,6 +101,7 @@ export const App: React.FC = () => {
           if (res.success) {
             setSettimane(getStoredSettimane(periodo.anno, periodo.semestre));
             setCongregazioni(getStoredCongregazioni());
+            setAppuntamenti(getStoredAppuntamenti());
           }
         })
         .finally(() => setIsSyncing(false));
@@ -134,6 +139,12 @@ export const App: React.FC = () => {
     scheduleAccountSync();
   };
 
+  const handleUpdateAppuntamenti = (newApps: Appuntamento[]) => {
+    setAppuntamenti(newApps);
+    saveStoredAppuntamenti(newApps);
+    scheduleAccountSync();
+  };
+
   const handleSaveWeek = (saved: Settimana) => {
     const idx = settimane.findIndex((w) => w.id === saved.id);
     let updated: Settimana[];
@@ -155,9 +166,26 @@ export const App: React.FC = () => {
     handleUpdateSettimane([...settimane, dup]);
   };
 
+  const handleSaveAppuntamento = (saved: Appuntamento) => {
+    const idx = appuntamenti.findIndex((a) => a.id === saved.id);
+    let updated: Appuntamento[];
+    if (idx >= 0) {
+      updated = [...appuntamenti];
+      updated[idx] = saved;
+    } else {
+      updated = [...appuntamenti, saved];
+    }
+    handleUpdateAppuntamenti(updated);
+  };
+
+  const handleDeleteAppuntamento = (id: string) => {
+    handleUpdateAppuntamenti(appuntamenti.filter((a) => a.id !== id));
+  };
+
   const handleRefreshData = () => {
     setSettimane(getStoredSettimane(periodo.anno, periodo.semestre));
     setCongregazioni(getStoredCongregazioni());
+    setAppuntamenti(getStoredAppuntamenti());
   };
 
   const handleLogout = () => {
@@ -239,7 +267,13 @@ export const App: React.FC = () => {
           )}
 
           {currentTab === 'situazione' && (
-            <SituazioneVisiteView congregazioni={congregazioni} settimane={settimane} />
+            <SituazioneVisiteView
+              congregazioni={congregazioni}
+              settimane={settimane}
+              appuntamenti={appuntamenti}
+              onSaveAppuntamento={handleSaveAppuntamento}
+              onDeleteAppuntamento={handleDeleteAppuntamento}
+            />
           )}
 
           {currentTab === 'impostazioni' && (

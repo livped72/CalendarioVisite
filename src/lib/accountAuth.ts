@@ -10,6 +10,8 @@ import {
   saveAllStoredSettimane,
   getStoredCongregazioni,
   saveStoredCongregazioni,
+  getStoredAppuntamenti,
+  saveStoredAppuntamenti,
 } from './storage';
 
 const STORAGE_KEYS = {
@@ -336,6 +338,7 @@ export async function syncAccountData(): Promise<{ success: boolean; error?: str
   const payload: CalendarioData = {
     settimane: getAllStoredSettimane(),
     congregazioni: getStoredCongregazioni(),
+    appuntamenti: getStoredAppuntamenti(),
     updatedAt: Date.now(),
     ownerId: user.email,
   };
@@ -399,6 +402,9 @@ export async function pullAccountData(): Promise<{ success: boolean; error?: str
       saveAllStoredSettimane(decrypted.settimane);
       if (decrypted.congregazioni) {
         saveStoredCongregazioni(decrypted.congregazioni);
+      }
+      if (decrypted.appuntamenti) {
+        saveStoredAppuntamenti(decrypted.appuntamenti);
       }
       localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
       return { success: true };

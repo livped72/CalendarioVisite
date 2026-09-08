@@ -11,8 +11,11 @@ import {
   Key,
   User,
   LogOut,
+  Pencil,
+  Trash2,
+  Plus,
 } from 'lucide-react';
-import { Congregazione, Settimana, UserProfile } from '../types';
+import { Congregazione, Settimana, UserProfile, Appuntamento } from '../types';
 import { exportBackupJSON, importBackupJSON, resetToDefaults } from '../lib/storage';
 import { abbreviateMonths } from '../lib/dateUtils';
 import {
@@ -23,14 +26,18 @@ import {
   getAccountLastSyncTime,
   logoutAccount,
 } from '../lib/accountAuth';
+import { CongregazioneModal } from './CongregazioneModal';
+import { WeeklyCalendarView } from './WeeklyCalendarView';
 
 // Congregazioni Tab View
 export const CongregazioniView: React.FC<{
   congregazioni: Congregazione[];
   onSaveCongregazioni: (data: Congregazione[]) => void;
   onOpenNewWeekWithCongregazione: (nome: string) => void;
-}> = ({ congregazioni, onOpenNewWeekWithCongregazione }) => {
+}> = ({ congregazioni, onSaveCongregazioni, onOpenNewWeekWithCongregazione }) => {
   const [filterUrgency, setFilterUrgency] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCong, setEditingCong] = useState<Congregazione | null>(null);
 
   const filtered = congregazioni.filter((c) => {
     if (filterUrgency === 'high') return c.settimaneTrascorse >= 12;
@@ -38,6 +45,31 @@ export const CongregazioniView: React.FC<{
     if (filterUrgency === 'low') return c.settimaneTrascorse < 6;
     return true;
   });
+
+  const handleOpenNew = () => {
+    setEditingCong(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (c: Congregazione) => {
+    setEditingCong(c);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = (saved: Congregazione) => {
+    const idx = congregazioni.findIndex((c) => c.id === saved.id);
+    if (idx >= 0) {
+      const updated = [...congregazioni];
+      updated[idx] = saved;
+      onSaveCongregazioni(updated);
+    } else {
+      onSaveCongregazioni([...congregazioni, saved]);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    onSaveCongregazioni(congregazioni.filter((c) => c.id !== id));
+  };
 
   return (
     <div className="space-y-6">
@@ -47,11 +79,19 @@ export const CongregazioniView: React.FC<{
             Elenco Congregazioni della Circoscrizione
           </h2>
           <p className="text-xs text-[#7C8B82] mt-1">
-            Gestisci i dettagli delle congregazioni e pianifica la prossima visita.
+            Gestisci e modifica i dettagli delle congregazioni o pianifica la prossima visita.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleOpenNew}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#7C8B82] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#68766E] transition-colors shadow-2xs cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Nuova Congregazione</span>
+          </button>
+
           <button
             onClick={() => setFilterUrgency('all')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${
@@ -89,7 +129,7 @@ export const CongregazioniView: React.FC<{
         {filtered.map((c) => (
           <div
             key={c.id}
-            className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-4 flex flex-col justify-between hover:border-[#7C8B82] transition-colors"
+            className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-4 flex flex-col justify-between hover:border-[#7C8B82] transition-colors group relative"
           >
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -126,83 +166,73 @@ export const CongregazioniView: React.FC<{
 
             <div className="pt-3 mt-3 border-t border-[#EFECE6] flex items-center justify-between">
               <span className="text-[11px] text-[#888]">{c.totaleVisite} visite registrate</span>
-              <button
-                onClick={() => onOpenNewWeekWithCongregazione(c.nome)}
-                className="text-xs font-bold text-[#5B6760] hover:text-[#2F3332] hover:underline cursor-pointer"
-              >
-                Pianifica visita →
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => handleOpenEdit(c)}
+                  className="p-1.5 rounded-lg text-[#666] hover:text-[#2F3332] hover:bg-[#FAF9F7] border border-[#E0DED9] transition-colors cursor-pointer"
+                  title="Modifica congregazione"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Eliminare la "${c.nome}"?`)) {
+                      handleDelete(c.id);
+                    }
+                  }}
+                  className="p-1.5 rounded-lg text-[#888] hover:text-rose-700 hover:bg-rose-50 border border-[#E0DED9] transition-colors cursor-pointer"
+                  title="Elimina congregazione"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => onOpenNewWeekWithCongregazione(c.nome)}
+                  className="text-xs font-bold text-[#5B6760] hover:text-[#2F3332] hover:underline cursor-pointer ml-1"
+                >
+                  Pianifica →
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      <CongregazioneModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingCong(null);
+        }}
+        onSave={handleSave}
+        onDelete={handleDelete}
+        editingCongregazione={editingCong}
+      />
     </div>
   );
 };
 
-// Situazione Visite Tab View
+// Situazione Visite Tab View (Formato Calendario Settimanale)
 export const SituazioneVisiteView: React.FC<{
   congregazioni: Congregazione[];
   settimane: Settimana[];
-}> = ({ congregazioni }) => {
+  appuntamenti: Appuntamento[];
+  onSaveAppuntamento: (app: Appuntamento) => void;
+  onDeleteAppuntamento: (id: string) => void;
+}> = ({
+  congregazioni,
+  settimane,
+  appuntamenti,
+  onSaveAppuntamento,
+  onDeleteAppuntamento,
+}) => {
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-base font-bold text-[#2F3332] uppercase tracking-wider">
-          Situazione e Copertura Visite
-        </h2>
-        <p className="text-xs text-[#7C8B82] mt-1">
-          Quadro sinottico del completamento delle visite per ciascuna congregazione.
-        </p>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs overflow-hidden">
-        <div className="p-4 border-b border-[#E0DED9] bg-[#FAF9F7] font-bold text-xs text-[#2F3332] uppercase tracking-wider grid grid-cols-12 gap-2">
-          <div className="col-span-4">Congregazione</div>
-          <div className="col-span-3">Ultima Visita</div>
-          <div className="col-span-3">Tempo Trascorso</div>
-          <div className="col-span-2 text-right">Stato</div>
-        </div>
-        <div className="divide-y divide-[#EFECE6]">
-          {congregazioni.map((c) => {
-            const isCritical = c.settimaneTrascorse >= 12;
-            const isMedium = c.settimaneTrascorse >= 6 && c.settimaneTrascorse < 12;
-            return (
-              <div key={c.id} className="p-4 text-xs grid grid-cols-12 gap-2 items-center hover:bg-[#FAF9F7]">
-                <div className="col-span-4 font-bold text-[#2F3332]">{c.nome}</div>
-                <div className="col-span-3 text-[#555]">{abbreviateMonths(c.ultimaVisita)}</div>
-                <div className="col-span-3">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#2F3332]">{c.settimaneTrascorse} sett.</span>
-                    <div className="w-16 bg-[#E0DED9] h-1.5 rounded-full overflow-hidden hidden sm:block">
-                      <div
-                        className={`h-full ${
-                          isCritical ? 'bg-rose-600' : isMedium ? 'bg-amber-600' : 'bg-[#7C8B82]'
-                        }`}
-                        style={{ width: `${Math.min(100, (c.settimaneTrascorse / 20) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="col-span-2 text-right">
-                  <span
-                    className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      isCritical
-                        ? 'bg-rose-100 text-rose-800'
-                        : isMedium
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-[#EBF1ED] text-[#475E50]'
-                    }`}
-                  >
-                    {isCritical ? 'Urgente' : isMedium ? 'In attesa' : 'Regolare'}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+    <WeeklyCalendarView
+      settimane={settimane}
+      congregazioni={congregazioni}
+      appuntamenti={appuntamenti}
+      onSaveAppuntamento={onSaveAppuntamento}
+      onDeleteAppuntamento={onDeleteAppuntamento}
+    />
   );
 };
 

@@ -79,11 +79,38 @@ export type TabNav =
   | 'impostazioni'
   | 'aiuto';
 
+export type CategoriaAppuntamento =
+  | 'servizio'
+  | 'adunanza'
+  | 'anziani'
+  | 'servitori'
+  | 'pionieri'
+  | 'pastorale'
+  | 'discorso'
+  | 'pranzo'
+  | 'personale'
+  | 'altro';
+
+export interface Appuntamento {
+  id: string;
+  settimanaId?: string;       // ID settimana corrispondente (se collegata)
+  congregazioneId?: string;   // ID congregazione (opzionale)
+  data: string;               // ISO "YYYY-MM-DD"
+  oraInizio: string;          // es. "09:30"
+  oraFine?: string;           // es. "11:30"
+  titolo: string;
+  categoria: CategoriaAppuntamento;
+  luogo?: string;
+  note?: string;
+}
+
 /** Struttura dati cloud sincronizzata */
 export interface CalendarioData {
   /** Mappa periodoKey → array di settimane */
   settimane: Record<PeriodoKey, Settimana[]>;
   congregazioni: Congregazione[];
+  appuntamenti?: Appuntamento[];
   updatedAt: number;
   ownerId: string;
 }
+

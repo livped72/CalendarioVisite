@@ -3,7 +3,7 @@
 // I dati sono salvati in modalità Local-First (la registrazione non fallisce MAI)
 // e sincronizzati sul server locale /api/account/ accessibile da tutti i tuoi dispositivi.
 import { encryptData, decryptData } from './crypto';
-import { getAllStoredSettimane, saveAllStoredSettimane, getStoredCongregazioni, saveStoredCongregazioni, } from './storage';
+import { getAllStoredSettimane, saveAllStoredSettimane, getStoredCongregazioni, saveStoredCongregazioni, getStoredAppuntamenti, saveStoredAppuntamenti, } from './storage';
 const STORAGE_KEYS = {
     CURRENT_USER: 'cv_account_user',
     SESSION_TOKEN: 'cv_account_session_pwd',
@@ -264,6 +264,7 @@ export async function syncAccountData() {
     const payload = {
         settimane: getAllStoredSettimane(),
         congregazioni: getStoredCongregazioni(),
+        appuntamenti: getStoredAppuntamenti(),
         updatedAt: Date.now(),
         ownerId: user.email,
     };
@@ -321,6 +322,9 @@ export async function pullAccountData() {
             saveAllStoredSettimane(decrypted.settimane);
             if (decrypted.congregazioni) {
                 saveStoredCongregazioni(decrypted.congregazioni);
+            }
+            if (decrypted.appuntamenti) {
+                saveStoredAppuntamenti(decrypted.appuntamenti);
             }
             localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
             return { success: true };

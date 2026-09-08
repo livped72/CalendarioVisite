@@ -1,12 +1,16 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from 'react';
-import { Download, Upload, RefreshCw, CheckCircle2, ShieldCheck, Cloud, CloudUpload, CloudDownload, Key, LogOut, } from 'lucide-react';
+import { Download, Upload, RefreshCw, CheckCircle2, ShieldCheck, Cloud, CloudUpload, CloudDownload, Key, LogOut, Pencil, Trash2, Plus, } from 'lucide-react';
 import { exportBackupJSON, importBackupJSON, resetToDefaults } from '../lib/storage';
 import { abbreviateMonths } from '../lib/dateUtils';
 import { getCurrentUser, changeAccountPassword, syncAccountData, pullAccountData, getAccountLastSyncTime, } from '../lib/accountAuth';
+import { CongregazioneModal } from './CongregazioneModal';
+import { WeeklyCalendarView } from './WeeklyCalendarView';
 // Congregazioni Tab View
-export const CongregazioniView = ({ congregazioni, onOpenNewWeekWithCongregazione }) => {
+export const CongregazioniView = ({ congregazioni, onSaveCongregazioni, onOpenNewWeekWithCongregazione }) => {
     const [filterUrgency, setFilterUrgency] = useState('all');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingCong, setEditingCong] = useState(null);
     const filtered = congregazioni.filter((c) => {
         if (filterUrgency === 'high')
             return c.settimaneTrascorse >= 12;
@@ -16,29 +20,50 @@ export const CongregazioniView = ({ congregazioni, onOpenNewWeekWithCongregazion
             return c.settimaneTrascorse < 6;
         return true;
     });
-    return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-base font-bold text-[#2F3332] uppercase tracking-wider", children: "Elenco Congregazioni della Circoscrizione" }), _jsx("p", { className: "text-xs text-[#7C8B82] mt-1", children: "Gestisci i dettagli delle congregazioni e pianifica la prossima visita." })] }), _jsxs("div", { className: "flex items-center gap-2", children: [_jsxs("button", { onClick: () => setFilterUrgency('all'), className: `px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${filterUrgency === 'all'
+    const handleOpenNew = () => {
+        setEditingCong(null);
+        setIsModalOpen(true);
+    };
+    const handleOpenEdit = (c) => {
+        setEditingCong(c);
+        setIsModalOpen(true);
+    };
+    const handleSave = (saved) => {
+        const idx = congregazioni.findIndex((c) => c.id === saved.id);
+        if (idx >= 0) {
+            const updated = [...congregazioni];
+            updated[idx] = saved;
+            onSaveCongregazioni(updated);
+        }
+        else {
+            onSaveCongregazioni([...congregazioni, saved]);
+        }
+    };
+    const handleDelete = (id) => {
+        onSaveCongregazioni(congregazioni.filter((c) => c.id !== id));
+    };
+    return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-base font-bold text-[#2F3332] uppercase tracking-wider", children: "Elenco Congregazioni della Circoscrizione" }), _jsx("p", { className: "text-xs text-[#7C8B82] mt-1", children: "Gestisci e modifica i dettagli delle congregazioni o pianifica la prossima visita." })] }), _jsxs("div", { className: "flex flex-wrap items-center gap-2", children: [_jsxs("button", { onClick: handleOpenNew, className: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#7C8B82] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#68766E] transition-colors shadow-2xs cursor-pointer", children: [_jsx(Plus, { className: "w-3.5 h-3.5" }), _jsx("span", { children: "Nuova Congregazione" })] }), _jsxs("button", { onClick: () => setFilterUrgency('all'), className: `px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${filterUrgency === 'all'
                                     ? 'bg-[#7C8B82] text-white'
                                     : 'bg-white border border-[#E0DED9] text-[#2F3332]'}`, children: ["Tutte (", congregazioni.length, ")"] }), _jsx("button", { onClick: () => setFilterUrgency('high'), className: `px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${filterUrgency === 'high'
                                     ? 'bg-rose-700 text-white'
                                     : 'bg-white border border-[#E0DED9] text-rose-800'}`, children: "Urgenza alta (>12 sett.)" }), _jsx("button", { onClick: () => setFilterUrgency('low'), className: `px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${filterUrgency === 'low'
                                     ? 'bg-[#5B6760] text-white'
-                                    : 'bg-white border border-[#E0DED9] text-[#5B6760]'}`, children: "Recenti (<6 sett.)" })] })] }), _jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4", children: filtered.map((c) => (_jsxs("div", { className: "bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-4 flex flex-col justify-between hover:border-[#7C8B82] transition-colors", children: [_jsxs("div", { children: [_jsxs("div", { className: "flex items-center justify-between gap-2 mb-2", children: [_jsx("span", { className: "font-bold text-[#2F3332] text-sm", children: c.nome }), _jsxs("span", { className: `text-[11px] font-bold px-2 py-0.5 rounded-full ${c.settimaneTrascorse >= 12
+                                    : 'bg-white border border-[#E0DED9] text-[#5B6760]'}`, children: "Recenti (<6 sett.)" })] })] }), _jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4", children: filtered.map((c) => (_jsxs("div", { className: "bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-4 flex flex-col justify-between hover:border-[#7C8B82] transition-colors group relative", children: [_jsxs("div", { children: [_jsxs("div", { className: "flex items-center justify-between gap-2 mb-2", children: [_jsx("span", { className: "font-bold text-[#2F3332] text-sm", children: c.nome }), _jsxs("span", { className: `text-[11px] font-bold px-2 py-0.5 rounded-full ${c.settimaneTrascorse >= 12
                                                 ? 'bg-rose-50 text-rose-800 border border-rose-200'
                                                 : c.settimaneTrascorse >= 6
                                                     ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                                    : 'bg-[#EBF1ED] text-[#475E50] border border-[#D5E1D9]'}`, children: [c.settimaneTrascorse, " sett. fa"] })] }), _jsxs("div", { className: "text-xs text-[#666] space-y-1", children: [_jsxs("div", { children: ["Ultima visita: ", _jsx("strong", { className: "text-[#2F3332]", children: abbreviateMonths(c.ultimaVisita) })] }), c.citta && (_jsxs("div", { children: ["Localit\u00E0: ", _jsx("span", { className: "text-[#2F3332]", children: c.citta })] })), c.contatto && (_jsxs("div", { children: ["Referente: ", _jsx("span", { className: "text-[#2F3332]", children: c.contatto })] })), c.note && _jsx("div", { className: "text-[#888] italic text-[11px] mt-1", children: c.note })] })] }), _jsxs("div", { className: "pt-3 mt-3 border-t border-[#EFECE6] flex items-center justify-between", children: [_jsxs("span", { className: "text-[11px] text-[#888]", children: [c.totaleVisite, " visite registrate"] }), _jsx("button", { onClick: () => onOpenNewWeekWithCongregazione(c.nome), className: "text-xs font-bold text-[#5B6760] hover:text-[#2F3332] hover:underline cursor-pointer", children: "Pianifica visita \u2192" })] })] }, c.id))) })] }));
+                                                    : 'bg-[#EBF1ED] text-[#475E50] border border-[#D5E1D9]'}`, children: [c.settimaneTrascorse, " sett. fa"] })] }), _jsxs("div", { className: "text-xs text-[#666] space-y-1", children: [_jsxs("div", { children: ["Ultima visita: ", _jsx("strong", { className: "text-[#2F3332]", children: abbreviateMonths(c.ultimaVisita) })] }), c.citta && (_jsxs("div", { children: ["Localit\u00E0: ", _jsx("span", { className: "text-[#2F3332]", children: c.citta })] })), c.contatto && (_jsxs("div", { children: ["Referente: ", _jsx("span", { className: "text-[#2F3332]", children: c.contatto })] })), c.note && _jsx("div", { className: "text-[#888] italic text-[11px] mt-1", children: c.note })] })] }), _jsxs("div", { className: "pt-3 mt-3 border-t border-[#EFECE6] flex items-center justify-between", children: [_jsxs("span", { className: "text-[11px] text-[#888]", children: [c.totaleVisite, " visite registrate"] }), _jsxs("div", { className: "flex items-center gap-1.5", children: [_jsx("button", { onClick: () => handleOpenEdit(c), className: "p-1.5 rounded-lg text-[#666] hover:text-[#2F3332] hover:bg-[#FAF9F7] border border-[#E0DED9] transition-colors cursor-pointer", title: "Modifica congregazione", children: _jsx(Pencil, { className: "w-3.5 h-3.5" }) }), _jsx("button", { onClick: () => {
+                                                if (confirm(`Eliminare la "${c.nome}"?`)) {
+                                                    handleDelete(c.id);
+                                                }
+                                            }, className: "p-1.5 rounded-lg text-[#888] hover:text-rose-700 hover:bg-rose-50 border border-[#E0DED9] transition-colors cursor-pointer", title: "Elimina congregazione", children: _jsx(Trash2, { className: "w-3.5 h-3.5" }) }), _jsx("button", { onClick: () => onOpenNewWeekWithCongregazione(c.nome), className: "text-xs font-bold text-[#5B6760] hover:text-[#2F3332] hover:underline cursor-pointer ml-1", children: "Pianifica \u2192" })] })] })] }, c.id))) }), _jsx(CongregazioneModal, { isOpen: isModalOpen, onClose: () => {
+                    setIsModalOpen(false);
+                    setEditingCong(null);
+                }, onSave: handleSave, onDelete: handleDelete, editingCongregazione: editingCong })] }));
 };
-// Situazione Visite Tab View
-export const SituazioneVisiteView = ({ congregazioni }) => {
-    return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-base font-bold text-[#2F3332] uppercase tracking-wider", children: "Situazione e Copertura Visite" }), _jsx("p", { className: "text-xs text-[#7C8B82] mt-1", children: "Quadro sinottico del completamento delle visite per ciascuna congregazione." })] }), _jsxs("div", { className: "bg-white rounded-2xl border border-[#E0DED9] shadow-2xs overflow-hidden", children: [_jsxs("div", { className: "p-4 border-b border-[#E0DED9] bg-[#FAF9F7] font-bold text-xs text-[#2F3332] uppercase tracking-wider grid grid-cols-12 gap-2", children: [_jsx("div", { className: "col-span-4", children: "Congregazione" }), _jsx("div", { className: "col-span-3", children: "Ultima Visita" }), _jsx("div", { className: "col-span-3", children: "Tempo Trascorso" }), _jsx("div", { className: "col-span-2 text-right", children: "Stato" })] }), _jsx("div", { className: "divide-y divide-[#EFECE6]", children: congregazioni.map((c) => {
-                            const isCritical = c.settimaneTrascorse >= 12;
-                            const isMedium = c.settimaneTrascorse >= 6 && c.settimaneTrascorse < 12;
-                            return (_jsxs("div", { className: "p-4 text-xs grid grid-cols-12 gap-2 items-center hover:bg-[#FAF9F7]", children: [_jsx("div", { className: "col-span-4 font-bold text-[#2F3332]", children: c.nome }), _jsx("div", { className: "col-span-3 text-[#555]", children: abbreviateMonths(c.ultimaVisita) }), _jsx("div", { className: "col-span-3", children: _jsxs("div", { className: "flex items-center gap-2", children: [_jsxs("span", { className: "font-bold text-[#2F3332]", children: [c.settimaneTrascorse, " sett."] }), _jsx("div", { className: "w-16 bg-[#E0DED9] h-1.5 rounded-full overflow-hidden hidden sm:block", children: _jsx("div", { className: `h-full ${isCritical ? 'bg-rose-600' : isMedium ? 'bg-amber-600' : 'bg-[#7C8B82]'}`, style: { width: `${Math.min(100, (c.settimaneTrascorse / 20) * 100)}%` } }) })] }) }), _jsx("div", { className: "col-span-2 text-right", children: _jsx("span", { className: `inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isCritical
-                                                ? 'bg-rose-100 text-rose-800'
-                                                : isMedium
-                                                    ? 'bg-amber-100 text-amber-800'
-                                                    : 'bg-[#EBF1ED] text-[#475E50]'}`, children: isCritical ? 'Urgente' : isMedium ? 'In attesa' : 'Regolare' }) })] }, c.id));
-                        }) })] })] }));
+// Situazione Visite Tab View (Formato Calendario Settimanale)
+export const SituazioneVisiteView = ({ congregazioni, settimane, appuntamenti, onSaveAppuntamento, onDeleteAppuntamento, }) => {
+    return (_jsx(WeeklyCalendarView, { settimane: settimane, congregazioni: congregazioni, appuntamenti: appuntamenti, onSaveAppuntamento: onSaveAppuntamento, onDeleteAppuntamento: onDeleteAppuntamento }));
 };
 // Impostazioni Tab View
 export const ImpostazioniView = ({ user, onUpdateUser, onRefreshData, onOpenSecurity, onLogout }) => {

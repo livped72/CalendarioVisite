@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Search, Plus, MapPin, Calendar } from 'lucide-react';
+import { X, Search, Plus, MapPin, Calendar, Pencil, Trash2 } from 'lucide-react';
 import { Congregazione } from '../types';
 import { abbreviateMonths } from '../lib/dateUtils';
+import { CongregazioneModal } from './CongregazioneModal';
 
 interface AllCongregationsModalProps {
   isOpen: boolean;
@@ -22,8 +23,11 @@ export const AllCongregationsModal: React.FC<AllCongregationsModalProps> = ({
   const [newNome, setNewNome] = useState('');
   const [newCitta, setNewCitta] = useState('');
   const [newContatto, setNewContatto] = useState('');
+  const [editingCong, setEditingCong] = useState<Congregazione | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!isOpen) return null;
+
 
   const filtered = congregazioni
     .filter(
@@ -195,12 +199,38 @@ export const AllCongregationsModal: React.FC<AllCongregationsModalProps> = ({
                   </div>
                 </div>
 
-                <div className="text-right shrink-0">
-                  <div className="text-xs font-bold text-rose-700">
-                    {c.settimaneTrascorse} sett. fa
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right">
+                    <div className="text-xs font-bold text-rose-700">
+                      {c.settimaneTrascorse} sett. fa
+                    </div>
+                    <div className="text-[11px] text-[#888] mt-0.5">
+                      {c.totaleVisite} visite
+                    </div>
                   </div>
-                  <div className="text-[11px] text-[#888] mt-0.5">
-                    {c.totaleVisite} visite
+
+                  <div className="flex items-center gap-1 border-l border-[#E0DED9] pl-2">
+                    <button
+                      onClick={() => {
+                        setEditingCong(c);
+                        setIsEditModalOpen(true);
+                      }}
+                      className="p-1.5 rounded-lg text-[#666] hover:text-[#2F3332] hover:bg-[#FAF9F7] border border-[#E0DED9] transition-colors cursor-pointer"
+                      title="Modifica congregazione"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Eliminare definitivamente la "${c.nome}"?`)) {
+                          onSaveCongregazioni(congregazioni.filter((item) => item.id !== c.id));
+                        }
+                      }}
+                      className="p-1.5 rounded-lg text-[#888] hover:text-rose-700 hover:bg-rose-50 border border-[#E0DED9] transition-colors cursor-pointer"
+                      title="Elimina congregazione"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -218,6 +248,28 @@ export const AllCongregationsModal: React.FC<AllCongregationsModalProps> = ({
           </button>
         </div>
       </div>
+
+      <CongregazioneModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingCong(null);
+        }}
+        onSave={(saved) => {
+          const idx = congregazioni.findIndex((c) => c.id === saved.id);
+          if (idx >= 0) {
+            const updated = [...congregazioni];
+            updated[idx] = saved;
+            onSaveCongregazioni(updated);
+          } else {
+            onSaveCongregazioni([...congregazioni, saved]);
+          }
+        }}
+        onDelete={(id) => {
+          onSaveCongregazioni(congregazioni.filter((c) => c.id !== id));
+        }}
+        editingCongregazione={editingCong}
+      />
     </div>
   );
 };

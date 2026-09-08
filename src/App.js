@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { isUserLoggedIn, getCurrentUser, logoutAccount, syncAccountData, pullAccountData, } from './lib/accountAuth';
-import { getStoredSettimane, saveStoredSettimane, getStoredCongregazioni, saveStoredCongregazioni, } from './lib/storage';
+import { getStoredSettimane, saveStoredSettimane, getStoredCongregazioni, saveStoredCongregazioni, getStoredAppuntamenti, saveStoredAppuntamenti, } from './lib/storage';
 import { currentAnnoSemestre, nextPeriodo, prevPeriodo, } from './lib/periodoUtils';
 import { AuthScreen } from './components/AuthScreen';
 import { Sidebar } from './components/Sidebar';
@@ -35,6 +35,7 @@ export const App = () => {
     // ── Data State ──
     const [settimane, setSettimane] = useState([]);
     const [congregazioni, setCongregazioni] = useState([]);
+    const [appuntamenti, setAppuntamenti] = useState([]);
     // ── Sync State ──
     const [isSyncing, setIsSyncing] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -56,6 +57,7 @@ export const App = () => {
     }, [periodo]);
     useEffect(() => {
         setCongregazioni(getStoredCongregazioni());
+        setAppuntamenti(getStoredAppuntamenti());
     }, []);
     // ── On login success or initial load, pull latest from account cloud ──
     useEffect(() => {
@@ -66,6 +68,7 @@ export const App = () => {
                 if (res.success) {
                     setSettimane(getStoredSettimane(periodo.anno, periodo.semestre));
                     setCongregazioni(getStoredCongregazioni());
+                    setAppuntamenti(getStoredAppuntamenti());
                 }
             })
                 .finally(() => setIsSyncing(false));
@@ -102,6 +105,11 @@ export const App = () => {
         saveStoredCongregazioni(newCong);
         scheduleAccountSync();
     };
+    const handleUpdateAppuntamenti = (newApps) => {
+        setAppuntamenti(newApps);
+        saveStoredAppuntamenti(newApps);
+        scheduleAccountSync();
+    };
     const handleSaveWeek = (saved) => {
         const idx = settimane.findIndex((w) => w.id === saved.id);
         let updated;
@@ -121,9 +129,25 @@ export const App = () => {
         const dup = { ...item, id: `week_${Date.now()}` };
         handleUpdateSettimane([...settimane, dup]);
     };
+    const handleSaveAppuntamento = (saved) => {
+        const idx = appuntamenti.findIndex((a) => a.id === saved.id);
+        let updated;
+        if (idx >= 0) {
+            updated = [...appuntamenti];
+            updated[idx] = saved;
+        }
+        else {
+            updated = [...appuntamenti, saved];
+        }
+        handleUpdateAppuntamenti(updated);
+    };
+    const handleDeleteAppuntamento = (id) => {
+        handleUpdateAppuntamenti(appuntamenti.filter((a) => a.id !== id));
+    };
     const handleRefreshData = () => {
         setSettimane(getStoredSettimane(periodo.anno, periodo.semestre));
         setCongregazioni(getStoredCongregazioni());
+        setAppuntamenti(getStoredAppuntamenti());
     };
     const handleLogout = () => {
         logoutAccount();
@@ -148,6 +172,6 @@ export const App = () => {
                                     setEditingWeek(null);
                                     setCurrentTab('calendario');
                                     setIsWeekModalOpen(true);
-                                } })), currentTab === 'situazione' && (_jsx(SituazioneVisiteView, { congregazioni: congregazioni, settimane: settimane })), currentTab === 'impostazioni' && (_jsx(ImpostazioniView, { user: user, onUpdateUser: () => { }, onRefreshData: handleRefreshData, onOpenSecurity: () => setIsSecurityOpen(true), onLogout: handleLogout })), currentTab === 'aiuto' && _jsx(AiutoView, {})] })] }), _jsx(MobileBottomNav, { currentTab: currentTab, onSelectTab: setCurrentTab, onOpenMore: () => setIsMobileMenuOpen(true) }), _jsx(WeekModal, { isOpen: isWeekModalOpen, onClose: () => { setIsWeekModalOpen(false); setEditingWeek(null); }, onSave: handleSaveWeek, onDelete: handleDeleteWeek, editingWeek: editingWeek, congregazioni: congregazioni, periodo: periodo }), _jsx(AllCongregationsModal, { isOpen: isAllCongregationsOpen, onClose: () => setIsAllCongregationsOpen(false), congregazioni: congregazioni, onSaveCongregazioni: handleUpdateCongregazioni }), _jsx(SecurityPrivacyModal, { isOpen: isSecurityOpen, onClose: () => setIsSecurityOpen(false), onDataReset: handleRefreshData })] }));
+                                } })), currentTab === 'situazione' && (_jsx(SituazioneVisiteView, { congregazioni: congregazioni, settimane: settimane, appuntamenti: appuntamenti, onSaveAppuntamento: handleSaveAppuntamento, onDeleteAppuntamento: handleDeleteAppuntamento })), currentTab === 'impostazioni' && (_jsx(ImpostazioniView, { user: user, onUpdateUser: () => { }, onRefreshData: handleRefreshData, onOpenSecurity: () => setIsSecurityOpen(true), onLogout: handleLogout })), currentTab === 'aiuto' && _jsx(AiutoView, {})] })] }), _jsx(MobileBottomNav, { currentTab: currentTab, onSelectTab: setCurrentTab, onOpenMore: () => setIsMobileMenuOpen(true) }), _jsx(WeekModal, { isOpen: isWeekModalOpen, onClose: () => { setIsWeekModalOpen(false); setEditingWeek(null); }, onSave: handleSaveWeek, onDelete: handleDeleteWeek, editingWeek: editingWeek, congregazioni: congregazioni, periodo: periodo }), _jsx(AllCongregationsModal, { isOpen: isAllCongregationsOpen, onClose: () => setIsAllCongregationsOpen(false), congregazioni: congregazioni, onSaveCongregazioni: handleUpdateCongregazioni }), _jsx(SecurityPrivacyModal, { isOpen: isSecurityOpen, onClose: () => setIsSecurityOpen(false), onDataReset: handleRefreshData })] }));
 };
 export default App;
