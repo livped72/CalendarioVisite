@@ -53,7 +53,16 @@ export const App = () => {
     }, []);
     // ── Load local data when period changes ──
     useEffect(() => {
-        setSettimane(getStoredSettimane(periodo.anno, periodo.semestre));
+        const raw = getStoredSettimane(periodo.anno, periodo.semestre);
+        setSettimane([...raw].sort((a, b) => {
+            if (a.startDate && b.startDate)
+                return a.startDate.localeCompare(b.startDate);
+            if (a.startDate)
+                return -1;
+            if (b.startDate)
+                return 1;
+            return 0;
+        }));
     }, [periodo]);
     useEffect(() => {
         setCongregazioni(getStoredCongregazioni());
@@ -66,7 +75,16 @@ export const App = () => {
             pullAccountData()
                 .then((res) => {
                 if (res.success) {
-                    setSettimane(getStoredSettimane(periodo.anno, periodo.semestre));
+                    const raw = getStoredSettimane(periodo.anno, periodo.semestre);
+                    setSettimane([...raw].sort((a, b) => {
+                        if (a.startDate && b.startDate)
+                            return a.startDate.localeCompare(b.startDate);
+                        if (a.startDate)
+                            return -1;
+                        if (b.startDate)
+                            return 1;
+                        return 0;
+                    }));
                     setCongregazioni(getStoredCongregazioni());
                     setAppuntamenti(getStoredAppuntamenti());
                 }
