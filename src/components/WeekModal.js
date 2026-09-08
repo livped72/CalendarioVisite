@@ -4,13 +4,13 @@ import { X, Building2, CalendarDays } from 'lucide-react';
 import { EventBadge } from './EventBadge';
 import { abbreviateMonths } from '../lib/dateUtils';
 const ALTRO_EVENTO_OPTIONS = [
-    { tipo: 'settimana_libera', label: 'Settimana libera' },
-    { tipo: 'settimana_pioniere', label: 'Settimana pioniere' },
-    { tipo: 'assenza', label: 'Assenza' },
-    { tipo: 'scuola_pionieri', label: 'Scuola pionieri' },
-    { tipo: 'assemblea_circoscrizione', label: 'Assemblea di circoscrizione' },
-    { tipo: 'congresso', label: 'Congresso' },
-    { tipo: 'evento_personalizzato', label: 'Evento personalizzato' },
+    { tipo: 'settimana_libera', label: 'SETTIMANA LIBERA' },
+    { tipo: 'settimana_pioniere', label: 'SETTIMANA PIONIERE' },
+    { tipo: 'assenza', label: 'ASSENZA' },
+    { tipo: 'scuola_pionieri', label: 'SCUOLA PIONIERI' },
+    { tipo: 'assemblea_circoscrizione', label: 'ASSEMBLEA DI CIRCOSCRIZIONE' },
+    { tipo: 'congresso', label: 'CONGRESSO' },
+    { tipo: 'evento_personalizzato', label: 'EVENTO PERSONALIZZATO' },
 ];
 export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, congregazioni, periodo, settimane = [], }) => {
     const [selectedStartDate, setSelectedStartDate] = useState('');
@@ -26,7 +26,7 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
             setSelectedStartDate(editingWeek.startDate || new Date().toISOString().slice(0, 10));
             if (editingWeek.evento === 'congregazione') {
                 setIsCongregazione(true);
-                setSelectedCongregazione(editingWeek.dettagli || congregazioni[0]?.nome || '');
+                setSelectedCongregazione(editingWeek.dettagli || 'Da definire');
                 setAltroEvento('settimana_libera');
                 setExtraDettaglio('');
             }
@@ -59,7 +59,7 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
             }
             setSelectedStartDate(nextDate.toISOString().slice(0, 10));
             setIsCongregazione(true);
-            setSelectedCongregazione(congregazioni[0]?.nome || '');
+            setSelectedCongregazione('Da definire');
             setAltroEvento('settimana_libera');
             setExtraDettaglio('');
             setNote('');
@@ -115,7 +115,7 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
                                                     ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-1 ring-[#7C8B82]'
                                                     : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(Building2, { className: "w-4 h-4 text-[#5B6760]" }), _jsx("span", { children: "Visita Congregazione" })] }), _jsxs("button", { type: "button", onClick: () => setIsCongregazione(false), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${!isCongregazione
                                                     ? 'border-[#7C8B82] bg-[#FAF9F7] text-[#2F3332] ring-1 ring-[#7C8B82]'
-                                                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(CalendarDays, { className: "w-4 h-4 text-[#7C8B82]" }), _jsx("span", { children: "Altro Evento" })] })] })] }), isCongregazione ? (_jsxs("div", { className: "space-y-2 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Nome Congregazione" }), _jsxs("select", { value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold", children: [_jsx("option", { value: "Da definire", children: "Da definire" }), congregazioni.map((c) => (_jsxs("option", { value: c.nome, children: [c.nome, " (Ultima: ", c.ultimaVisita, ")"] }, c.id)))] }), _jsx("input", { type: "text", placeholder: "Oppure inserisci un altro nome...", value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" })] })) : (
+                                                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(CalendarDays, { className: "w-4 h-4 text-[#7C8B82]" }), _jsx("span", { children: "Altro Evento" })] })] })] }), isCongregazione ? (_jsxs("div", { className: "space-y-2 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Nome Congregazione" }), _jsxs("select", { value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold uppercase", children: [_jsx("option", { value: "Da definire", children: "Da definire" }), congregazioni.map((c) => (_jsxs("option", { value: c.nome, children: [c.nome, " (Ultima: ", c.ultimaVisita, ")"] }, c.id)))] }), _jsx("input", { type: "text", placeholder: "Oppure inserisci un altro nome...", value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" })] })) : (
                             /* Alternative events panel */
                             _jsxs("div", { className: "space-y-3 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Evento Sostitutivo" }), _jsx("div", { className: "grid grid-cols-2 gap-2", children: ALTRO_EVENTO_OPTIONS.map((opt) => (_jsxs("label", { className: `flex items-center gap-2 p-2 rounded-xl border text-xs cursor-pointer transition-all ${altroEvento === opt.tipo
                                                 ? 'border-[#7C8B82] bg-white ring-1 ring-[#7C8B82] font-bold'

@@ -16,13 +16,13 @@ interface WeekModalProps {
 }
 
 const ALTRO_EVENTO_OPTIONS: { tipo: TipoEvento; label: string }[] = [
-  { tipo: 'settimana_libera', label: 'Settimana libera' },
-  { tipo: 'settimana_pioniere', label: 'Settimana pioniere' },
-  { tipo: 'assenza', label: 'Assenza' },
-  { tipo: 'scuola_pionieri', label: 'Scuola pionieri' },
-  { tipo: 'assemblea_circoscrizione', label: 'Assemblea di circoscrizione' },
-  { tipo: 'congresso', label: 'Congresso' },
-  { tipo: 'evento_personalizzato', label: 'Evento personalizzato' },
+  { tipo: 'settimana_libera', label: 'SETTIMANA LIBERA' },
+  { tipo: 'settimana_pioniere', label: 'SETTIMANA PIONIERE' },
+  { tipo: 'assenza', label: 'ASSENZA' },
+  { tipo: 'scuola_pionieri', label: 'SCUOLA PIONIERI' },
+  { tipo: 'assemblea_circoscrizione', label: 'ASSEMBLEA DI CIRCOSCRIZIONE' },
+  { tipo: 'congresso', label: 'CONGRESSO' },
+  { tipo: 'evento_personalizzato', label: 'EVENTO PERSONALIZZATO' },
 ];
 
 export const WeekModal: React.FC<WeekModalProps> = ({
@@ -48,7 +48,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
       setSelectedStartDate(editingWeek.startDate || new Date().toISOString().slice(0, 10));
       if (editingWeek.evento === 'congregazione') {
         setIsCongregazione(true);
-        setSelectedCongregazione(editingWeek.dettagli || congregazioni[0]?.nome || '');
+        setSelectedCongregazione(editingWeek.dettagli || 'Da definire');
         setAltroEvento('settimana_libera');
         setExtraDettaglio('');
       } else {
@@ -80,7 +80,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
 
       setSelectedStartDate(nextDate.toISOString().slice(0, 10));
       setIsCongregazione(true);
-      setSelectedCongregazione(congregazioni[0]?.nome || '');
+      setSelectedCongregazione('Da definire');
       setAltroEvento('settimana_libera');
       setExtraDettaglio('');
       setNote('');
@@ -214,7 +214,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
               <select
                 value={selectedCongregazione}
                 onChange={(e) => setSelectedCongregazione(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold"
+                className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold uppercase"
               >
                 <option value="Da definire">Da definire</option>
                 {congregazioni.map((c) => (
