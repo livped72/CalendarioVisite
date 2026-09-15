@@ -205,7 +205,7 @@ export const App = () => {
     /** ID settimana su cui il calendario deve scrollare/selezionare dopo navigazione da congregazione */
     const [jumpToSettimanaId, setJumpToSettimanaId] = useState(null);
     const handleNavigateToSettimana = (settimanaId) => {
-        setJumpToSettimanaId(settimanaId);
+        setJumpToSettimanaId(settimanaId ?? null);
         setCurrentTab('appuntamenti');
     };
     // ── If not logged in, display AuthScreen ──

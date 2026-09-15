@@ -247,8 +247,8 @@ export const App: React.FC = () => {
   /** ID settimana su cui il calendario deve scrollare/selezionare dopo navigazione da congregazione */
   const [jumpToSettimanaId, setJumpToSettimanaId] = useState<string | null>(null);
 
-  const handleNavigateToSettimana = (settimanaId: string) => {
-    setJumpToSettimanaId(settimanaId);
+  const handleNavigateToSettimana = (settimanaId?: string) => {
+    setJumpToSettimanaId(settimanaId ?? null);
     setCurrentTab('appuntamenti');
   };
 

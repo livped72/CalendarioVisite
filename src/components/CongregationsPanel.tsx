@@ -8,8 +8,8 @@ interface CongregationsPanelProps {
   settimane: Settimana[];
   onViewAll: () => void;
   onSelectCongregazione?: (c: Congregazione) => void;
-  /** Navigare direttamente alla settimana legata alla congregazione nel calendario */
-  onNavigateToSettimana?: (settimanaId: string) => void;
+  /** Naviga al tab appuntamenti, opzionalmente su una settimana specifica */
+  onNavigateToSettimana?: (settimanaId?: string) => void;
 }
 
 export const CongregationsPanel: React.FC<CongregationsPanelProps> = ({
@@ -146,25 +146,23 @@ export const CongregationsPanel: React.FC<CongregationsPanelProps> = ({
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  {/* Nome congregazione — cliccabile per navigare alla settimana */}
-                  {linkedSettimana && onNavigateToSettimana ? (
-                    <button
-                      type="button"
-                      onClick={() => onNavigateToSettimana(linkedSettimana.id)}
-                      className={`text-xs font-bold truncate block w-full text-left transition-colors underline decoration-dotted underline-offset-2 cursor-pointer ${style.linkClass}`}
-                      title={`Vai alla settimana: ${linkedSettimana.periodo}`}
-                    >
-                      {c.nome}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => onSelectCongregazione && onSelectCongregazione(c)}
-                      className="text-xs font-bold text-[#2F3332] truncate block w-full text-left hover:text-[#5B6760] transition-colors cursor-pointer"
-                    >
-                      {c.nome}
-                    </button>
-                  )}
+                  {/* Nome congregazione — cliccabile, naviga SEMPRE agli appuntamenti */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onNavigateToSettimana) {
+                        onNavigateToSettimana(linkedSettimana?.id);
+                      } else if (onSelectCongregazione) {
+                        onSelectCongregazione(c);
+                      }
+                    }}
+                    className={`text-xs font-bold truncate block w-full text-left transition-colors underline decoration-dotted underline-offset-2 cursor-pointer ${
+                      onNavigateToSettimana ? style.linkClass : 'text-[#2F3332] hover:text-[#5B6760]'
+                    }`}
+                    title={linkedSettimana ? `Vai alla settimana: ${linkedSettimana.periodo}` : 'Vai agli appuntamenti'}
+                  >
+                    {c.nome}
+                  </button>
                   <div className="text-[10px] text-[#999]">
                     Ultima: {formattedUltimaVisita}
                   </div>
