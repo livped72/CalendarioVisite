@@ -292,6 +292,7 @@ export const App: React.FC = () => {
                 onDeleteWeek={handleDeleteWeek}
                 onDuplicateWeek={handleDuplicateWeek}
                 visitNumberMap={visitNumberMap}
+                onViewAppuntamenti={handleNavigateToSettimana}
               />
               <CongregationsPanel
                 congregazioni={congregazioni}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pencil, MoreVertical, ChevronDown, ChevronUp, Trash2, Copy, ChevronRight } from 'lucide-react';
+import { Pencil, MoreVertical, ChevronDown, ChevronUp, Trash2, Copy, ChevronRight, CalendarDays } from 'lucide-react';
 import { Settimana } from '../types';
 import { EventBadge } from './EventBadge';
 import { abbreviateMonths } from '../lib/dateUtils';
@@ -10,6 +10,8 @@ interface WeekTableProps {
   onDeleteWeek: (id: string) => void;
   onDuplicateWeek: (settimana: Settimana) => void;
   visitNumberMap?: Map<string, { numero: number; isReset?: boolean; motivazione?: string }>;
+  /** Naviga al tab appuntamenti per questa settimana */
+  onViewAppuntamenti?: (settimanaId: string) => void;
 }
 
 const BADGE_COLORS = [
@@ -24,6 +26,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   onDeleteWeek,
   onDuplicateWeek,
   visitNumberMap,
+  onViewAppuntamenti,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -114,12 +117,36 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                     )}
                   </td>
 
+                  {/* Periodo — cliccabile per andare agli appuntamenti */}
                   <td className="py-3 px-4 font-bold text-[#2F3332] whitespace-nowrap">
-                    {abbreviateMonths(item.periodo)}
+                    {onViewAppuntamenti ? (
+                      <button
+                        type="button"
+                        onClick={() => onViewAppuntamenti(item.id)}
+                        className="group/cell inline-flex items-center gap-1.5 font-bold text-[#2F3332] hover:text-[#5B6760] transition-colors cursor-pointer"
+                        title="Vedi appuntamenti di questa settimana"
+                      >
+                        {abbreviateMonths(item.periodo)}
+                        <CalendarDays className="w-3.5 h-3.5 text-[#7C8B82] opacity-0 group-hover/cell:opacity-100 transition-opacity shrink-0" />
+                      </button>
+                    ) : (
+                      abbreviateMonths(item.periodo)
+                    )}
                   </td>
 
                   <td className="py-3 px-4 whitespace-nowrap">
-                    {renderEventCell(item)}
+                    {onViewAppuntamenti ? (
+                      <button
+                        type="button"
+                        onClick={() => onViewAppuntamenti(item.id)}
+                        className="cursor-pointer"
+                        title="Vedi appuntamenti di questa settimana"
+                      >
+                        {renderEventCell(item)}
+                      </button>
+                    ) : (
+                      renderEventCell(item)
+                    )}
                   </td>
 
                   <td className="py-3 px-4 text-[#666] text-xs">
@@ -191,10 +218,13 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           return (
             <div
               key={item.id}
-              onClick={() => onEditWeek(item)}
-              className="p-3.5 hover:bg-[#FAF9F7] active:bg-[#FAF9F7] transition-colors flex items-center justify-between gap-3 cursor-pointer"
+              className="p-3.5 hover:bg-[#FAF9F7] active:bg-[#FAF9F7] transition-colors flex items-center justify-between gap-3"
             >
-              <div className="flex items-start gap-3 min-w-0">
+              <div
+                className="flex items-start gap-3 min-w-0 flex-1 cursor-pointer"
+                onClick={() => onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item)}
+                title={onViewAppuntamenti ? 'Vedi appuntamenti di questa settimana' : 'Modifica'}
+              >
                 {isCong && visitNum != null ? (
                   <div className="flex flex-col items-center shrink-0 mt-0.5">
                     <span
@@ -225,7 +255,19 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                   )}
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#AAA] shrink-0" />
+              {/* Tasto modifica separato su mobile */}
+              <div className="flex items-center gap-1 shrink-0">
+                {onViewAppuntamenti && (
+                  <button
+                    onClick={() => onEditWeek(item)}
+                    className="p-1.5 rounded-lg text-[#AAA] hover:text-[#5B6760] hover:bg-[#FAF9F7] transition-colors cursor-pointer"
+                    title="Modifica settimana"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <ChevronRight className="w-4 h-4 text-[#CCC] shrink-0" />
+              </div>
             </div>
           );
         })}
