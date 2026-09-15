@@ -244,6 +244,14 @@ export const App: React.FC = () => {
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  /** ID settimana su cui il calendario deve scrollare/selezionare dopo navigazione da congregazione */
+  const [jumpToSettimanaId, setJumpToSettimanaId] = useState<string | null>(null);
+
+  const handleNavigateToSettimana = (settimanaId: string) => {
+    setJumpToSettimanaId(settimanaId);
+    setCurrentTab('appuntamenti');
+  };
+
   // ── If not logged in, display AuthScreen ──
   if (!isLoggedIn) {
     return <AuthScreen onSuccess={handleLoginSuccess} />;
@@ -287,8 +295,10 @@ export const App: React.FC = () => {
               />
               <CongregationsPanel
                 congregazioni={congregazioni}
+                settimane={settimane}
                 onViewAll={() => setIsAllCongregationsOpen(true)}
                 onSelectCongregazione={() => { setEditingWeek(null); setIsWeekModalOpen(true); }}
+                onNavigateToSettimana={handleNavigateToSettimana}
               />
             </div>
           )}
@@ -312,6 +322,8 @@ export const App: React.FC = () => {
               appuntamenti={appuntamenti}
               onSaveAppuntamento={handleSaveAppuntamento}
               onDeleteAppuntamento={handleDeleteAppuntamento}
+              initialSettimanaId={jumpToSettimanaId || undefined}
+              onJumpConsumed={() => setJumpToSettimanaId(null)}
             />
           )}
 

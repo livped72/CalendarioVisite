@@ -218,12 +218,16 @@ export const AppuntamentiView: React.FC<{
   appuntamenti: Appuntamento[];
   onSaveAppuntamento: (app: Appuntamento) => void;
   onDeleteAppuntamento: (id: string) => void;
+  initialSettimanaId?: string;
+  onJumpConsumed?: () => void;
 }> = ({
   congregazioni,
   settimane,
   appuntamenti,
   onSaveAppuntamento,
   onDeleteAppuntamento,
+  initialSettimanaId,
+  onJumpConsumed,
 }) => {
   return (
     <WeeklyCalendarView
@@ -232,6 +236,8 @@ export const AppuntamentiView: React.FC<{
       appuntamenti={appuntamenti}
       onSaveAppuntamento={onSaveAppuntamento}
       onDeleteAppuntamento={onDeleteAppuntamento}
+      initialSettimanaId={initialSettimanaId}
+      onJumpConsumed={onJumpConsumed}
     />
   );
 };

@@ -62,8 +62,8 @@ export const CongregazioniView = ({ congregazioni, onSaveCongregazioni, onOpenNe
                 }, onSave: handleSave, onDelete: handleDelete, editingCongregazione: editingCong })] }));
 };
 // Appuntamenti Tab View (Formato Calendario Settimanale)
-export const AppuntamentiView = ({ congregazioni, settimane, appuntamenti, onSaveAppuntamento, onDeleteAppuntamento, }) => {
-    return (_jsx(WeeklyCalendarView, { settimane: settimane, congregazioni: congregazioni, appuntamenti: appuntamenti, onSaveAppuntamento: onSaveAppuntamento, onDeleteAppuntamento: onDeleteAppuntamento }));
+export const AppuntamentiView = ({ congregazioni, settimane, appuntamenti, onSaveAppuntamento, onDeleteAppuntamento, initialSettimanaId, onJumpConsumed, }) => {
+    return (_jsx(WeeklyCalendarView, { settimane: settimane, congregazioni: congregazioni, appuntamenti: appuntamenti, onSaveAppuntamento: onSaveAppuntamento, onDeleteAppuntamento: onDeleteAppuntamento, initialSettimanaId: initialSettimanaId, onJumpConsumed: onJumpConsumed }));
 };
 /** Alias di retrocompatibilità */
 export const SituazioneVisiteView = AppuntamentiView;

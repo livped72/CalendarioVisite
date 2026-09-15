@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, MapPin, FileText, Tag, Trash2, Calendar } from 'lucide-react';
+import { X, Clock, MapPin, FileText, Trash2, Calendar } from 'lucide-react';
 import { Appuntamento, CategoriaAppuntamento } from '../types';
 
 interface AppointmentModalProps {
@@ -12,18 +12,7 @@ interface AppointmentModalProps {
   settimanaId?: string;
 }
 
-const CATEGORIE: { id: CategoriaAppuntamento; label: string; bg: string; text: string; border: string }[] = [
-  { id: 'servizio', label: 'Servizio di campo', bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-200' },
-  { id: 'adunanza', label: 'Adunanza', bg: 'bg-indigo-50', text: 'text-indigo-800', border: 'border-indigo-200' },
-  { id: 'anziani', label: 'Incontro Anziani', bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200' },
-  { id: 'pionieri', label: 'Incontro Pionieri', bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-200' },
-  { id: 'servitori', label: 'Incontro Servitori', bg: 'bg-teal-50', text: 'text-teal-800', border: 'border-teal-200' },
-  { id: 'pastorale', label: 'Visita Pastorale', bg: 'bg-rose-50', text: 'text-rose-800', border: 'border-rose-200' },
-  { id: 'discorso', label: 'Discorso Pubblico', bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200' },
-  { id: 'pranzo', label: 'Pranzo / Ospitalità', bg: 'bg-orange-50', text: 'text-orange-800', border: 'border-orange-200' },
-  { id: 'personale', label: 'Studio / Personale', bg: 'bg-stone-100', text: 'text-stone-800', border: 'border-stone-300' },
-  { id: 'altro', label: 'Altro evento', bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-300' },
-];
+
 
 export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   isOpen,
@@ -131,68 +120,51 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             />
           </div>
 
-          {/* Categoria Selection Grid */}
+          {/* Data e Orari — 3 colonne fisse, nessuna sovrapposizione */}
           <div>
-            <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1.5 flex items-center gap-1">
-              <Tag className="w-3.5 h-3.5 text-[#7C8B82]" /> Categoria
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-              {CATEGORIE.map((cat) => {
-                const isSelected = categoria === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setCategoria(cat.id)}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold text-left transition-all border cursor-pointer truncate ${
-                      isSelected
-                        ? `${cat.bg} ${cat.text} ${cat.border} ring-2 ring-[#7C8B82]`
-                        : 'bg-white text-[#666] border-[#E0DED9] hover:bg-stone-50'
-                    }`}
-                  >
-                    {cat.label}
-                  </button>
-                );
-              })}
+            <div className="grid grid-cols-3 gap-3">
+              {/* Data */}
+              <div className="flex flex-col gap-1">
+                <label className="flex items-center gap-1 text-xs font-bold text-[#2F3332] uppercase whitespace-nowrap">
+                  <Calendar className="w-3.5 h-3.5 text-[#7C8B82] shrink-0" />
+                  <span>Data</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={data}
+                  onChange={(e) => setData(e.target.value)}
+                  className="w-full px-2 py-2 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82] min-w-0"
+                />
+              </div>
+              {/* Inizio */}
+              <div className="flex flex-col gap-1">
+                <label className="flex items-center gap-1 text-xs font-bold text-[#2F3332] uppercase whitespace-nowrap">
+                  <Clock className="w-3.5 h-3.5 text-[#7C8B82] shrink-0" />
+                  <span>Inizio</span>
+                </label>
+                <input
+                  type="time"
+                  value={oraInizio}
+                  onChange={(e) => setOraInizio(e.target.value)}
+                  className="w-full px-2 py-2 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82] min-w-0"
+                />
+              </div>
+              {/* Fine */}
+              <div className="flex flex-col gap-1">
+                <label className="flex items-center gap-1 text-xs font-bold text-[#2F3332] uppercase whitespace-nowrap">
+                  <Clock className="w-3.5 h-3.5 text-[#7C8B82] shrink-0" />
+                  <span>Fine</span>
+                </label>
+                <input
+                  type="time"
+                  value={oraFine}
+                  onChange={(e) => setOraFine(e.target.value)}
+                  className="w-full px-2 py-2 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82] min-w-0"
+                />
+              </div>
             </div>
-          </div>
-
-          {/* Data e Orari */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-[#7C8B82]" /> Data
-              </label>
-              <input
-                type="date"
-                required
-                value={data}
-                onChange={(e) => setData(e.target.value)}
-                className="w-full px-2.5 py-2 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-[#7C8B82]" /> Inizio
-              </label>
-              <input
-                type="time"
-                value={oraInizio}
-                onChange={(e) => setOraInizio(e.target.value)}
-                className="w-full px-2.5 py-2 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-[#7C8B82]" /> Fine (opz.)
-              </label>
-              <input
-                type="time"
-                value={oraFine}
-                onChange={(e) => setOraFine(e.target.value)}
-                className="w-full px-2.5 py-2 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]"
-              />
-            </div>
+            <p className="text-[10px] text-[#AAA] mt-1.5">Fine è opzionale</p>
           </div>
 
           {/* Luogo */}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,6 +28,10 @@ interface WeeklyCalendarViewProps {
   appuntamenti: Appuntamento[];
   onSaveAppuntamento: (app: Appuntamento) => void;
   onDeleteAppuntamento: (id: string) => void;
+  /** ID settimana da selezionare immediatamente alla montatura del componente */
+  initialSettimanaId?: string;
+  /** Callback chiamata dopo che il jump è stato consumato */
+  onJumpConsumed?: () => void;
 }
 
 const CATEGORY_STYLES: Record<CategoriaAppuntamento, { bg: string; text: string; border: string; label: string }> = {
@@ -52,10 +56,23 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
   appuntamenti,
   onSaveAppuntamento,
   onDeleteAppuntamento,
+  initialSettimanaId,
+  onJumpConsumed,
 }) => {
   // Selected week index
   const [selectedWeekIndex, setSelectedWeekIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<'calendar' | 'table'>('calendar');
+
+  // Jump to initialSettimanaId when provided
+  useEffect(() => {
+    if (!initialSettimanaId || settimane.length === 0) return;
+    const idx = settimane.findIndex((w) => w.id === initialSettimanaId);
+    if (idx >= 0) {
+      setSelectedWeekIndex(idx);
+    }
+    onJumpConsumed?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSettimanaId]);
 
   // Modals state
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);

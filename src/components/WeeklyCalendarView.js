@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Calendar, Clock, MapPin, CalendarDays, Pencil, Table as TableIcon, Phone, Info, } from 'lucide-react';
 import { EventBadge } from './EventBadge';
 import { AppointmentModal } from './AppointmentModal';
@@ -19,10 +19,21 @@ const CATEGORY_STYLES = {
 };
 const DAY_NAMES = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 const DAY_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-export const WeeklyCalendarView = ({ settimane, congregazioni, appuntamenti, onSaveAppuntamento, onDeleteAppuntamento, }) => {
+export const WeeklyCalendarView = ({ settimane, congregazioni, appuntamenti, onSaveAppuntamento, onDeleteAppuntamento, initialSettimanaId, onJumpConsumed, }) => {
     // Selected week index
     const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
     const [viewMode, setViewMode] = useState('calendar');
+    // Jump to initialSettimanaId when provided
+    useEffect(() => {
+        if (!initialSettimanaId || settimane.length === 0)
+            return;
+        const idx = settimane.findIndex((w) => w.id === initialSettimanaId);
+        if (idx >= 0) {
+            setSelectedWeekIndex(idx);
+        }
+        onJumpConsumed?.();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialSettimanaId]);
     // Modals state
     const [isAppModalOpen, setIsAppModalOpen] = useState(false);
     const [editingApp, setEditingApp] = useState(null);
