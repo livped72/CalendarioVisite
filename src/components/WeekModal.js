@@ -2,6 +2,8 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState, useEffect } from 'react';
 import { X, Building2, CalendarDays, Calendar, BookMarked, Plane, BookOpen, Users, Star, } from 'lucide-react';
 import { abbreviateMonths } from '../lib/dateUtils';
+import { predictVisitNumber } from '../lib/visitNumbering';
+import { getAllStoredSettimane } from '../lib/storage';
 const ALTRO_EVENTO_OPTIONS = [
     {
         tipo: 'settimana_libera',
@@ -67,18 +69,20 @@ const ALTRO_EVENTO_OPTIONS = [
         selectedStyle: 'ring-2 ring-stone-600 border-stone-400 bg-stone-200 font-extrabold shadow-xs',
     },
 ];
-export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, congregazioni, periodo, settimane = [], }) => {
+export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, congregazioni, periodo, settimane = [], allSettimaneMap, }) => {
     const [selectedStartDate, setSelectedStartDate] = useState('');
     const [isCongregazione, setIsCongregazione] = useState(true);
     const [selectedCongregazione, setSelectedCongregazione] = useState('');
     const [altroEvento, setAltroEvento] = useState('settimana_libera');
     const [extraDettaglio, setExtraDettaglio] = useState('');
     const [note, setNote] = useState('');
+    const [forceResetNumerazione, setForceResetNumerazione] = useState(false);
     useEffect(() => {
         if (!isOpen)
             return;
         if (editingWeek) {
             setSelectedStartDate(editingWeek.startDate || new Date().toISOString().slice(0, 10));
+            setForceResetNumerazione(!!editingWeek.resetNumerazione);
             if (editingWeek.evento === 'congregazione') {
                 setIsCongregazione(true);
                 setSelectedCongregazione(editingWeek.dettagli || 'Da definire');
@@ -136,6 +140,18 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
             return `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${year}`;
         }
     };
+    const effectiveAllSettimane = allSettimaneMap || getAllStoredSettimane();
+    const visitPrediction = isCongregazione
+        ? predictVisitNumber({
+            anno: periodo.anno,
+            semestre: periodo.semestre,
+            targetStartDate: selectedStartDate,
+            targetCongregazioneNome: selectedCongregazione || 'Da definire',
+            editingWeekId: editingWeek?.id,
+            forceReset: forceResetNumerazione,
+            allSettimaneMap: effectiveAllSettimane,
+        })
+        : null;
     if (!isOpen)
         return null;
     const handleSubmit = (e) => {
@@ -149,10 +165,11 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
         const dettagli = isCongregazione
             ? selectedCongregazione.trim() || 'Congregazione'
             : extraDettaglio.trim() || '-';
-        // Numero is only meaningful for congregazione; use 0 as placeholder for others
+        const calculatedNumero = isCongregazione && visitPrediction ? visitPrediction.numero : 0;
         const newWeek = {
             id: editingWeek ? editingWeek.id : `week_${Date.now()}`,
-            numero: editingWeek ? editingWeek.numero : 0,
+            numero: calculatedNumero,
+            resetNumerazione: isCongregazione ? (forceResetNumerazione || !!visitPrediction?.isReset) : false,
             periodo: formattedPeriodo,
             startDate: selectedStartDate,
             endDate: end.toISOString().slice(0, 10),
@@ -170,7 +187,7 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
                                                     ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-2 ring-[#7C8B82] shadow-xs'
                                                     : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(Building2, { className: "w-4 h-4 text-[#5B6760]" }), _jsx("span", { children: "VISITA CONGREGAZIONE" })] }), _jsxs("button", { type: "button", onClick: () => setIsCongregazione(false), className: `flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold uppercase transition-all cursor-pointer ${!isCongregazione
                                                     ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-2 ring-[#7C8B82] shadow-xs'
-                                                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(CalendarDays, { className: "w-4 h-4 text-[#7C8B82]" }), _jsx("span", { children: "ALTRO EVENTO" })] })] })] }), isCongregazione ? (_jsxs("div", { className: "space-y-2 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Nome Congregazione" }), _jsxs("select", { value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold", children: [_jsx("option", { value: "Da definire", children: "DA DEFINIRE" }), congregazioni.map((c) => (_jsxs("option", { value: c.nome, children: [c.nome, " (Ultima: ", c.ultimaVisita, ")"] }, c.id)))] }), _jsx("input", { type: "text", placeholder: "Oppure inserisci un altro nome...", value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" })] })) : (
+                                                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'}`, children: [_jsx(CalendarDays, { className: "w-4 h-4 text-[#7C8B82]" }), _jsx("span", { children: "ALTRO EVENTO" })] })] })] }), isCongregazione ? (_jsxs("div", { className: "space-y-2 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Nome Congregazione" }), _jsxs("select", { value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold", children: [_jsx("option", { value: "Da definire", children: "DA DEFINIRE" }), congregazioni.map((c) => (_jsxs("option", { value: c.nome, children: [c.nome, " (Ultima: ", c.ultimaVisita, ")"] }, c.id)))] }), _jsx("input", { type: "text", placeholder: "Oppure inserisci un altro nome...", value: selectedCongregazione, onChange: (e) => setSelectedCongregazione(e.target.value), className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" }), visitPrediction && (_jsxs("div", { className: "p-3 bg-white rounded-xl border border-[#E0DED9] space-y-2 mt-2 shadow-2xs", children: [_jsxs("div", { className: "flex items-center justify-between", children: [_jsx("span", { className: "text-[11px] font-bold text-[#555] uppercase tracking-wider", children: "Numero Visita Calcolato" }), _jsxs("span", { className: "inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-[#7C8B82] text-white text-xs font-extrabold shadow-2xs", children: ["#", visitPrediction.numero] })] }), _jsx("p", { className: "text-xs text-[#555] leading-relaxed", children: visitPrediction.motivazione }), _jsxs("label", { className: "flex items-center gap-2 pt-1.5 border-t border-[#F0EEEA] cursor-pointer", children: [_jsx("input", { type: "checkbox", checked: forceResetNumerazione, onChange: (e) => setForceResetNumerazione(e.target.checked), className: "rounded border-[#E0DED9] text-[#7C8B82] focus:ring-[#7C8B82] w-4 h-4 cursor-pointer accent-[#7C8B82]" }), _jsx("span", { className: "text-xs font-semibold text-[#2F3332]", children: "Riavvia la numerazione da 1 per questa visita" })] })] }))] })) : (
                             /* Alternative events panel */
                             _jsxs("div", { className: "space-y-3 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]", children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase", children: "Evento Sostitutivo" }), _jsx("div", { className: "grid grid-cols-2 gap-2", children: ALTRO_EVENTO_OPTIONS.map((opt, idx) => {
                                             const isSelected = altroEvento === opt.tipo;

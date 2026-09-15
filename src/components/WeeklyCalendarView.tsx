@@ -278,6 +278,14 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                   <span className="text-xs font-extrabold text-[#7C8B82] uppercase tracking-wider">
                     {abbreviateMonths(activeWeek.periodo)}
                   </span>
+                  {activeWeek.evento === 'congregazione' && activeWeek.numero > 0 && (
+                    <span
+                      className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-[#7C8B82] text-white text-[11px] font-bold shadow-2xs"
+                      title={`Visita #${activeWeek.numero}`}
+                    >
+                      #{activeWeek.numero}
+                    </span>
+                  )}
                   <EventBadge
                     tipo={activeWeek.evento}
                     customLabel={activeWeek.dettagli !== '-' ? activeWeek.dettagli : undefined}

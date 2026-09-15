@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { AnnoSemestre, TabNav, Settimana, Congregazione, UserProfile, Appuntamento } from './types';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { AnnoSemestre, TabNav, Settimana, Congregazione, UserProfile, Appuntamento, PeriodoKey } from './types';
 import {
   isUserLoggedIn,
   getCurrentUser,
@@ -10,6 +10,7 @@ import {
 import {
   getStoredSettimane,
   saveStoredSettimane,
+  getAllStoredSettimane,
   getStoredCongregazioni,
   saveStoredCongregazioni,
   getStoredAppuntamenti,
@@ -19,7 +20,9 @@ import {
   currentAnnoSemestre,
   nextPeriodo,
   prevPeriodo,
+  periodoKey,
 } from './lib/periodoUtils';
+import { computeServiceYearVisitNumbers } from './lib/visitNumbering';
 
 import { AuthScreen } from './components/AuthScreen';
 import { Sidebar } from './components/Sidebar';
@@ -32,6 +35,7 @@ import { SecurityPrivacyModal } from './components/SecurityPrivacyModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import {
   CongregazioniView,
+  AppuntamentiView,
   SituazioneVisiteView,
   ImpostazioniView,
   AiutoView,
@@ -61,9 +65,16 @@ export const App: React.FC = () => {
   };
 
   // ── Data State ──
+  const [allSettimaneMap, setAllSettimaneMap] = useState<Record<PeriodoKey, Settimana[]>>(() => getAllStoredSettimane());
   const [settimane, setSettimane] = useState<Settimana[]>([]);
   const [congregazioni, setCongregazioni] = useState<Congregazione[]>([]);
   const [appuntamenti, setAppuntamenti] = useState<Appuntamento[]>([]);
+
+  // ── Unified Service Year Visit Numbering (1st and 2nd Semester Continuity & Reset) ──
+  const visitNumberMap = useMemo(
+    () => computeServiceYearVisitNumbers(periodo.anno, allSettimaneMap),
+    [periodo.anno, allSettimaneMap]
+  );
 
   // ── Sync State ──
   const [isSyncing, setIsSyncing] = useState(false);
@@ -105,6 +116,7 @@ export const App: React.FC = () => {
       pullAccountData()
         .then((res) => {
           if (res.success) {
+            setAllSettimaneMap(getAllStoredSettimane());
             const raw = getStoredSettimane(periodo.anno, periodo.semestre);
             setSettimane([...raw].sort((a, b) => {
               if (a.startDate && b.startDate) return a.startDate.localeCompare(b.startDate);
@@ -142,6 +154,11 @@ export const App: React.FC = () => {
   const handleUpdateSettimane = (newSettimane: Settimana[]) => {
     setSettimane(newSettimane);
     saveStoredSettimane(periodo.anno, periodo.semestre, newSettimane);
+    const key = periodoKey(periodo.anno, periodo.semestre);
+    setAllSettimaneMap((prev) => ({
+      ...prev,
+      [key]: newSettimane,
+    }));
     scheduleAccountSync();
   };
 
@@ -203,6 +220,7 @@ export const App: React.FC = () => {
   };
 
   const handleRefreshData = () => {
+    setAllSettimaneMap(getAllStoredSettimane());
     setSettimane(getStoredSettimane(periodo.anno, periodo.semestre));
     setCongregazioni(getStoredCongregazioni());
     setAppuntamenti(getStoredAppuntamenti());
@@ -232,7 +250,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#F7F6F2] text-[#2F3332] selection:bg-[#7C8B82] selection:text-white pb-16 lg:pb-0">
+    <div className="min-h-screen flex bg-[#F7F6F2] text-[#2F3332] selection:bg-[#7C8B82] selection:text-white pb-24 lg:pb-8">
       <Sidebar
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
@@ -265,6 +283,7 @@ export const App: React.FC = () => {
                 onEditWeek={(w) => { setEditingWeek(w); setIsWeekModalOpen(true); }}
                 onDeleteWeek={handleDeleteWeek}
                 onDuplicateWeek={handleDuplicateWeek}
+                visitNumberMap={visitNumberMap}
               />
               <CongregationsPanel
                 congregazioni={congregazioni}
@@ -286,8 +305,8 @@ export const App: React.FC = () => {
             />
           )}
 
-          {currentTab === 'situazione' && (
-            <SituazioneVisiteView
+          {(currentTab === 'appuntamenti' || currentTab === 'situazione') && (
+            <AppuntamentiView
               congregazioni={congregazioni}
               settimane={settimane}
               appuntamenti={appuntamenti}
@@ -326,6 +345,7 @@ export const App: React.FC = () => {
         congregazioni={congregazioni}
         periodo={periodo}
         settimane={settimane}
+        allSettimaneMap={allSettimaneMap}
       />
 
       <AllCongregationsModal

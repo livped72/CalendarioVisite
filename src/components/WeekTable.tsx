@@ -9,6 +9,7 @@ interface WeekTableProps {
   onEditWeek: (settimana: Settimana) => void;
   onDeleteWeek: (id: string) => void;
   onDuplicateWeek: (settimana: Settimana) => void;
+  visitNumberMap?: Map<string, { numero: number; isReset?: boolean; motivazione?: string }>;
 }
 
 const BADGE_COLORS = [
@@ -22,6 +23,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   onEditWeek,
   onDeleteWeek,
   onDuplicateWeek,
+  visitNumberMap,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -29,18 +31,27 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   const displayItems = isExpanded ? settimane : settimane.slice(0, 10);
   const hasMore = settimane.length > 10;
 
-  // Visit counter: sequential number ONLY for 'congregazione' events
-  const visitCountMap = new Map<string, number>();
-  let visitCounter = 0;
-  for (const w of settimane) {
-    if (w.evento === 'congregazione') {
-      visitCounter++;
-      visitCountMap.set(w.id, visitCounter);
+  // Visit info resolver: takes priority from visitNumberMap, then item.numero, then local fallback
+  const getVisitInfo = (item: Settimana): { numero: number; isReset?: boolean; motivazione?: string } | null => {
+    if (item.evento !== 'congregazione') return null;
+    if (visitNumberMap?.has(item.id)) {
+      return visitNumberMap.get(item.id)!;
     }
-  }
+    if (item.numero && item.numero > 0) {
+      return { numero: item.numero };
+    }
+    let localNum = 0;
+    for (const w of settimane) {
+      if (w.evento === 'congregazione') {
+        localNum++;
+        if (w.id === item.id) return { numero: localNum };
+      }
+    }
+    return { numero: 1 };
+  };
 
   const getBadgeColor = (visitNum: number) =>
-    BADGE_COLORS[(visitNum - 1) % BADGE_COLORS.length];
+    BADGE_COLORS[(Math.max(1, visitNum) - 1) % BADGE_COLORS.length];
 
   const renderEventCell = (item: Settimana) => {
     if (item.evento === 'congregazione') {
@@ -81,7 +92,8 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           <tbody className="divide-y divide-[#EFECE6] text-[#2F3332]">
             {displayItems.map((item) => {
               const isMenuOpen = activeMenuId === item.id;
-              const visitNum = visitCountMap.get(item.id);
+              const visitInfo = getVisitInfo(item);
+              const visitNum = visitInfo?.numero;
               const isCong = item.evento === 'congregazione';
 
               return (
@@ -91,6 +103,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                     {isCong && visitNum != null ? (
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[11px] font-bold shadow-2xs ${getBadgeColor(visitNum)}`}
+                        title={visitInfo?.motivazione || `Visita #${visitNum}`}
                       >
                         {visitNum}
                       </span>
@@ -171,22 +184,36 @@ export const WeekTable: React.FC<WeekTableProps> = ({
       {/* Mobile Cards */}
       <div className="lg:hidden divide-y divide-[#EFECE6]">
         {displayItems.map((item) => {
-          const visitNum = visitCountMap.get(item.id);
+          const visitInfo = getVisitInfo(item);
+          const visitNum = visitInfo?.numero;
           const isCong = item.evento === 'congregazione';
 
           return (
             <div
               key={item.id}
               onClick={() => onEditWeek(item)}
-              className="p-3.5 hover:bg-[#FAF9F7] transition-colors flex items-center justify-between gap-3 cursor-pointer"
+              className="p-3.5 hover:bg-[#FAF9F7] active:bg-[#FAF9F7] transition-colors flex items-center justify-between gap-3 cursor-pointer"
             >
               <div className="flex items-start gap-3 min-w-0">
                 {isCong && visitNum != null ? (
-                  <span className={`w-6 h-6 rounded-full text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 ${getBadgeColor(visitNum)}`}>
-                    {visitNum}
-                  </span>
+                  <div className="flex flex-col items-center shrink-0 mt-0.5">
+                    <span
+                      className={`w-6 h-6 rounded-full text-white text-[11px] font-bold flex items-center justify-center shadow-2xs ${getBadgeColor(
+                        visitNum
+                      )}`}
+                    >
+                      {visitNum}
+                    </span>
+                    {visitInfo?.isReset && (
+                      <span className="text-[8px] font-extrabold text-[#7C8B82] uppercase tracking-tighter mt-0.5">
+                        Ciclo 1
+                      </span>
+                    )}
+                  </div>
                 ) : (
-                  <span className="w-6 h-6 rounded-full bg-[#F3F0EA] text-[#AAA] text-[10px] flex items-center justify-center shrink-0 mt-0.5">—</span>
+                  <span className="w-6 h-6 rounded-full bg-[#F3F0EA] text-[#AAA] text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                    —
+                  </span>
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5 mb-1">

@@ -1,16 +1,16 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { CalendarDays, Users, BarChart3, Settings, HelpCircle, CalendarCheck2, ShieldCheck, LogOut, } from 'lucide-react';
+import { CalendarDays, Users, Settings, HelpCircle, CalendarCheck2, ShieldCheck, LogOut, } from 'lucide-react';
 export const Sidebar = ({ currentTab, onSelectTab, user, isOpenMobile = false, onCloseMobile, onOpenSecurity, onLogout, }) => {
     const navItems = [
         { id: 'calendario', label: 'Calendario', icon: CalendarDays },
         { id: 'congregazioni', label: 'Congregazioni', icon: Users },
-        { id: 'situazione', label: 'Situazione visite', icon: BarChart3 },
+        { id: 'appuntamenti', label: 'Appuntamenti', icon: CalendarCheck2 },
         { id: 'impostazioni', label: 'Impostazioni', icon: Settings },
         { id: 'aiuto', label: 'Aiuto', icon: HelpCircle },
     ];
     const content = (_jsxs("aside", { className: "w-64 bg-[#18201D] text-[#D4DDD8] flex flex-col h-full select-none shadow-xl border-r border-[#26312C]", children: [_jsxs("div", { className: "p-5 flex items-center gap-3 border-b border-[#26312C]", children: [_jsx("div", { className: "w-10 h-10 rounded-xl bg-[#7C8B82] flex items-center justify-center text-white shadow-md ring-1 ring-white/10", children: _jsx(CalendarCheck2, { className: "w-5 h-5" }) }), _jsxs("div", { className: "flex flex-col", children: [_jsx("span", { className: "text-white font-bold text-base leading-tight tracking-tight", children: "Calendario" }), _jsx("span", { className: "text-[#9BAAA2] font-medium text-xs leading-tight", children: "Visite" })] })] }), _jsx("nav", { className: "flex-1 py-4 px-3 space-y-1.5 overflow-y-auto", children: navItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = currentTab === item.id;
+                    const isActive = currentTab === item.id || (item.id === 'appuntamenti' && currentTab === 'situazione');
                     return (_jsxs("button", { onClick: () => {
                             onSelectTab(item.id);
                             if (onCloseMobile)

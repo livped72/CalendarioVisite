@@ -40,34 +40,35 @@ export const Header: React.FC<HeaderProps> = ({
   const label = periodoLabel(periodo);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2">
       {/* Left: mobile menu toggle + periodo navigator */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full sm:w-auto">
         {/* Mobile hamburger */}
         <button
           onClick={onOpenMobileMenu}
-          className="lg:hidden p-1.5 rounded-xl text-[#888] hover:text-[#2F3332] hover:bg-white border border-transparent hover:border-[#E0DED9] transition-all cursor-pointer"
+          className="lg:hidden p-2 rounded-xl text-[#888] hover:text-[#2F3332] bg-white border border-[#E0DED9] hover:bg-[#FAF9F7] transition-all cursor-pointer shrink-0 shadow-2xs"
+          aria-label="Menu di navigazione"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         {/* Period Navigation */}
-        <div className="flex items-center gap-1 bg-white border border-[#E0DED9] rounded-2xl px-2 py-1.5 shadow-2xs">
+        <div className="flex-1 sm:flex-initial flex items-center justify-between sm:justify-start gap-1 bg-white border border-[#E0DED9] rounded-2xl px-2 py-1.5 shadow-2xs">
           <button
             onClick={onPrev}
-            className="p-1 rounded-lg text-[#888] hover:text-[#2F3332] hover:bg-[#FAF9F7] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[#888] hover:text-[#2F3332] hover:bg-[#FAF9F7] transition-colors cursor-pointer shrink-0"
             title="Periodo precedente"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <div className="px-3 text-center min-w-[180px]">
+          <div className="px-2 sm:px-3 text-center min-w-[120px] sm:min-w-[170px] truncate">
             <span className="text-xs font-bold text-[#2F3332] tracking-wide">{label}</span>
           </div>
 
           <button
             onClick={onNext}
-            className="p-1 rounded-lg text-[#888] hover:text-[#2F3332] hover:bg-[#FAF9F7] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[#888] hover:text-[#2F3332] hover:bg-[#FAF9F7] transition-colors cursor-pointer shrink-0"
             title="Periodo successivo"
           >
             <ChevronRight className="w-4 h-4" />
@@ -77,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Today button */}
         <button
           onClick={onToday}
-          className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-xl bg-white border border-[#E0DED9] text-xs font-bold text-[#5B6760] hover:bg-[#FAF9F7] transition-colors cursor-pointer shadow-2xs"
+          className="hidden sm:inline-flex items-center px-3 py-2 rounded-xl bg-white border border-[#E0DED9] text-xs font-bold text-[#5B6760] hover:bg-[#FAF9F7] transition-colors cursor-pointer shadow-2xs shrink-0"
         >
           Oggi
         </button>

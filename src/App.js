@@ -1,8 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { isUserLoggedIn, getCurrentUser, logoutAccount, syncAccountData, pullAccountData, } from './lib/accountAuth';
-import { getStoredSettimane, saveStoredSettimane, getStoredCongregazioni, saveStoredCongregazioni, getStoredAppuntamenti, saveStoredAppuntamenti, } from './lib/storage';
-import { currentAnnoSemestre, nextPeriodo, prevPeriodo, } from './lib/periodoUtils';
+import { getStoredSettimane, saveStoredSettimane, getAllStoredSettimane, getStoredCongregazioni, saveStoredCongregazioni, getStoredAppuntamenti, saveStoredAppuntamenti, } from './lib/storage';
+import { currentAnnoSemestre, nextPeriodo, prevPeriodo, periodoKey, } from './lib/periodoUtils';
+import { computeServiceYearVisitNumbers } from './lib/visitNumbering';
 import { AuthScreen } from './components/AuthScreen';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -12,7 +13,7 @@ import { WeekModal } from './components/WeekModal';
 import { AllCongregationsModal } from './components/AllCongregationsModal';
 import { SecurityPrivacyModal } from './components/SecurityPrivacyModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
-import { CongregazioniView, SituazioneVisiteView, ImpostazioniView, AiutoView, } from './components/OtherViews';
+import { CongregazioniView, AppuntamentiView, ImpostazioniView, AiutoView, } from './components/OtherViews';
 export const App = () => {
     // ── Account State ──
     const [isLoggedIn, setIsLoggedIn] = useState(() => isUserLoggedIn());
@@ -33,9 +34,12 @@ export const App = () => {
             .slice(0, 2) || 'LP',
     };
     // ── Data State ──
+    const [allSettimaneMap, setAllSettimaneMap] = useState(() => getAllStoredSettimane());
     const [settimane, setSettimane] = useState([]);
     const [congregazioni, setCongregazioni] = useState([]);
     const [appuntamenti, setAppuntamenti] = useState([]);
+    // ── Unified Service Year Visit Numbering (1st and 2nd Semester Continuity & Reset) ──
+    const visitNumberMap = useMemo(() => computeServiceYearVisitNumbers(periodo.anno, allSettimaneMap), [periodo.anno, allSettimaneMap]);
     // ── Sync State ──
     const [isSyncing, setIsSyncing] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -75,6 +79,7 @@ export const App = () => {
             pullAccountData()
                 .then((res) => {
                 if (res.success) {
+                    setAllSettimaneMap(getAllStoredSettimane());
                     const raw = getStoredSettimane(periodo.anno, periodo.semestre);
                     setSettimane([...raw].sort((a, b) => {
                         if (a.startDate && b.startDate)
@@ -116,6 +121,11 @@ export const App = () => {
     const handleUpdateSettimane = (newSettimane) => {
         setSettimane(newSettimane);
         saveStoredSettimane(periodo.anno, periodo.semestre, newSettimane);
+        const key = periodoKey(periodo.anno, periodo.semestre);
+        setAllSettimaneMap((prev) => ({
+            ...prev,
+            [key]: newSettimane,
+        }));
         scheduleAccountSync();
     };
     const handleUpdateCongregazioni = (newCong) => {
@@ -172,6 +182,7 @@ export const App = () => {
         handleUpdateAppuntamenti(appuntamenti.filter((a) => a.id !== id));
     };
     const handleRefreshData = () => {
+        setAllSettimaneMap(getAllStoredSettimane());
         setSettimane(getStoredSettimane(periodo.anno, periodo.semestre));
         setCongregazioni(getStoredCongregazioni());
         setAppuntamenti(getStoredAppuntamenti());
@@ -195,10 +206,10 @@ export const App = () => {
     if (!isLoggedIn) {
         return _jsx(AuthScreen, { onSuccess: handleLoginSuccess });
     }
-    return (_jsxs("div", { className: "min-h-screen flex bg-[#F7F6F2] text-[#2F3332] selection:bg-[#7C8B82] selection:text-white pb-16 lg:pb-0", children: [_jsx(Sidebar, { currentTab: currentTab, onSelectTab: setCurrentTab, user: user, isOpenMobile: isMobileMenuOpen, onCloseMobile: () => setIsMobileMenuOpen(false), onOpenSecurity: () => setIsSecurityOpen(true), onLogout: handleLogout }), _jsxs("main", { className: "flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full", children: [_jsx(Header, { periodo: periodo, onPrev: () => setPeriodo((p) => prevPeriodo(p)), onNext: () => setPeriodo((p) => nextPeriodo(p)), onToday: () => setPeriodo(currentAnnoSemestre()), onNewWeek: () => { setEditingWeek(null); setIsWeekModalOpen(true); }, onOpenSecurity: () => setIsSecurityOpen(true), onOpenMobileMenu: () => setIsMobileMenuOpen(true), username: user.email || 'odglivio', isSyncing: isSyncing, isOnline: isOnline }), _jsxs("div", { className: "mt-5", children: [currentTab === 'calendario' && (_jsxs("div", { className: "space-y-6", children: [_jsx(WeekTable, { settimane: settimane, onEditWeek: (w) => { setEditingWeek(w); setIsWeekModalOpen(true); }, onDeleteWeek: handleDeleteWeek, onDuplicateWeek: handleDuplicateWeek }), _jsx(CongregationsPanel, { congregazioni: congregazioni, onViewAll: () => setIsAllCongregationsOpen(true), onSelectCongregazione: () => { setEditingWeek(null); setIsWeekModalOpen(true); } })] })), currentTab === 'congregazioni' && (_jsx(CongregazioniView, { congregazioni: congregazioni, onSaveCongregazioni: handleUpdateCongregazioni, onOpenNewWeekWithCongregazione: () => {
+    return (_jsxs("div", { className: "min-h-screen flex bg-[#F7F6F2] text-[#2F3332] selection:bg-[#7C8B82] selection:text-white pb-24 lg:pb-8", children: [_jsx(Sidebar, { currentTab: currentTab, onSelectTab: setCurrentTab, user: user, isOpenMobile: isMobileMenuOpen, onCloseMobile: () => setIsMobileMenuOpen(false), onOpenSecurity: () => setIsSecurityOpen(true), onLogout: handleLogout }), _jsxs("main", { className: "flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full", children: [_jsx(Header, { periodo: periodo, onPrev: () => setPeriodo((p) => prevPeriodo(p)), onNext: () => setPeriodo((p) => nextPeriodo(p)), onToday: () => setPeriodo(currentAnnoSemestre()), onNewWeek: () => { setEditingWeek(null); setIsWeekModalOpen(true); }, onOpenSecurity: () => setIsSecurityOpen(true), onOpenMobileMenu: () => setIsMobileMenuOpen(true), username: user.email || 'odglivio', isSyncing: isSyncing, isOnline: isOnline }), _jsxs("div", { className: "mt-5", children: [currentTab === 'calendario' && (_jsxs("div", { className: "space-y-6", children: [_jsx(WeekTable, { settimane: settimane, onEditWeek: (w) => { setEditingWeek(w); setIsWeekModalOpen(true); }, onDeleteWeek: handleDeleteWeek, onDuplicateWeek: handleDuplicateWeek, visitNumberMap: visitNumberMap }), _jsx(CongregationsPanel, { congregazioni: congregazioni, onViewAll: () => setIsAllCongregationsOpen(true), onSelectCongregazione: () => { setEditingWeek(null); setIsWeekModalOpen(true); } })] })), currentTab === 'congregazioni' && (_jsx(CongregazioniView, { congregazioni: congregazioni, onSaveCongregazioni: handleUpdateCongregazioni, onOpenNewWeekWithCongregazione: () => {
                                     setEditingWeek(null);
                                     setCurrentTab('calendario');
                                     setIsWeekModalOpen(true);
-                                } })), currentTab === 'situazione' && (_jsx(SituazioneVisiteView, { congregazioni: congregazioni, settimane: settimane, appuntamenti: appuntamenti, onSaveAppuntamento: handleSaveAppuntamento, onDeleteAppuntamento: handleDeleteAppuntamento })), currentTab === 'impostazioni' && (_jsx(ImpostazioniView, { user: user, onUpdateUser: () => { }, onRefreshData: handleRefreshData, onOpenSecurity: () => setIsSecurityOpen(true), onLogout: handleLogout })), currentTab === 'aiuto' && _jsx(AiutoView, {})] })] }), _jsx(MobileBottomNav, { currentTab: currentTab, onSelectTab: setCurrentTab, onOpenMore: () => setIsMobileMenuOpen(true) }), _jsx(WeekModal, { isOpen: isWeekModalOpen, onClose: () => { setIsWeekModalOpen(false); setEditingWeek(null); }, onSave: handleSaveWeek, onDelete: handleDeleteWeek, editingWeek: editingWeek, congregazioni: congregazioni, periodo: periodo, settimane: settimane }), _jsx(AllCongregationsModal, { isOpen: isAllCongregationsOpen, onClose: () => setIsAllCongregationsOpen(false), congregazioni: congregazioni, onSaveCongregazioni: handleUpdateCongregazioni }), _jsx(SecurityPrivacyModal, { isOpen: isSecurityOpen, onClose: () => setIsSecurityOpen(false), onDataReset: handleRefreshData })] }));
+                                } })), (currentTab === 'appuntamenti' || currentTab === 'situazione') && (_jsx(AppuntamentiView, { congregazioni: congregazioni, settimane: settimane, appuntamenti: appuntamenti, onSaveAppuntamento: handleSaveAppuntamento, onDeleteAppuntamento: handleDeleteAppuntamento })), currentTab === 'impostazioni' && (_jsx(ImpostazioniView, { user: user, onUpdateUser: () => { }, onRefreshData: handleRefreshData, onOpenSecurity: () => setIsSecurityOpen(true), onLogout: handleLogout })), currentTab === 'aiuto' && _jsx(AiutoView, {})] })] }), _jsx(MobileBottomNav, { currentTab: currentTab, onSelectTab: setCurrentTab, onOpenMore: () => setIsMobileMenuOpen(true) }), _jsx(WeekModal, { isOpen: isWeekModalOpen, onClose: () => { setIsWeekModalOpen(false); setEditingWeek(null); }, onSave: handleSaveWeek, onDelete: handleDeleteWeek, editingWeek: editingWeek, congregazioni: congregazioni, periodo: periodo, settimane: settimane, allSettimaneMap: allSettimaneMap }), _jsx(AllCongregationsModal, { isOpen: isAllCongregationsOpen, onClose: () => setIsAllCongregationsOpen(false), congregazioni: congregazioni, onSaveCongregazioni: handleUpdateCongregazioni }), _jsx(SecurityPrivacyModal, { isOpen: isSecurityOpen, onClose: () => setIsSecurityOpen(false), onDataReset: handleRefreshData })] }));
 };
 export default App;

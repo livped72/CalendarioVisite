@@ -10,8 +10,10 @@ import {
   Users,
   Star,
 } from 'lucide-react';
-import { Settimana, TipoEvento, Congregazione, Semestre, AnnoSemestre } from '../types';
+import { Settimana, TipoEvento, Congregazione, Semestre, AnnoSemestre, PeriodoKey } from '../types';
 import { abbreviateMonths } from '../lib/dateUtils';
+import { predictVisitNumber } from '../lib/visitNumbering';
+import { getAllStoredSettimane } from '../lib/storage';
 
 interface WeekModalProps {
   isOpen: boolean;
@@ -22,6 +24,7 @@ interface WeekModalProps {
   congregazioni: Congregazione[];
   periodo: AnnoSemestre;
   settimane?: Settimana[];
+  allSettimaneMap?: Record<PeriodoKey, Settimana[]>;
 }
 
 interface AltroEventoOption {
@@ -109,6 +112,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
   congregazioni,
   periodo,
   settimane = [],
+  allSettimaneMap,
 }) => {
   const [selectedStartDate, setSelectedStartDate] = useState('');
   const [isCongregazione, setIsCongregazione] = useState(true);
@@ -116,11 +120,13 @@ export const WeekModal: React.FC<WeekModalProps> = ({
   const [altroEvento, setAltroEvento] = useState<TipoEvento>('settimana_libera');
   const [extraDettaglio, setExtraDettaglio] = useState('');
   const [note, setNote] = useState('');
+  const [forceResetNumerazione, setForceResetNumerazione] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     if (editingWeek) {
       setSelectedStartDate(editingWeek.startDate || new Date().toISOString().slice(0, 10));
+      setForceResetNumerazione(!!editingWeek.resetNumerazione);
       if (editingWeek.evento === 'congregazione') {
         setIsCongregazione(true);
         setSelectedCongregazione(editingWeek.dettagli || 'Da definire');
@@ -179,6 +185,19 @@ export const WeekModal: React.FC<WeekModalProps> = ({
     }
   };
 
+  const effectiveAllSettimane = allSettimaneMap || getAllStoredSettimane();
+  const visitPrediction = isCongregazione
+    ? predictVisitNumber({
+        anno: periodo.anno,
+        semestre: periodo.semestre,
+        targetStartDate: selectedStartDate,
+        targetCongregazioneNome: selectedCongregazione || 'Da definire',
+        editingWeekId: editingWeek?.id,
+        forceReset: forceResetNumerazione,
+        allSettimaneMap: effectiveAllSettimane,
+      })
+    : null;
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -195,10 +214,11 @@ export const WeekModal: React.FC<WeekModalProps> = ({
       ? selectedCongregazione.trim() || 'Congregazione'
       : extraDettaglio.trim() || '-';
 
-    // Numero is only meaningful for congregazione; use 0 as placeholder for others
+    const calculatedNumero = isCongregazione && visitPrediction ? visitPrediction.numero : 0;
     const newWeek: Settimana = {
       id: editingWeek ? editingWeek.id : `week_${Date.now()}`,
-      numero: editingWeek ? editingWeek.numero : 0,
+      numero: calculatedNumero,
+      resetNumerazione: isCongregazione ? (forceResetNumerazione || !!visitPrediction?.isReset) : false,
       periodo: formattedPeriodo,
       startDate: selectedStartDate,
       endDate: end.toISOString().slice(0, 10),
@@ -305,6 +325,34 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                 onChange={(e) => setSelectedCongregazione(e.target.value)}
                 className="w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]"
               />
+
+              {/* Box Numerazione Visita Calcolata */}
+              {visitPrediction && (
+                <div className="p-3 bg-white rounded-xl border border-[#E0DED9] space-y-2 mt-2 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#555] uppercase tracking-wider">
+                      Numero Visita Calcolato
+                    </span>
+                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-[#7C8B82] text-white text-xs font-extrabold shadow-2xs">
+                      #{visitPrediction.numero}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#555] leading-relaxed">
+                    {visitPrediction.motivazione}
+                  </p>
+                  <label className="flex items-center gap-2 pt-1.5 border-t border-[#F0EEEA] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={forceResetNumerazione}
+                      onChange={(e) => setForceResetNumerazione(e.target.checked)}
+                      className="rounded border-[#E0DED9] text-[#7C8B82] focus:ring-[#7C8B82] w-4 h-4 cursor-pointer accent-[#7C8B82]"
+                    />
+                    <span className="text-xs font-semibold text-[#2F3332]">
+                      Riavvia la numerazione da 1 per questa visita
+                    </span>
+                  </label>
+                </div>
+              )}
             </div>
           ) : (
             /* Alternative events panel */

@@ -30,6 +30,7 @@ export interface Settimana {
   dettagli: string;
   congregazioneId?: string;
   note: string;
+  resetNumerazione?: boolean;
 }
 
 export interface Congregazione {
@@ -74,6 +75,7 @@ export interface KPIStats {
 export type TabNav =
   | 'calendario'
   | 'congregazioni'
+  | 'appuntamenti'
   | 'situazione'
   | 'eventi_personalizzati'
   | 'impostazioni'

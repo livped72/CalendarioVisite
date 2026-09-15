@@ -33,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     { id: 'calendario' as TabNav, label: 'Calendario', icon: CalendarDays },
     { id: 'congregazioni' as TabNav, label: 'Congregazioni', icon: Users },
-    { id: 'situazione' as TabNav, label: 'Situazione visite', icon: BarChart3 },
+    { id: 'appuntamenti' as TabNav, label: 'Appuntamenti', icon: CalendarCheck2 },
     { id: 'impostazioni' as TabNav, label: 'Impostazioni', icon: Settings },
     { id: 'aiuto' as TabNav, label: 'Aiuto', icon: HelpCircle },
   ];
@@ -55,7 +55,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentTab === item.id;
+          const isActive =
+            currentTab === item.id || (item.id === 'appuntamenti' && currentTab === ('situazione' as TabNav));
           return (
             <button
               key={item.id}

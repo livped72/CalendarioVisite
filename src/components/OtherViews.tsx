@@ -211,8 +211,8 @@ export const CongregazioniView: React.FC<{
   );
 };
 
-// Situazione Visite Tab View (Formato Calendario Settimanale)
-export const SituazioneVisiteView: React.FC<{
+// Appuntamenti Tab View (Formato Calendario Settimanale)
+export const AppuntamentiView: React.FC<{
   congregazioni: Congregazione[];
   settimane: Settimana[];
   appuntamenti: Appuntamento[];
@@ -235,6 +235,9 @@ export const SituazioneVisiteView: React.FC<{
     />
   );
 };
+
+/** Alias di retrocompatibilità */
+export const SituazioneVisiteView = AppuntamentiView;
 
 // Impostazioni Tab View
 export const ImpostazioniView: React.FC<{
