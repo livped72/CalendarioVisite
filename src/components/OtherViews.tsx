@@ -73,51 +73,57 @@ export const CongregazioniView: React.FC<{
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base font-bold text-[#2F3332] uppercase tracking-wider">
-            Elenco Congregazioni della Circoscrizione
-          </h2>
-          <p className="text-xs text-[#7C8B82] mt-1">
-            Gestisci e modifica i dettagli delle congregazioni o pianifica la prossima visita.
-          </p>
-        </div>
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-[#E0DED9] shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm sm:text-base font-black text-[#2F3332] uppercase tracking-wider">
+              Elenco Congregazioni della Circoscrizione
+            </h2>
+            <p className="text-xs text-[#7C8B82] mt-0.5">
+              Gestisci e modifica i dettagli delle congregazioni o pianifica la prossima visita.
+            </p>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleOpenNew}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#7C8B82] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#68766E] transition-colors shadow-2xs cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#7C8B82] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#68766E] active:scale-95 transition-all shadow-xs cursor-pointer shrink-0"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             <span>Nuova Congregazione</span>
           </button>
+        </div>
 
+        {/* Barra Filtri Segmentata per Smartphone e Desktop */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none pt-2 border-t border-[#EFECE6]">
+          <span className="text-[11px] font-bold text-[#888] uppercase tracking-wider mr-1 hidden sm:inline">
+            Filtra:
+          </span>
           <button
             onClick={() => setFilterUrgency('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase transition-all cursor-pointer whitespace-nowrap ${
               filterUrgency === 'all'
-                ? 'bg-[#7C8B82] text-white'
-                : 'bg-white border border-[#E0DED9] text-[#2F3332]'
+                ? 'bg-[#7C8B82] text-white shadow-2xs'
+                : 'bg-[#FAF9F7] border border-[#D5D2CA] text-[#555] hover:bg-white'
             }`}
           >
             Tutte ({congregazioni.length})
           </button>
           <button
             onClick={() => setFilterUrgency('high')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase transition-all cursor-pointer whitespace-nowrap ${
               filterUrgency === 'high'
-                ? 'bg-rose-700 text-white'
-                : 'bg-white border border-[#E0DED9] text-rose-800'
+                ? 'bg-rose-700 text-white shadow-2xs'
+                : 'bg-[#FAF9F7] border border-[#D5D2CA] text-rose-700 hover:bg-white'
             }`}
           >
             Urgenza alta (&gt;12 sett.)
           </button>
           <button
             onClick={() => setFilterUrgency('low')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase transition-all cursor-pointer whitespace-nowrap ${
               filterUrgency === 'low'
-                ? 'bg-[#5B6760] text-white'
-                : 'bg-white border border-[#E0DED9] text-[#5B6760]'
+                ? 'bg-[#5B6760] text-white shadow-2xs'
+                : 'bg-[#FAF9F7] border border-[#D5D2CA] text-[#5B6760] hover:bg-white'
             }`}
           >
             Recenti (&lt;6 sett.)

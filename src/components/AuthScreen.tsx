@@ -10,12 +10,16 @@ import {
   Mail,
   User,
   CheckCircle2,
+  KeyRound,
 } from 'lucide-react';
 import { loginAccount, registerAccount } from '../lib/accountAuth';
 
 interface AuthScreenProps {
   onSuccess: () => void;
 }
+
+// Codici di autorizzazione preconfigurati per consentire la registrazione solo a persone autorizzate
+const VALID_INVITE_CODES = ['CV2026', 'VISITE2026', 'PEDRINI2026', 'ODG2026'];
 
 export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -24,6 +28,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [codiceInvito, setCodiceInvito] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -56,6 +61,20 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     setError(null);
     setSuccessMsg(null);
 
+    // Verifica di sicurezza: blocco registrazione autonoma senza codice amministratore
+    const normalizedCode = codiceInvito.trim().toUpperCase();
+    const customAdminCode = localStorage.getItem('cv_custom_admin_invite_code')?.trim().toUpperCase();
+    const isAuthorized =
+      VALID_INVITE_CODES.includes(normalizedCode) ||
+      (customAdminCode && normalizedCode === customAdminCode);
+
+    if (!isAuthorized) {
+      setError(
+        'Codice di autorizzazione non valido. La registrazione autonoma è disabilitata per proteggere il portale. Contatta l’amministratore per ottenere l’autorizzazione.'
+      );
+      return;
+    }
+
     if (!nome.trim()) {
       setError('Inserisci il tuo nome e cognome.');
       return;
@@ -78,7 +97,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     setLoading(false);
 
     if (res.success) {
-      setSuccessMsg('Account creato con successo! Accesso in corso…');
+      setSuccessMsg('Account autorizzato e creato con successo! Accesso in corso…');
       setTimeout(() => onSuccess(), 900);
     } else {
       setError(res.error || 'Impossibile creare l\'account. Riprova.');
@@ -94,22 +113,22 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             <ShieldCheck size={36} className="text-[#5B6760]" />
           </div>
           <span className="text-[10px] font-bold tracking-widest text-[#7C8B82] uppercase bg-[#FAF9F7] px-3 py-1 rounded-full border border-[#E0DED9] mb-1.5 flex items-center gap-1">
-            <span>🛡️ Account Cifrato &amp; Sicuro</span>
+            <span>🛡️ Portale Riservato &amp; Cifrato</span>
           </span>
-          <h1 className="text-xl font-bold text-[#2F3332]">Calendario Visite</h1>
+          <h1 className="text-xl font-black text-[#2F3332]">Calendario Visite</h1>
           <p className="text-xs text-[#777] text-center mt-1">
             {mode === 'login'
-              ? 'Accedi per sincronizzare le tue visite su tutti i dispositivi'
-              : 'Crea il tuo account per accedere ovunque in totale sicurezza'}
+              ? 'Accedi con le tue credenziali autorizzate'
+              : 'Registrazione ad accesso protetto: codice invito richiesto'}
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 p-1 bg-[#FAF9F7] rounded-xl border border-[#E0DED9] mb-5">
+        <div className="grid grid-cols-2 p-1 bg-[#FAF9F7] rounded-2xl border border-[#E0DED9] mb-5">
           <button
             type="button"
             onClick={() => { setMode('login'); setError(null); }}
-            className={`py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+            className={`py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
               mode === 'login'
                 ? 'bg-white text-[#2F3332] shadow-xs'
                 : 'text-[#888] hover:text-[#2F3332]'
@@ -120,25 +139,26 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           <button
             type="button"
             onClick={() => { setMode('register'); setError(null); }}
-            className={`py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+            className={`py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 ${
               mode === 'register'
                 ? 'bg-white text-[#2F3332] shadow-xs'
                 : 'text-[#888] hover:text-[#2F3332]'
             }`}
           >
-            Registrati
+            <span>Registrati</span>
+            <Lock className="w-3 h-3 text-[#7C8B82]" />
           </button>
         </div>
 
         {/* Error / Success Notifications */}
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 animate-in fade-in">
-            <AlertCircle size={15} className="shrink-0 mt-0.5" />
-            <span>{error}</span>
+          <div className="mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 animate-in fade-in">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <span className="leading-relaxed">{error}</span>
           </div>
         )}
         {successMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2 font-medium animate-in fade-in">
+          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2 font-medium animate-in fade-in">
             <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
             <span>{successMsg}</span>
           </div>
@@ -152,7 +172,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 w-4 h-4 text-[#7C8B82]" />
+                <Mail className="absolute left-3.5 top-3 w-4 h-4 text-[#7C8B82]" />
                 <input
                   type="email"
                   value={email}
@@ -161,7 +181,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="email"
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tua@email.it"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#E0DED9] text-sm bg-[#FAF9F7] focus:outline-none focus:border-[#7C8B82] focus:bg-white transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20 transition-all"
                 />
               </div>
             </div>
@@ -171,7 +191,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 w-4 h-4 text-[#7C8B82]" />
+                <Lock className="absolute left-3.5 top-3 w-4 h-4 text-[#7C8B82]" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -179,12 +199,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="current-password"
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-[#E0DED9] text-sm bg-[#FAF9F7] focus:outline-none focus:border-[#7C8B82] focus:bg-white transition-colors"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-[#888] hover:text-[#2F3332] cursor-pointer"
+                  className="absolute right-3 top-3 text-[#888] hover:text-[#2F3332] cursor-pointer"
+                  aria-label="Mostra o nascondi password"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -194,7 +215,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin inline-block" />
@@ -207,34 +228,52 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           </form>
         )}
 
-        {/* FORM: REGISTRAZIONE */}
+        {/* FORM: REGISTRAZIONE PROTETTA DA CODICE */}
         {mode === 'register' && (
           <form onSubmit={handleRegister} className="space-y-3.5">
+            {/* Blocco Codice di Autorizzazione obbligatorio */}
+            <div className="p-3 bg-[#FAF9F7] rounded-2xl border border-[#E0DED9] space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#2F3332] uppercase tracking-wider">
+                <KeyRound className="w-4 h-4 text-[#7C8B82]" />
+                <span>Codice Autorizzazione Amministratore *</span>
+              </div>
+              <p className="text-[11px] text-[#777] leading-tight">
+                La registrazione autonoma è disabilitata. Inserisci il codice segreto fornito dall'amministratore.
+              </p>
+              <input
+                type="password"
+                required
+                value={codiceInvito}
+                onChange={(e) => setCodiceInvito(e.target.value)}
+                placeholder="Codice autorizzazione..."
+                className="w-full px-3.5 py-2 rounded-xl border border-[#D5D2CA] text-xs sm:text-sm bg-white font-bold tracking-wider focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20 text-[#2F3332]"
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
-                Nome e Cognome
+                Nome e Cognome *
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 w-4 h-4 text-[#7C8B82]" />
+                <User className="absolute left-3.5 top-2.5 w-4 h-4 text-[#7C8B82]" />
                 <input
                   type="text"
                   value={nome}
-                  autoFocus
                   required
                   autoComplete="name"
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="es. Livio Pedrini"
-                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#E0DED9] text-sm bg-[#FAF9F7] focus:outline-none focus:border-[#7C8B82] focus:bg-white"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20"
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
-                Email
+                Email *
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 w-4 h-4 text-[#7C8B82]" />
+                <Mail className="absolute left-3.5 top-2.5 w-4 h-4 text-[#7C8B82]" />
                 <input
                   type="email"
                   value={email}
@@ -242,17 +281,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="email"
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tua@email.it"
-                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#E0DED9] text-sm bg-[#FAF9F7] focus:outline-none focus:border-[#7C8B82] focus:bg-white"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20"
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
-                Password (min. 6 caratteri)
+                Password (min. 6 caratteri) *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 w-4 h-4 text-[#7C8B82]" />
+                <Lock className="absolute left-3.5 top-2.5 w-4 h-4 text-[#7C8B82]" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -261,12 +300,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="new-password"
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-10 py-2 rounded-xl border border-[#E0DED9] text-sm bg-[#FAF9F7] focus:outline-none focus:border-[#7C8B82] focus:bg-white"
+                  className="w-full pl-10 pr-10 py-2 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-2.5 text-[#888] hover:text-[#2F3332] cursor-pointer"
+                  aria-label="Mostra o nascondi password"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -275,10 +315,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
             <div>
               <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
-                Conferma Password
+                Conferma Password *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 w-4 h-4 text-[#7C8B82]" />
+                <Lock className="absolute left-3.5 top-2.5 w-4 h-4 text-[#7C8B82]" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
@@ -286,7 +326,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="new-password"
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#E0DED9] text-sm bg-[#FAF9F7] focus:outline-none focus:border-[#7C8B82] focus:bg-white"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20"
                 />
               </div>
             </div>
@@ -294,13 +334,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin inline-block" />
               ) : (
                 <>
-                  <UserPlus size={15} /> Crea Account e Inizia
+                  <UserPlus size={15} /> Valida Codice e Crea Account
                 </>
               )}
             </button>
@@ -311,22 +351,22 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         <div className="mt-5 pt-4 border-t border-[#E0DED9] text-center text-xs text-[#777]">
           {mode === 'login' ? (
             <span>
-              Non hai ancora un account?{' '}
+              Hai un codice di autorizzazione per registrarti?{' '}
               <button
                 onClick={() => { setMode('register'); setError(null); }}
                 className="text-[#5B6760] font-bold hover:underline cursor-pointer"
               >
-                Registrati gratis
+                Registrati qui
               </button>
             </span>
           ) : (
             <span>
-              Hai già un account?{' '}
+              Hai già un account registrato?{' '}
               <button
                 onClick={() => { setMode('login'); setError(null); }}
                 className="text-[#5B6760] font-bold hover:underline cursor-pointer"
               >
-                Accedi qui
+                Torna al Login
               </button>
             </span>
           )}
@@ -334,7 +374,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
         {/* Privacy badge */}
         <p className="mt-4 text-[10px] text-[#AAA] text-center leading-relaxed">
-          I dati del tuo calendario sono cifrati con standard AES-256 e protetti dalla tua password. Nessun tracciamento o condivisione con terze parti.
+          Accesso riservato e protetto da crittografia AES-256. L'amministratore del sistema rilascia le autorizzazioni di accesso.
         </p>
       </div>
     </div>
