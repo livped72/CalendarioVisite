@@ -218,55 +218,76 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           return (
             <div
               key={item.id}
-              className="p-3.5 hover:bg-[#FAF9F7] active:bg-[#FAF9F7] transition-colors flex items-center justify-between gap-3"
+              className="p-3.5 hover:bg-[#FAF9F7] active:bg-[#F7F5F0] transition-colors flex items-center justify-between gap-3"
             >
               <div
-                className="flex items-start gap-3 min-w-0 flex-1 cursor-pointer"
+                className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
                 onClick={() => onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item)}
                 title={onViewAppuntamenti ? 'Vedi appuntamenti di questa settimana' : 'Modifica'}
               >
+                {/* Badge Numerico o Simbolo Evento */}
                 {isCong && visitNum != null ? (
-                  <div className="flex flex-col items-center shrink-0 mt-0.5">
+                  <div className="flex flex-col items-center shrink-0">
                     <span
-                      className={`w-6 h-6 rounded-full text-white text-[11px] font-bold flex items-center justify-center shadow-2xs ${getBadgeColor(
+                      className={`w-7 h-7 rounded-xl text-white text-xs font-extrabold flex items-center justify-center shadow-2xs ring-2 ring-white ${getBadgeColor(
                         visitNum
                       )}`}
                     >
                       {visitNum}
                     </span>
+                  </div>
+                ) : (
+                  <span className="w-7 h-7 rounded-xl bg-[#F0EEE8] text-[#888] text-xs font-bold flex items-center justify-center shrink-0 ring-2 ring-white">
+                    —
+                  </span>
+                )}
+
+                {/* Contenuto a due livelli: Data del periodo sopra, Nome/Badge evento sotto */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[11px] font-bold text-[#7C8B82] uppercase tracking-wider">
+                      {abbreviateMonths(item.periodo)}
+                    </span>
                     {visitInfo?.isReset && (
-                      <span className="text-[8px] font-extrabold text-[#7C8B82] uppercase tracking-tighter mt-0.5">
+                      <span className="text-[9px] font-extrabold text-[#7C8B82] uppercase bg-[#EBF1ED] px-1.5 py-0.5 rounded-md">
                         Ciclo 1
                       </span>
                     )}
                   </div>
-                ) : (
-                  <span className="w-6 h-6 rounded-full bg-[#F3F0EA] text-[#AAA] text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                    —
-                  </span>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                    <span className="font-bold text-xs text-[#2F3332]">{abbreviateMonths(item.periodo)}</span>
+
+                  <div className="flex items-center gap-1.5">
                     {renderEventCell(item)}
                   </div>
+
                   {item.note && item.note !== '-' && (
-                    <div className="text-xs text-[#666] truncate">{item.note}</div>
+                    <div className="text-[11px] text-[#777] truncate mt-1">
+                      {item.note}
+                    </div>
                   )}
                 </div>
               </div>
-              {/* Tasto modifica separato su mobile */}
-              <div className="flex items-center gap-1 shrink-0">
+
+              {/* Tasti azione su mobile */}
+              <div className="flex items-center gap-1 shrink-0 pl-1">
                 {onViewAppuntamenti && (
                   <button
-                    onClick={() => onEditWeek(item)}
-                    className="p-1.5 rounded-lg text-[#AAA] hover:text-[#5B6760] hover:bg-[#FAF9F7] transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditWeek(item);
+                    }}
+                    className="p-2 rounded-xl text-[#777] hover:text-[#2F3332] hover:bg-[#FAF9F7] active:bg-[#EFECE6] transition-colors cursor-pointer"
                     title="Modifica settimana"
+                    aria-label="Modifica settimana"
                   >
-                    <Pencil className="w-3.5 h-3.5" />
+                    <Pencil className="w-4 h-4" />
                   </button>
                 )}
-                <ChevronRight className="w-4 h-4 text-[#CCC] shrink-0" />
+                <div
+                  onClick={() => onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item)}
+                  className="p-1 cursor-pointer text-[#BBB] hover:text-[#5B6760] transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </div>
               </div>
             </div>
           );
