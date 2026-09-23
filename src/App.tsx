@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { AnnoSemestre, TabNav, Settimana, Congregazione, UserProfile, Appuntamento, PeriodoKey } from './types';
+import { AnnoSemestre, TabNav, Settimana, Congregazione, UserProfile, Appuntamento, PeriodoKey, KPIStats } from './types';
 import {
   isUserLoggedIn,
   getCurrentUser,
@@ -33,6 +33,7 @@ import { WeekModal } from './components/WeekModal';
 import { AllCongregationsModal } from './components/AllCongregationsModal';
 import { SecurityPrivacyModal } from './components/SecurityPrivacyModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import { SummaryCards } from './components/SummaryCards';
 import {
   CongregazioniView,
   AppuntamentiView,
@@ -41,7 +42,48 @@ import {
   AiutoView,
 } from './components/OtherViews';
 
+
+// ── KPI Statistics Helper ──
+function computeKpiStats(
+  settimane: Settimana[],
+  congregazioni: Congregazione[]
+): KPIStats {
+  const total = settimane.length;
+  const visiteCong = settimane.filter((w) => w.evento === 'congregazione');
+  const congVisitate = new Set(visiteCong.map((w) => w.dettagli?.trim().toLowerCase()).filter(Boolean));
+
+  // Average weeks between congregation visits
+  const settimaneTrascorseList = congregazioni
+    .filter((c) => c.settimaneTrascorse > 0)
+    .map((c) => c.settimaneTrascorse);
+  const mediaSettimane =
+    settimaneTrascorseList.length > 0
+      ? settimaneTrascorseList.reduce((a, b) => a + b, 0) / settimaneTrascorseList.length
+      : 0;
+
+  // Next future week
+  const today = new Date().toISOString().slice(0, 10);
+  const prossima = [...settimane]
+    .filter((w) => w.startDate && w.startDate >= today)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
+
+  return {
+    settimaneProgrammate: visiteCong.length,
+    totaleSettimane: total,
+    congregazioniVisitate: congVisitate.size,
+    totaleCongregazioni: congregazioni.length,
+    mediaSettimane,
+    prossimaSettimana: {
+      periodo: prossima?.periodo ?? 'Da pianificare',
+      stato: prossima
+        ? `${prossima.evento === 'congregazione' ? '📍 ' + prossima.dettagli : prossima.evento}`
+        : 'Nessuna settimana pianificata →',
+    },
+  };
+}
+
 export const App: React.FC = () => {
+
   // ── Account State ──
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => isUserLoggedIn());
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
@@ -286,6 +328,10 @@ export const App: React.FC = () => {
         <div className="mt-5">
           {currentTab === 'calendario' && (
             <div className="space-y-6">
+              <SummaryCards
+                stats={computeKpiStats(settimane, congregazioni)}
+                onPlanNextWeek={() => { setEditingWeek(null); setIsWeekModalOpen(true); }}
+              />
               <WeekTable
                 settimane={settimane}
                 onEditWeek={(w) => { setEditingWeek(w); setIsWeekModalOpen(true); }}

@@ -13,7 +13,39 @@ import { WeekModal } from './components/WeekModal';
 import { AllCongregationsModal } from './components/AllCongregationsModal';
 import { SecurityPrivacyModal } from './components/SecurityPrivacyModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import { SummaryCards } from './components/SummaryCards';
 import { CongregazioniView, AppuntamentiView, ImpostazioniView, AiutoView, } from './components/OtherViews';
+// ── KPI Statistics Helper ──
+function computeKpiStats(settimane, congregazioni) {
+    const total = settimane.length;
+    const visiteCong = settimane.filter((w) => w.evento === 'congregazione');
+    const congVisitate = new Set(visiteCong.map((w) => w.dettagli?.trim().toLowerCase()).filter(Boolean));
+    // Average weeks between congregation visits
+    const settimaneTrascorseList = congregazioni
+        .filter((c) => c.settimaneTrascorse > 0)
+        .map((c) => c.settimaneTrascorse);
+    const mediaSettimane = settimaneTrascorseList.length > 0
+        ? settimaneTrascorseList.reduce((a, b) => a + b, 0) / settimaneTrascorseList.length
+        : 0;
+    // Next future week
+    const today = new Date().toISOString().slice(0, 10);
+    const prossima = [...settimane]
+        .filter((w) => w.startDate && w.startDate >= today)
+        .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
+    return {
+        settimaneProgrammate: visiteCong.length,
+        totaleSettimane: total,
+        congregazioniVisitate: congVisitate.size,
+        totaleCongregazioni: congregazioni.length,
+        mediaSettimane,
+        prossimaSettimana: {
+            periodo: prossima?.periodo ?? 'Da pianificare',
+            stato: prossima
+                ? `${prossima.evento === 'congregazione' ? '📍 ' + prossima.dettagli : prossima.evento}`
+                : 'Nessuna settimana pianificata →',
+        },
+    };
+}
 export const App = () => {
     // ── Account State ──
     const [isLoggedIn, setIsLoggedIn] = useState(() => isUserLoggedIn());
@@ -212,7 +244,7 @@ export const App = () => {
     if (!isLoggedIn) {
         return _jsx(AuthScreen, { onSuccess: handleLoginSuccess });
     }
-    return (_jsxs("div", { className: "min-h-screen flex bg-[#F7F6F2] text-[#2F3332] selection:bg-[#7C8B82] selection:text-white pb-24 lg:pb-8", children: [_jsx(Sidebar, { currentTab: currentTab, onSelectTab: setCurrentTab, user: user, isOpenMobile: isMobileMenuOpen, onCloseMobile: () => setIsMobileMenuOpen(false), onOpenSecurity: () => setIsSecurityOpen(true), onLogout: handleLogout }), _jsxs("main", { className: "flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full", children: [_jsx(Header, { periodo: periodo, onPrev: () => setPeriodo((p) => prevPeriodo(p)), onNext: () => setPeriodo((p) => nextPeriodo(p)), onToday: () => setPeriodo(currentAnnoSemestre()), onNewWeek: () => { setEditingWeek(null); setIsWeekModalOpen(true); }, onOpenSecurity: () => setIsSecurityOpen(true), onOpenMobileMenu: () => setIsMobileMenuOpen(true), username: user.email || 'odglivio', isSyncing: isSyncing, isOnline: isOnline }), _jsxs("div", { className: "mt-5", children: [currentTab === 'calendario' && (_jsxs("div", { className: "space-y-6", children: [_jsx(WeekTable, { settimane: settimane, onEditWeek: (w) => { setEditingWeek(w); setIsWeekModalOpen(true); }, onDeleteWeek: handleDeleteWeek, onDuplicateWeek: handleDuplicateWeek, visitNumberMap: visitNumberMap, onViewAppuntamenti: handleNavigateToSettimana }), _jsx(CongregationsPanel, { congregazioni: congregazioni, settimane: settimane, onViewAll: () => setIsAllCongregationsOpen(true), onSelectCongregazione: () => { setEditingWeek(null); setIsWeekModalOpen(true); }, onNavigateToSettimana: handleNavigateToSettimana })] })), currentTab === 'congregazioni' && (_jsx(CongregazioniView, { congregazioni: congregazioni, onSaveCongregazioni: handleUpdateCongregazioni, onOpenNewWeekWithCongregazione: () => {
+    return (_jsxs("div", { className: "min-h-screen flex bg-[#F7F6F2] text-[#2F3332] selection:bg-[#7C8B82] selection:text-white pb-24 lg:pb-8", children: [_jsx(Sidebar, { currentTab: currentTab, onSelectTab: setCurrentTab, user: user, isOpenMobile: isMobileMenuOpen, onCloseMobile: () => setIsMobileMenuOpen(false), onOpenSecurity: () => setIsSecurityOpen(true), onLogout: handleLogout }), _jsxs("main", { className: "flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full", children: [_jsx(Header, { periodo: periodo, onPrev: () => setPeriodo((p) => prevPeriodo(p)), onNext: () => setPeriodo((p) => nextPeriodo(p)), onToday: () => setPeriodo(currentAnnoSemestre()), onNewWeek: () => { setEditingWeek(null); setIsWeekModalOpen(true); }, onOpenSecurity: () => setIsSecurityOpen(true), onOpenMobileMenu: () => setIsMobileMenuOpen(true), username: user.email || 'odglivio', isSyncing: isSyncing, isOnline: isOnline }), _jsxs("div", { className: "mt-5", children: [currentTab === 'calendario' && (_jsxs("div", { className: "space-y-6", children: [_jsx(SummaryCards, { stats: computeKpiStats(settimane, congregazioni), onPlanNextWeek: () => { setEditingWeek(null); setIsWeekModalOpen(true); } }), _jsx(WeekTable, { settimane: settimane, onEditWeek: (w) => { setEditingWeek(w); setIsWeekModalOpen(true); }, onDeleteWeek: handleDeleteWeek, onDuplicateWeek: handleDuplicateWeek, visitNumberMap: visitNumberMap, onViewAppuntamenti: handleNavigateToSettimana }), _jsx(CongregationsPanel, { congregazioni: congregazioni, settimane: settimane, onViewAll: () => setIsAllCongregationsOpen(true), onSelectCongregazione: () => { setEditingWeek(null); setIsWeekModalOpen(true); }, onNavigateToSettimana: handleNavigateToSettimana })] })), currentTab === 'congregazioni' && (_jsx(CongregazioniView, { congregazioni: congregazioni, onSaveCongregazioni: handleUpdateCongregazioni, onOpenNewWeekWithCongregazione: () => {
                                     setEditingWeek(null);
                                     setCurrentTab('calendario');
                                     setIsWeekModalOpen(true);
