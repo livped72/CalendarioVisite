@@ -1,9 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState, useEffect } from 'react';
-import { X, Building2, CalendarDays, Calendar, BookMarked, Plane, BookOpen, Users, Star, } from 'lucide-react';
+import { X, Building2, CalendarDays, Calendar, BookMarked, Plane, BookOpen, Users, Star, FileDown, } from 'lucide-react';
 import { abbreviateMonths } from '../lib/dateUtils';
 import { predictVisitNumber } from '../lib/visitNumbering';
 import { getAllStoredSettimane } from '../lib/storage';
+import { downloadS302Pdf } from '../lib/pdfGenerator';
 const ALTRO_EVENTO_OPTIONS = [
     {
         tipo: 'settimana_libera',
@@ -198,10 +199,14 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
                                                     : 'opacity-70 hover:opacity-100 hover:shadow-2xs'}`, children: [_jsx("input", { type: "radio", name: "altroEvento", value: opt.tipo, checked: isSelected, onChange: () => setAltroEvento(opt.tipo), className: "sr-only" }), _jsx(Icon, { className: "w-4 h-4 shrink-0" }), _jsx("span", { className: "font-bold tracking-tight text-center leading-tight truncate", children: opt.label })] }, opt.tipo));
                                         }) }), hasExtraDetail && (_jsxs("div", { children: [_jsx("label", { className: "block text-[11px] font-semibold text-[#555] mb-1", children: "Dettaglio opzionale" }), _jsx("input", { type: "text", value: extraDettaglio, onChange: (e) => setExtraDettaglio(e.target.value), placeholder: altroEvento === 'assemblea_circoscrizione' ? 'es. Milano'
                                                     : altroEvento === 'congresso' ? 'es. Congresso 2026 – Roma'
-                                                        : 'es. Visita Betel', className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" })] }))] })), _jsxs("div", { children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase mb-1", children: "Note" }), _jsx("textarea", { rows: 3, value: note, onChange: (e) => setNote(e.target.value), placeholder: "es. Portare il materiale...", className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] resize-none" })] }), _jsxs("div", { className: "flex items-center justify-between pt-3 border-t border-[#E0DED9]", children: [editingWeek && onDelete ? (_jsx("button", { type: "button", onClick: () => {
-                                            if (confirm('Eliminare questa settimana?')) {
-                                                onDelete(editingWeek.id);
-                                                onClose();
-                                            }
-                                        }, className: "px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer", children: "Elimina" })) : _jsx("div", {}), _jsxs("div", { className: "flex gap-2", children: [_jsx("button", { type: "button", onClick: onClose, className: "px-4 py-2 text-xs font-bold text-[#666] hover:bg-stone-100 rounded-xl cursor-pointer", children: "Annulla" }), _jsx("button", { type: "submit", className: "px-5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#7C8B82] hover:bg-[#68766E] rounded-xl shadow-xs cursor-pointer", children: "Salva" })] })] })] })] })] }));
+                                                        : 'es. Visita Betel', className: "w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]" })] }))] })), _jsxs("div", { children: [_jsx("label", { className: "block text-xs font-bold text-[#2F3332] uppercase mb-1", children: "Note" }), _jsx("textarea", { rows: 3, value: note, onChange: (e) => setNote(e.target.value), placeholder: "es. Portare il materiale...", className: "w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] resize-none" })] }), _jsxs("div", { className: "flex items-center justify-between pt-3 border-t border-[#E0DED9] flex-wrap gap-2", children: [_jsxs("div", { className: "flex items-center gap-2", children: [editingWeek && onDelete && (_jsx("button", { type: "button", onClick: () => {
+                                                    if (confirm('Eliminare questa settimana?')) {
+                                                        onDelete(editingWeek.id);
+                                                        onClose();
+                                                    }
+                                                }, className: "px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer", children: "Elimina" })), editingWeek && isCongregazione && (_jsxs("button", { type: "button", onClick: () => downloadS302Pdf({
+                                                    ...editingWeek,
+                                                    dettagli: selectedCongregazione || editingWeek.dettagli,
+                                                    startDate: selectedStartDate || editingWeek.startDate,
+                                                }), className: "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl cursor-pointer", title: "Scarica il modulo S-302 compilato per questa visita", children: [_jsx(FileDown, { className: "w-3.5 h-3.5" }), _jsx("span", { children: "Scarica S-302" })] }))] }), _jsxs("div", { className: "flex gap-2", children: [_jsx("button", { type: "button", onClick: onClose, className: "px-4 py-2 text-xs font-bold text-[#666] hover:bg-stone-100 rounded-xl cursor-pointer", children: "Annulla" }), _jsx("button", { type: "submit", className: "px-5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#7C8B82] hover:bg-[#68766E] rounded-xl shadow-xs cursor-pointer", children: "Salva" })] })] })] })] })] }));
 };

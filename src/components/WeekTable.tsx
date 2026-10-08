@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
-import { Pencil, MoreVertical, ChevronDown, ChevronUp, Trash2, Copy, ChevronRight, CalendarDays } from 'lucide-react';
+import {
+  Pencil,
+  MoreVertical,
+  Trash2,
+  Copy,
+  ChevronRight,
+  CalendarDays,
+  FileDown,
+  Loader2,
+  DownloadCloud,
+} from 'lucide-react';
 import { Settimana } from '../types';
 import { EventBadge } from './EventBadge';
 import { abbreviateMonths } from '../lib/dateUtils';
+import { downloadS302Pdf, isWithin90Days, downloadAll90DaysS302 } from '../lib/pdfGenerator';
 
 interface WeekTableProps {
   settimane: Settimana[];
@@ -28,11 +39,43 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   visitNumberMap,
   onViewAppuntamenti,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
-  const displayItems = isExpanded ? settimane : settimane.slice(0, 10);
-  const hasMore = settimane.length > 10;
+  // Mostra sempre tutto il semestre di visite
+  const displayItems = settimane;
+
+  // Conta le visite a congregazione entro 90 giorni
+  const visitsWithin90Days = displayItems.filter(
+    (w) => w.evento === 'congregazione' && isWithin90Days(w.startDate)
+  );
+
+  const handleDownloadSinglePdf = async (item: Settimana, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDownloadingId(item.id);
+    try {
+      await downloadS302Pdf(item);
+    } catch (err) {
+      console.error('Errore compilazione PDF S-302:', err);
+      alert('Impossibile generare il PDF per questa settimana.');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleDownloadAll90Days = async () => {
+    if (visitsWithin90Days.length === 0) return;
+    setIsDownloadingAll(true);
+    try {
+      await downloadAll90DaysS302(displayItems);
+    } catch (err) {
+      console.error('Errore download cumulativo:', err);
+      alert('Errore durante il download dei moduli S-302.');
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
 
   // Visit info resolver: takes priority from visitNumberMap, then item.numero, then local fallback
   const getVisitInfo = (item: Settimana): { numero: number; isReset?: boolean; motivazione?: string } | null => {
@@ -80,16 +123,47 @@ export const WeekTable: React.FC<WeekTableProps> = ({
 
   return (
     <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs overflow-hidden">
+      {/* Intestazione Semestre con opzione download cumulativo S-302 */}
+      <div className="px-4 py-3 bg-[#FAF9F7] border-b border-[#E0DED9] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
+            Settimane del Semestre ({settimane.length})
+          </span>
+          {visitsWithin90Days.length > 0 && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              {visitsWithin90Days.length} entro 90 gg
+            </span>
+          )}
+        </div>
+
+        {visitsWithin90Days.length > 0 && (
+          <button
+            type="button"
+            onClick={handleDownloadAll90Days}
+            disabled={isDownloadingAll}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold transition-all cursor-pointer self-start sm:self-auto disabled:opacity-50"
+            title="Compila e scarica tutti i moduli S-302 per le visite nei prossimi 90 giorni"
+          >
+            {isDownloadingAll ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <DownloadCloud className="w-3.5 h-3.5 text-purple-600" />
+            )}
+            <span>Scarica tutti gli S-302 ({visitsWithin90Days.length})</span>
+          </button>
+        )}
+      </div>
+
       {/* Desktop Table */}
       <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-[#E0DED9] bg-[#FAF9F7] text-[#2F3332] font-bold uppercase tracking-wider text-[11px]">
+            <tr className="border-b border-[#E0DED9] bg-[#FAF9F7]/70 text-[#2F3332] font-bold uppercase tracking-wider text-[11px]">
               <th className="py-3 px-4 w-16 text-center">#</th>
-              <th className="py-3 px-4 w-52">Periodo (Mar – Dom)</th>
-              <th className="py-3 px-4 w-64">Evento</th>
+              <th className="py-3 px-4 w-48">Periodo (Mar – Dom)</th>
+              <th className="py-3 px-4 w-60">Evento</th>
               <th className="py-3 px-4">Note</th>
-              <th className="py-3 px-3 w-16 text-right pr-4" />
+              <th className="py-3 px-3 w-40 text-right pr-4">Azioni</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#EFECE6] text-[#2F3332]">
@@ -98,6 +172,8 @@ export const WeekTable: React.FC<WeekTableProps> = ({
               const visitInfo = getVisitInfo(item);
               const visitNum = visitInfo?.numero;
               const isCong = item.evento === 'congregazione';
+              const is90Days = isCong && isWithin90Days(item.startDate);
+              const isThisDownloading = downloadingId === item.id;
 
               return (
                 <tr key={item.id} className="hover:bg-[#FAF9F7] transition-colors group">
@@ -155,9 +231,31 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                       : <span className="text-[#CCC]">—</span>}
                   </td>
 
-                  {/* Actions */}
+                  {/* Actions & S-302 PDF Download */}
                   <td className="py-3 px-3 text-right pr-4 whitespace-nowrap relative">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1.5">
+                      {/* Bottone per compilare e scaricare S-302 */}
+                      {isCong && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDownloadSinglePdf(item, e)}
+                          disabled={isThisDownloading}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                            is90Days
+                              ? 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 shadow-2xs'
+                              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                          }`}
+                          title={`Compila e scarica modello S-302 per ${item.dettagli}${is90Days ? ' (visita entro 90 giorni)' : ''}`}
+                        >
+                          {isThisDownloading ? (
+                            <Loader2 className="w-3 h-3 animate-spin text-purple-600" />
+                          ) : (
+                            <FileDown className={`w-3.5 h-3.5 ${is90Days ? 'text-purple-600' : 'text-slate-500'}`} />
+                          )}
+                          <span>S-302</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={() => onEditWeek(item)}
                         className="p-1.5 rounded-lg text-[#888] hover:text-[#5B6760] hover:bg-[#FAF9F7] transition-colors cursor-pointer"
@@ -165,6 +263,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
+
                       <div className="relative">
                         <button
                           onClick={() => setActiveMenuId(isMenuOpen ? null : item.id)}
@@ -175,7 +274,21 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                         {isMenuOpen && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
-                            <div className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-lg border border-[#E0DED9] py-1 z-50 text-xs animate-in fade-in zoom-in-95">
+                            <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-[#E0DED9] py-1 z-50 text-xs animate-in fade-in zoom-in-95">
+                              {isCong && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      setActiveMenuId(null);
+                                      handleDownloadSinglePdf(item, e);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-purple-50 text-purple-700 text-left font-semibold cursor-pointer"
+                                  >
+                                    <FileDown className="w-3.5 h-3.5 text-purple-600" /> Scarica S-302 (PDF)
+                                  </button>
+                                  <div className="border-t border-[#E0DED9] my-1" />
+                                </>
+                              )}
                               <button
                                 onClick={() => { setActiveMenuId(null); onEditWeek(item); }}
                                 className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-[#FAF9F7] text-left font-semibold cursor-pointer text-[#2F3332]"
@@ -214,6 +327,8 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           const visitInfo = getVisitInfo(item);
           const visitNum = visitInfo?.numero;
           const isCong = item.evento === 'congregazione';
+          const is90Days = isCong && isWithin90Days(item.startDate);
+          const isThisDownloading = downloadingId === item.id;
 
           return (
             <div
@@ -253,6 +368,11 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                         Ciclo 1
                       </span>
                     )}
+                    {is90Days && (
+                      <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
+                        Entro 90gg
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -269,19 +389,39 @@ export const WeekTable: React.FC<WeekTableProps> = ({
 
               {/* Tasti azione su mobile */}
               <div className="flex items-center gap-1 shrink-0 pl-1">
-                {onViewAppuntamenti && (
+                {isCong && (
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditWeek(item);
-                    }}
-                    className="p-2 rounded-xl text-[#777] hover:text-[#2F3332] hover:bg-[#FAF9F7] active:bg-[#EFECE6] transition-colors cursor-pointer"
-                    title="Modifica settimana"
-                    aria-label="Modifica settimana"
+                    type="button"
+                    onClick={(e) => handleDownloadSinglePdf(item, e)}
+                    disabled={isThisDownloading}
+                    className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                      is90Days
+                        ? 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'
+                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    }`}
+                    title="Scarica S-302 (PDF)"
+                    aria-label="Scarica S-302"
                   >
-                    <Pencil className="w-4 h-4" />
+                    {isThisDownloading ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
+                    ) : (
+                      <FileDown className="w-4 h-4" />
+                    )}
                   </button>
                 )}
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditWeek(item);
+                  }}
+                  className="p-2 rounded-xl text-[#777] hover:text-[#2F3332] hover:bg-[#FAF9F7] active:bg-[#EFECE6] transition-colors cursor-pointer"
+                  title="Modifica settimana"
+                  aria-label="Modifica settimana"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+
                 <div
                   onClick={() => onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item)}
                   className="p-1 cursor-pointer text-[#BBB] hover:text-[#5B6760] transition-colors"
@@ -293,19 +433,6 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           );
         })}
       </div>
-
-      {/* Expand/Collapse */}
-      {hasMore && (
-        <div className="p-3 border-t border-[#E0DED9] bg-[#FAF9F7]/70 text-center">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#5B6760] hover:text-[#2F3332] transition-colors py-1 px-3 rounded-lg hover:bg-white cursor-pointer"
-          >
-            {isExpanded ? 'Mostra meno' : `Mostra altre ${settimane.length - 10} settimane`}
-            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

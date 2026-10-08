@@ -9,11 +9,13 @@ import {
   BookOpen,
   Users,
   Star,
+  FileDown,
 } from 'lucide-react';
 import { Settimana, TipoEvento, Congregazione, Semestre, AnnoSemestre, PeriodoKey } from '../types';
 import { abbreviateMonths } from '../lib/dateUtils';
 import { predictVisitNumber } from '../lib/visitNumbering';
 import { getAllStoredSettimane } from '../lib/storage';
+import { downloadS302Pdf } from '../lib/pdfGenerator';
 
 interface WeekModalProps {
   isOpen: boolean;
@@ -426,21 +428,38 @@ export const WeekModal: React.FC<WeekModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-[#E0DED9]">
-            {editingWeek && onDelete ? (
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Eliminare questa settimana?')) {
-                    onDelete(editingWeek.id);
-                    onClose();
-                  }
-                }}
-                className="px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer"
-              >
-                Elimina
-              </button>
-            ) : <div />}
+          <div className="flex items-center justify-between pt-3 border-t border-[#E0DED9] flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              {editingWeek && onDelete && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm('Eliminare questa settimana?')) {
+                      onDelete(editingWeek.id);
+                      onClose();
+                    }
+                  }}
+                  className="px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer"
+                >
+                  Elimina
+                </button>
+              )}
+              {editingWeek && isCongregazione && (
+                <button
+                  type="button"
+                  onClick={() => downloadS302Pdf({
+                    ...editingWeek,
+                    dettagli: selectedCongregazione || editingWeek.dettagli,
+                    startDate: selectedStartDate || editingWeek.startDate,
+                  })}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl cursor-pointer"
+                  title="Scarica il modulo S-302 compilato per questa visita"
+                >
+                  <FileDown className="w-3.5 h-3.5" />
+                  <span>Scarica S-302</span>
+                </button>
+              )}
+            </div>
             <div className="flex gap-2">
               <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-[#666] hover:bg-stone-100 rounded-xl cursor-pointer">
                 Annulla

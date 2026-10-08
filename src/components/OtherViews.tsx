@@ -29,190 +29,147 @@ import {
 import { CongregazioneModal } from './CongregazioneModal';
 import { WeeklyCalendarView } from './WeeklyCalendarView';
 
-// Congregazioni Tab View
+// Congregazioni Tab View - Layout a singola colonna per inserimento ed eliminazione
 export const CongregazioniView: React.FC<{
   congregazioni: Congregazione[];
   onSaveCongregazioni: (data: Congregazione[]) => void;
   onOpenNewWeekWithCongregazione: (nome: string) => void;
-}> = ({ congregazioni, onSaveCongregazioni, onOpenNewWeekWithCongregazione }) => {
-  const [filterUrgency, setFilterUrgency] = useState<'all' | 'high' | 'medium' | 'low'>('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCong, setEditingCong] = useState<Congregazione | null>(null);
+}> = ({ congregazioni, onSaveCongregazioni }) => {
+  const [newNome, setNewNome] = useState('');
+  const [searchFilter, setSearchFilter] = useState('');
 
-  const filtered = congregazioni.filter((c) => {
-    if (filterUrgency === 'high') return c.settimaneTrascorse >= 12;
-    if (filterUrgency === 'medium') return c.settimaneTrascorse >= 6 && c.settimaneTrascorse < 12;
-    if (filterUrgency === 'low') return c.settimaneTrascorse < 6;
-    return true;
-  });
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newNome.trim();
+    if (!trimmed) return;
 
-  const handleOpenNew = () => {
-    setEditingCong(null);
-    setIsModalOpen(true);
+    // Controlla se esiste già
+    if (congregazioni.some((c) => c.nome.toLowerCase() === trimmed.toLowerCase())) {
+      alert(`La congregazione "${trimmed}" è già presente nell'elenco.`);
+      return;
+    }
+
+    const nuova: Congregazione = {
+      id: `c_${Date.now()}`,
+      nome: trimmed,
+      ultimaVisita: 'Da definire',
+      ultimaVisitaDate: new Date().toISOString().slice(0, 10),
+      settimaneTrascorse: 0,
+      totaleVisite: 0,
+    };
+
+    onSaveCongregazioni([...congregazioni, nuova]);
+    setNewNome('');
   };
 
-  const handleOpenEdit = (c: Congregazione) => {
-    setEditingCong(c);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = (saved: Congregazione) => {
-    const idx = congregazioni.findIndex((c) => c.id === saved.id);
-    if (idx >= 0) {
-      const updated = [...congregazioni];
-      updated[idx] = saved;
-      onSaveCongregazioni(updated);
-    } else {
-      onSaveCongregazioni([...congregazioni, saved]);
+  const handleDelete = (id: string, nome: string) => {
+    if (confirm(`Sei sicuro di voler eliminare la congregazione "${nome}"?`)) {
+      onSaveCongregazioni(congregazioni.filter((c) => c.id !== id));
     }
   };
 
-  const handleDelete = (id: string) => {
-    onSaveCongregazioni(congregazioni.filter((c) => c.id !== id));
-  };
+  const visibleCongregazioni = congregazioni
+    .filter((c) => c.nome.toLowerCase().includes(searchFilter.toLowerCase()))
+    .sort((a, b) => a.nome.localeCompare(b.nome));
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-[#E0DED9] shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm sm:text-base font-black text-[#2F3332] uppercase tracking-wider">
-              Elenco Congregazioni della Circoscrizione
-            </h2>
-            <p className="text-xs text-[#7C8B82] mt-0.5">
-              Gestisci e modifica i dettagli delle congregazioni o pianifica la prossima visita.
-            </p>
-          </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Box Inserimento Nuova Congregazione */}
+      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-[#E0DED9] shadow-xs space-y-4">
+        <div>
+          <h2 className="text-base font-black text-[#2F3332] uppercase tracking-wider">
+            Gestione Congregazioni
+          </h2>
+          <p className="text-xs text-[#7C8B82] mt-0.5">
+            Inserisci nuove congregazioni o elimina quelle esistenti dalla circoscrizione.
+          </p>
+        </div>
 
+        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-[#EFECE6]">
+          <input
+            type="text"
+            value={newNome}
+            onChange={(e) => setNewNome(e.target.value)}
+            placeholder="Nome nuova congregazione (es. Salerno Fratte)..."
+            className="flex-1 px-4 py-2.5 rounded-xl border border-[#D5D2CA] text-sm focus:outline-none focus:ring-2 focus:ring-[#7C8B82] bg-[#FAF9F7]"
+          />
           <button
-            onClick={handleOpenNew}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#7C8B82] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#68766E] active:scale-95 transition-all shadow-xs cursor-pointer shrink-0"
+            type="submit"
+            disabled={!newNome.trim()}
+            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#7C8B82] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#68766E] active:scale-95 transition-all shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Nuova Congregazione</span>
+            <span>Inserisci</span>
           </button>
-        </div>
-
-        {/* Barra Filtri Segmentata per Smartphone e Desktop */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none pt-2 border-t border-[#EFECE6]">
-          <span className="text-[11px] font-bold text-[#888] uppercase tracking-wider mr-1 hidden sm:inline">
-            Filtra:
-          </span>
-          <button
-            onClick={() => setFilterUrgency('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase transition-all cursor-pointer whitespace-nowrap ${
-              filterUrgency === 'all'
-                ? 'bg-[#7C8B82] text-white shadow-2xs'
-                : 'bg-[#FAF9F7] border border-[#D5D2CA] text-[#555] hover:bg-white'
-            }`}
-          >
-            Tutte ({congregazioni.length})
-          </button>
-          <button
-            onClick={() => setFilterUrgency('high')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase transition-all cursor-pointer whitespace-nowrap ${
-              filterUrgency === 'high'
-                ? 'bg-rose-700 text-white shadow-2xs'
-                : 'bg-[#FAF9F7] border border-[#D5D2CA] text-rose-700 hover:bg-white'
-            }`}
-          >
-            Urgenza alta (&gt;12 sett.)
-          </button>
-          <button
-            onClick={() => setFilterUrgency('low')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase transition-all cursor-pointer whitespace-nowrap ${
-              filterUrgency === 'low'
-                ? 'bg-[#5B6760] text-white shadow-2xs'
-                : 'bg-[#FAF9F7] border border-[#D5D2CA] text-[#5B6760] hover:bg-white'
-            }`}
-          >
-            Recenti (&lt;6 sett.)
-          </button>
-        </div>
+        </form>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((c) => (
-          <div
-            key={c.id}
-            className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-4 flex flex-col justify-between hover:border-[#7C8B82] transition-colors group relative"
-          >
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="font-bold text-[#2F3332] text-sm">{c.nome}</span>
-                <span
-                  className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                    c.settimaneTrascorse >= 12
-                      ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                      : c.settimaneTrascorse >= 6
-                      ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                      : 'bg-[#EBF1ED] text-[#475E50] border border-[#D5E1D9]'
-                  }`}
-                >
-                  {c.settimaneTrascorse} sett. fa
-                </span>
-              </div>
-              <div className="text-xs text-[#666] space-y-1">
-                <div>
-                  Ultima visita: <strong className="text-[#2F3332]">{abbreviateMonths(c.ultimaVisita)}</strong>
-                </div>
-                {c.citta && (
-                  <div>
-                    Località: <span className="text-[#2F3332]">{c.citta}</span>
-                  </div>
-                )}
-                {c.contatto && (
-                  <div>
-                    Referente: <span className="text-[#2F3332]">{c.contatto}</span>
-                  </div>
-                )}
-                {c.note && <div className="text-[#888] italic text-[11px] mt-1">{c.note}</div>}
-              </div>
-            </div>
-
-            <div className="pt-3 mt-3 border-t border-[#EFECE6] flex items-center justify-between">
-              <span className="text-[11px] text-[#888]">{c.totaleVisite} visite registrate</span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => handleOpenEdit(c)}
-                  className="p-1.5 rounded-lg text-[#666] hover:text-[#2F3332] hover:bg-[#FAF9F7] border border-[#E0DED9] transition-colors cursor-pointer"
-                  title="Modifica congregazione"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`Eliminare la "${c.nome}"?`)) {
-                      handleDelete(c.id);
-                    }
-                  }}
-                  className="p-1.5 rounded-lg text-[#888] hover:text-rose-700 hover:bg-rose-50 border border-[#E0DED9] transition-colors cursor-pointer"
-                  title="Elimina congregazione"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => onOpenNewWeekWithCongregazione(c.nome)}
-                  className="text-xs font-bold text-[#5B6760] hover:text-[#2F3332] hover:underline cursor-pointer ml-1"
-                >
-                  Pianifica →
-                </button>
-              </div>
-            </div>
+      {/* Elenco Congregazioni su UNA SOLA COLONNA */}
+      <div className="bg-white rounded-3xl border border-[#E0DED9] shadow-xs overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-[#E0DED9] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF9F7]/70">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
+              Elenco Congregazioni
+            </span>
+            <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-[#EBF1ED] text-[#475E50]">
+              {congregazioni.length}
+            </span>
           </div>
-        ))}
-      </div>
 
-      <CongregazioneModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingCong(null);
-        }}
-        onSave={handleSave}
-        onDelete={handleDelete}
-        editingCongregazione={editingCong}
-      />
+          {congregazioni.length > 5 && (
+            <input
+              type="text"
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              placeholder="Cerca congregazione..."
+              className="px-3 py-1.5 rounded-lg border border-[#D5D2CA] text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#7C8B82] w-full sm:w-56"
+            />
+          )}
+        </div>
+
+        {visibleCongregazioni.length === 0 ? (
+          <div className="p-8 text-center text-xs text-[#888]">
+            {congregazioni.length === 0
+              ? 'Nessuna congregazione presente. Inseriscine una dal modulo sopra.'
+              : 'Nessuna congregazione corrisponde alla ricerca.'}
+          </div>
+        ) : (
+          <div className="divide-y divide-[#EFECE6]">
+            {visibleCongregazioni.map((c, index) => (
+              <div
+                key={c.id}
+                className="p-4 flex items-center justify-between gap-3 hover:bg-[#FAF9F7] transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="w-7 h-7 rounded-lg bg-[#FAF9F7] text-[#7C8B82] border border-[#E0DED9] text-xs font-bold flex items-center justify-center shrink-0">
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <span className="text-sm font-bold text-[#2F3332] truncate block">
+                      {c.nome}
+                    </span>
+                    {c.citta && (
+                      <span className="text-xs text-[#7C8B82] block truncate">
+                        {c.citta}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Unica azione permessa: Elimina congregazione */}
+                <button
+                  type="button"
+                  onClick={() => handleDelete(c.id, c.nome)}
+                  className="p-2 rounded-xl text-[#888] hover:text-rose-700 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all cursor-pointer shrink-0"
+                  title={`Elimina ${c.nome}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -330,6 +330,11 @@ export const App: React.FC = () => {
             <div className="space-y-6">
               <SummaryCards
                 stats={computeKpiStats(settimane, congregazioni)}
+                nextSettimana={
+                  [...settimane]
+                    .filter((w) => w.startDate && w.startDate >= new Date().toISOString().slice(0, 10))
+                    .sort((a, b) => a.startDate.localeCompare(b.startDate))[0]
+                }
                 onPlanNextWeek={() => { setEditingWeek(null); setIsWeekModalOpen(true); }}
               />
               <WeekTable
@@ -339,13 +344,6 @@ export const App: React.FC = () => {
                 onDuplicateWeek={handleDuplicateWeek}
                 visitNumberMap={visitNumberMap}
                 onViewAppuntamenti={handleNavigateToSettimana}
-              />
-              <CongregationsPanel
-                congregazioni={congregazioni}
-                settimane={settimane}
-                onViewAll={() => setIsAllCongregationsOpen(true)}
-                onSelectCongregazione={() => { setEditingWeek(null); setIsWeekModalOpen(true); }}
-                onNavigateToSettimana={handleNavigateToSettimana}
               />
             </div>
           )}

@@ -1,77 +1,106 @@
-import React from 'react';
-import { Calendar, Users, Clock } from 'lucide-react';
-import { KPIStats } from '../types';
+import React, { useState } from 'react';
+import { Calendar, MapPin, Download, Loader2 } from 'lucide-react';
+import { KPIStats, Settimana } from '../types';
+import { downloadS302Pdf, isWithin90Days } from '../lib/pdfGenerator';
 
 interface SummaryCardsProps {
   stats: KPIStats;
+  nextSettimana?: Settimana;
   onPlanNextWeek?: () => void;
 }
 
-export const SummaryCards: React.FC<SummaryCardsProps> = ({ stats, onPlanNextWeek }) => {
+export const SummaryCards: React.FC<SummaryCardsProps> = ({
+  stats,
+  nextSettimana,
+  onPlanNextWeek,
+}) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const canDownloadS302 =
+    nextSettimana &&
+    nextSettimana.evento === 'congregazione' &&
+    isWithin90Days(nextSettimana.startDate);
+
+  const handleDownloadS302 = async () => {
+    if (!nextSettimana) return;
+    setIsDownloading(true);
+    try {
+      await downloadS302Pdf(nextSettimana);
+    } catch (err) {
+      console.error('Errore durante la generazione del PDF:', err);
+      alert('Errore durante la generazione del modulo S-302');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
-    <div className="space-y-3 pt-2">
-      <h3 className="text-sm font-bold text-slate-900">Informazioni periodo corrente</h3>
+    <div className="space-y-2 pt-2">
+      <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+        Informazioni periodo corrente
+      </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {/* Card 1: Settimane programmate */}
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 flex items-center gap-4 hover:border-blue-200 transition-colors">
-          <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-            <Calendar className="w-5 h-5" />
+      {/* Visualizzazione unica della visita successiva */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-purple-200 transition-all">
+        <div className="flex items-start sm:items-center gap-4 min-w-0">
+          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100 shadow-2xs">
+            <Calendar className="w-6 h-6" />
           </div>
-          <div>
-            <div className="text-xs text-slate-500 font-medium">Settimane programmate</div>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-2xl font-bold text-slate-900 leading-tight">
-                {stats.settimaneProgrammate}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Prossima visita
               </span>
-              <span className="text-xs text-slate-400 font-medium">su {stats.totaleSettimane}</span>
+              {canDownloadS302 && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Entro 90 giorni
+                </span>
+              )}
+            </div>
+
+            <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5 tracking-tight">
+              {stats.prossimaSettimana.periodo}
+            </div>
+
+            <div className="flex items-center gap-1.5 mt-1 text-sm font-semibold text-purple-700">
+              <MapPin className="w-4 h-4 shrink-0 text-purple-500" />
+              <button
+                type="button"
+                onClick={onPlanNextWeek}
+                className="hover:underline text-left truncate cursor-pointer"
+                title="Dettagli settimana"
+              >
+                {stats.prossimaSettimana.stato.replace(/^📍\s*/, '')}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Card 2: Congregazioni visitate */}
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 flex items-center gap-4 hover:border-emerald-200 transition-colors">
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-            <Users className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-slate-500 font-medium">Congregazioni visitate</div>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-2xl font-bold text-slate-900 leading-tight">
-                {stats.congregazioniVisitate}
-              </span>
-              <span className="text-xs text-slate-400 font-medium">su {stats.totaleCongregazioni}</span>
-            </div>
-          </div>
-        </div>
+        {/* Azioni rapide */}
+        <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
+          {canDownloadS302 && (
+            <button
+              type="button"
+              onClick={handleDownloadS302}
+              disabled={isDownloading}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+              title="Scarica avviso S-302 compilato per questa visita"
+            >
+              {isDownloading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
+              <span>Scarica Avviso S-302</span>
+            </button>
+          )}
 
-        {/* Card 3: Media settimane tra le visite */}
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 flex items-center gap-4 hover:border-amber-200 transition-colors">
-          <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
-            <Clock className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-slate-500 font-medium">Media settimane tra le visite</div>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-2xl font-bold text-slate-900 leading-tight">
-                {stats.mediaSettimane.toFixed(1).replace('.', ',')}
-              </span>
-              <span className="text-xs text-slate-500 font-medium">settimane</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Prossima settimana */}
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 flex flex-col justify-center hover:border-purple-200 transition-colors">
-          <div className="text-xs text-slate-500 font-medium">Prossima settimana</div>
-          <div className="text-sm font-bold text-slate-900 mt-1 truncate">
-            {stats.prossimaSettimana.periodo}
-          </div>
           <button
+            type="button"
             onClick={onPlanNextWeek}
-            className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors hover:underline text-left mt-0.5 cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition-colors cursor-pointer"
           >
-            {stats.prossimaSettimana.stato}
+            Modifica / Dettagli
           </button>
         </div>
       </div>
