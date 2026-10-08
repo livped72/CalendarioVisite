@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck,
   Lock,
@@ -11,8 +11,17 @@ import {
   User,
   CheckCircle2,
   KeyRound,
+  Fingerprint,
 } from 'lucide-react';
 import { loginAccount, registerAccount } from '../lib/accountAuth';
+import {
+  isBiometricsSupported,
+  isBiometricsEnrolled,
+  getBiometricUserLabel,
+  loginWithBiometrics,
+  enrollBiometrics,
+  removeBiometrics,
+} from '../lib/biometrics';
 
 interface AuthScreenProps {
   onSuccess: () => void;
@@ -31,9 +40,45 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const [codiceInvito, setCodiceInvito] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Biometric states
+  const [bioSupported, setBioSupported] = useState(false);
+  const [bioEnrolled, setBioEnrolled] = useState(false);
+  const [bioUserLabel, setBioUserLabel] = useState('');
+  const [bioLoading, setBioLoading] = useState(false);
+  const [enableBiometricsCheckbox, setEnableBiometricsCheckbox] = useState(true);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    isBiometricsSupported().then((supported) => {
+      if (!isMounted) return;
+      setBioSupported(supported);
+      if (supported && isBiometricsEnrolled()) {
+        setBioEnrolled(true);
+        setBioUserLabel(getBiometricUserLabel());
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleBiometricLogin = async () => {
+    setError(null);
+    setSuccessMsg(null);
+    setBioLoading(true);
+    const res = await loginWithBiometrics();
+    setBioLoading(false);
+
+    if (res.success) {
+      onSuccess();
+    } else {
+      setError(res.error || 'Autenticazione biometrica non riuscita. Puoi inserire la password sotto.');
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +95,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     setLoading(false);
 
     if (res.success) {
+      if (bioSupported && !bioEnrolled && enableBiometricsCheckbox) {
+        try {
+          await enrollBiometrics(email, password, 'Livio Pedrini');
+        } catch (e) {
+          console.warn('Registrazione biometrica saltata:', e);
+        }
+      }
       onSuccess();
     } else {
       setError(res.error || 'Credenziali non valide. Riprova.');
@@ -166,66 +218,148 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
         {/* FORM: LOGIN */}
         {mode === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
-                Username o Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-3 w-4 h-4 text-[#7C8B82]" />
-                <input
-                  type="text"
-                  value={email}
-                  autoFocus
-                  required
-                  autoComplete="username"
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="odglivio oppure la tua email"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20 transition-all"
-                />
-              </div>
-            </div>
+          <div className="space-y-4">
+            {/* Box Accesso Rapido Biometrico (se già abilitato sul dispositivo) */}
+            {bioEnrolled && (
+              <div className="p-4 rounded-2xl bg-[#2F3332] text-white shadow-md border border-[#3A3F3D] animate-in fade-in">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400">
+                      <Fingerprint size={22} />
+                    </div>
+                    <div>
+                      <h2 className="text-xs font-bold uppercase tracking-wider text-white">Accesso Biometrico</h2>
+                      <p className="text-[11px] text-[#BBB]">
+                        {bioUserLabel ? `Dispositivo autorizzato per ${bioUserLabel}` : 'Touch ID / Face ID configurato'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Pronto
+                  </span>
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-3 w-4 h-4 text-[#7C8B82]" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  required
-                  autoComplete="current-password"
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20 transition-all"
-                />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-[#888] hover:text-[#2F3332] cursor-pointer"
-                  aria-label="Mostra o nascondi password"
+                  onClick={handleBiometricLogin}
+                  disabled={bioLoading}
+                  className="w-full py-3 px-4 rounded-xl bg-white hover:bg-[#F2F0EC] active:scale-[0.98] text-[#2F3332] font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {bioLoading ? (
+                    <span className="w-4 h-4 border-2 border-[#2F3332]/40 border-t-[#2F3332] rounded-full animate-spin inline-block" />
+                  ) : (
+                    <>
+                      <Fingerprint size={16} className="text-emerald-600" />
+                      <span>Accedi con Face ID / Touch ID</span>
+                    </>
+                  )}
                 </button>
-              </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
-            >
-              {loading ? (
-                <span className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin inline-block" />
-              ) : (
-                <>
-                  <LogIn size={15} /> Accedi al tuo Account
-                </>
+                <div className="mt-2.5 flex items-center justify-between text-[10px] text-white/50">
+                  <span>Sblocco rapido senza password</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      removeBiometrics();
+                      setBioEnrolled(false);
+                      setBioUserLabel('');
+                    }}
+                    className="hover:text-white underline cursor-pointer"
+                  >
+                    Rimuovi da questo dispositivo
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {bioEnrolled && (
+              <div className="relative my-2 flex items-center justify-center">
+                <div className="border-t border-[#E0DED9] w-full" />
+                <span className="bg-white px-3 text-[10px] font-bold text-[#888] uppercase tracking-wider absolute">
+                  oppure con credenziali
+                </span>
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
+                  Username o Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3 w-4 h-4 text-[#7C8B82]" />
+                  <input
+                    type="text"
+                    value={email}
+                    autoFocus={!bioEnrolled}
+                    required
+                    autoComplete="username"
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="odglivio oppure la tua email"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-3 w-4 h-4 text-[#7C8B82]" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    required
+                    autoComplete="current-password"
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-[#888] hover:text-[#2F3332] cursor-pointer"
+                    aria-label="Mostra o nascondi password"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Opzione per attivare biometria se il dispositivo è compatibile ma non ancora configurato */}
+              {bioSupported && !bioEnrolled && (
+                <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#FAF9F7] border border-[#E0DED9] cursor-pointer hover:bg-[#F2F0EC] transition-colors select-none">
+                  <input
+                    type="checkbox"
+                    checked={enableBiometricsCheckbox}
+                    onChange={(e) => setEnableBiometricsCheckbox(e.target.checked)}
+                    className="w-4 h-4 rounded text-[#7C8B82] accent-[#7C8B82] cursor-pointer shrink-0"
+                  />
+                  <div className="flex items-center gap-1.5 text-xs text-[#2F3332]">
+                    <Fingerprint className="w-4 h-4 text-[#7C8B82] shrink-0" />
+                    <span>
+                      Attiva <strong>Face ID / Touch ID</strong> per i prossimi accessi
+                    </span>
+                  </div>
+                </label>
               )}
-            </button>
-          </form>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
+              >
+                {loading ? (
+                  <span className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin inline-block" />
+                ) : (
+                  <>
+                    <LogIn size={15} /> Accedi al tuo Account
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         )}
 
         {/* FORM: REGISTRAZIONE PROTETTA DA CODICE */}

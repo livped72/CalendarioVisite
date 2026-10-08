@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Download,
   Upload,
@@ -14,6 +14,7 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Fingerprint,
 } from 'lucide-react';
 import { Congregazione, Settimana, UserProfile, Appuntamento } from '../types';
 import { exportBackupJSON, importBackupJSON, resetToDefaults } from '../lib/storage';
@@ -25,7 +26,17 @@ import {
   pullAccountData,
   getAccountLastSyncTime,
   logoutAccount,
+  getSessionPassword,
 } from '../lib/accountAuth';
+import {
+  isBiometricsSupported,
+  isBiometricsEnrolled,
+  getBiometricUserLabel,
+  enrollBiometrics,
+  loginWithBiometrics,
+  removeBiometrics,
+  updateBiometricPassword,
+} from '../lib/biometrics';
 import { CongregazioneModal } from './CongregazioneModal';
 import { WeeklyCalendarView } from './WeeklyCalendarView';
 
@@ -223,6 +234,69 @@ export const ImpostazioniView: React.FC<{
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
   const [isSyncSuccess, setIsSyncSuccess] = useState(true);
 
+  // Biometrics State
+  const [bioSupported, setBioSupported] = useState(false);
+  const [bioEnrolled, setBioEnrolled] = useState(() => isBiometricsEnrolled());
+  const [bioUserLabel, setBioUserLabel] = useState(() => getBiometricUserLabel());
+  const [bioLoading, setBioLoading] = useState(false);
+  const [bioMsg, setBioMsg] = useState<string | null>(null);
+  const [bioError, setBioError] = useState<string | null>(null);
+  const [manualBioPwd, setManualBioPwd] = useState('');
+  const [showManualBioInput, setShowManualBioInput] = useState(false);
+
+  useEffect(() => {
+    isBiometricsSupported().then((supported) => {
+      setBioSupported(supported);
+      setBioEnrolled(isBiometricsEnrolled());
+      setBioUserLabel(getBiometricUserLabel());
+    });
+  }, []);
+
+  const handleEnableBiometrics = async (pwdToUse?: string) => {
+    setBioError(null);
+    setBioMsg(null);
+    const pwd = pwdToUse || getSessionPassword() || manualBioPwd;
+    if (!pwd) {
+      setShowManualBioInput(true);
+      return;
+    }
+
+    setBioLoading(true);
+    const res = await enrollBiometrics(account?.email || user.email, pwd, account?.nome || user.nome);
+    setBioLoading(false);
+
+    if (res.success) {
+      setBioEnrolled(true);
+      setBioUserLabel(account?.email || user.email);
+      setBioMsg('Accesso biometrico configurato con successo su questo dispositivo!');
+      setShowManualBioInput(false);
+      setManualBioPwd('');
+    } else {
+      setBioError(res.error || 'Impossibile configurare l\'accesso biometrico.');
+    }
+  };
+
+  const handleDisableBiometrics = () => {
+    removeBiometrics();
+    setBioEnrolled(false);
+    setBioUserLabel('');
+    setBioMsg('Accesso biometrico rimosso da questo dispositivo.');
+    setBioError(null);
+  };
+
+  const handleTestBiometrics = async () => {
+    setBioError(null);
+    setBioMsg(null);
+    setBioLoading(true);
+    const res = await loginWithBiometrics();
+    setBioLoading(false);
+    if (res.success) {
+      setBioMsg('Riconoscimento biometrico verificato con successo!');
+    } else {
+      setBioError(res.error || 'Test biometrico non superato.');
+    }
+  };
+
   // Password Change State
   const [currentPwd, setCurrentPwd] = useState('');
   const [newPwd, setNewPwd] = useState('');
@@ -278,6 +352,9 @@ export const ImpostazioniView: React.FC<{
     setPwdLoading(false);
 
     if (res.success) {
+      if (isBiometricsEnrolled()) {
+        updateBiometricPassword(newPwd);
+      }
       setPwdSuccess(true);
       setCurrentPwd('');
       setNewPwd('');
@@ -341,6 +418,138 @@ export const ImpostazioniView: React.FC<{
               <LogOut size={13} />
               <span>Esci</span>
             </button>
+          )}
+        </div>
+      </div>
+
+      {/* Accesso Rapido Biometrico (Touch ID / Face ID) */}
+      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#7C8B82]/20 text-[#5B6760] flex items-center justify-center shrink-0">
+              <Fingerprint size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
+                  Accesso Rapido Biometrico
+                </h3>
+                {bioEnrolled ? (
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle2 size={12} className="text-emerald-600" /> Attivo
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold text-stone-600 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded-full">
+                    {bioSupported ? 'Disponibile' : 'Non rilevato'}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-[#777] mt-0.5">
+                Accedi istantaneamente con Face ID, Touch ID o Windows Hello senza digitare la password.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {bioMsg && (
+          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+            <span>{bioMsg}</span>
+          </div>
+        )}
+
+        {bioError && (
+          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+            <ShieldCheck size={16} className="text-rose-600 shrink-0" />
+            <span>{bioError}</span>
+          </div>
+        )}
+
+        <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E0DED9] space-y-3">
+          {bioEnrolled ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className="text-[#666]">Stato sensore su questo dispositivo:</span>
+                <span className="font-bold text-emerald-700">
+                  Configurato per {bioUserLabel || account?.email || user.email}
+                </span>
+              </div>
+              <p className="text-[11px] text-[#666] leading-relaxed">
+                Alla schermata di accesso potrai utilizzare il pulsante rapido per entrare istantaneamente con l'impronta digitale o il volto.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleTestBiometrics}
+                  disabled={bioLoading}
+                  className="px-4 py-2 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs flex items-center gap-1.5"
+                >
+                  <Fingerprint size={15} />
+                  <span>{bioLoading ? 'Scansione…' : 'Testa Riconoscimento'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDisableBiometrics}
+                  className="px-4 py-2 bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs"
+                >
+                  Disattiva su questo dispositivo
+                </button>
+              </div>
+            </div>
+          ) : bioSupported ? (
+            <div className="space-y-3">
+              <p className="text-[11px] text-[#666] leading-relaxed">
+                Il tuo dispositivo dispone di un sensore biometrico compatibile (Touch ID, Face ID o Windows Hello). Puoi abilitare l'accesso rapido adesso con un solo tocco!
+              </p>
+
+              {showManualBioInput ? (
+                <div className="space-y-2 pt-1">
+                  <label className="block text-xs font-bold text-[#2F3332]">
+                    Inserisci la password del tuo account per confermare:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="password"
+                      value={manualBioPwd}
+                      onChange={(e) => setManualBioPwd(e.target.value)}
+                      placeholder="Password account..."
+                      className="px-3 py-2 text-xs rounded-xl border border-[#D5D2CA] bg-white flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleEnableBiometrics(manualBioPwd)}
+                      disabled={bioLoading || !manualBioPwd}
+                      className="px-4 py-2 bg-[#7C8B82] hover:bg-[#68766E] text-white rounded-xl text-xs font-bold uppercase disabled:opacity-50 cursor-pointer"
+                    >
+                      {bioLoading ? 'Configurazione…' : 'Conferma'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowManualBioInput(false)}
+                      className="px-3 py-2 text-xs text-[#888] hover:text-[#2F3332] cursor-pointer"
+                    >
+                      Annulla
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleEnableBiometrics()}
+                    disabled={bioLoading}
+                    className="px-4 py-2 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs flex items-center gap-1.5"
+                  >
+                    <Fingerprint size={15} />
+                    <span>{bioLoading ? 'Registrazione sensore…' : 'Attiva Face ID / Touch ID adesso'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-[11px] text-[#888] italic">
+              Il browser o il dispositivo corrente non supporta l'autenticazione biometrica della piattaforma o il protocollo WebAuthn.
+            </p>
           )}
         </div>
       </div>
