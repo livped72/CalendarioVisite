@@ -134,17 +134,29 @@ export async function registerAccount(email, password, nome) {
     }
 }
 /**
- * Effettua il login con Email e Password.
- * Cerca prima sul server (per altri dispositivi) e poi nell'archivio locale.
+ * Effettua il login con Username/Email e Password.
+ * Supporta sia "odglivio" che "pedrinilivio@gmail.com".
+ * Cerca sul server e poi nell'archivio locale.
  */
-export async function loginAccount(email, password) {
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail || !password) {
-        return { success: false, error: 'Inserisci sia email che password.' };
+export async function loginAccount(identifier, password) {
+    const rawId = identifier.trim();
+    if (!rawId || !password) {
+        return { success: false, error: 'Inserisci sia username/email che password.' };
     }
-    const accountKey = await hashEmail(normalizedEmail);
+    const normalized = rawId.toLowerCase();
+    // Se è un username noto come "odglivio", "livio", "pedrini", mappiamo a "pedrinilivio@gmail.com"
+    let emailCandidate = normalized;
+    if (!normalized.includes('@')) {
+        if (normalized === 'odglivio' ||
+            normalized === 'livio' ||
+            normalized === 'livped72' ||
+            normalized === 'pedrinilivio') {
+            emailCandidate = 'pedrinilivio@gmail.com';
+        }
+    }
+    const accountKey = await hashEmail(emailCandidate);
     let record = null;
-    // 1. Cerca di recuperare l'account dal server dell'applicazione
+    // 1. Cerca di recuperare l'account dal server dell'applicazione per accountKey
     try {
         const res = await fetch(`/api/account/acc_${accountKey}?t=${Date.now()}`, {
             method: 'GET',
@@ -155,7 +167,20 @@ export async function loginAccount(email, password) {
         }
     }
     catch (e) {
-        console.warn('Server non raggiungibile, ricerca in archivio locale:', e);
+        console.warn('Server non raggiungibile, ricerca per alias:', e);
+    }
+    // 1b. Se non trovato tramite accountKey, cerca interrogando direttamente per identifier
+    if (!record) {
+        try {
+            const res = await fetch(`/api/account/${encodeURIComponent(normalized)}?t=${Date.now()}`, {
+                method: 'GET',
+                headers: { Accept: 'application/json' },
+            });
+            if (res.ok) {
+                record = await res.json();
+            }
+        }
+        catch (_) { }
     }
     // 2. Fallback: cerca nell'archivio locale di questo dispositivo
     if (!record) {
@@ -163,15 +188,24 @@ export async function loginAccount(email, password) {
         if (localAccounts[accountKey]) {
             record = localAccounts[accountKey];
         }
+        else {
+            const found = Object.values(localAccounts).find((a) => {
+                const e = (a.email || '').toLowerCase();
+                const n = (a.nome || '').toLowerCase();
+                return e === normalized || e === emailCandidate || n.includes(normalized);
+            });
+            if (found)
+                record = found;
+        }
     }
     if (!record) {
         return {
             success: false,
-            error: 'Nessun account trovato con questa email. Clicca su "Registrati" per creare il tuo account.',
+            error: 'Nessun account trovato. Verifica lo username o l\'email.',
         };
     }
-    // 3. Verifica Password tramite hash PBKDF2
-    const computedVerifier = await computeAuthVerifier(password, normalizedEmail);
+    // 3. Verifica Password tramite hash PBKDF2 basato sull'email reale registrata nel record
+    const computedVerifier = await computeAuthVerifier(password, record.email);
     if (computedVerifier !== record.authVerifier) {
         return { success: false, error: 'Password errata. Riprova.' };
     }
@@ -190,7 +224,7 @@ export async function loginAccount(email, password) {
     }
     const profile = {
         email: record.email,
-        nome: record.nome || 'Utente',
+        nome: record.nome || 'Livio Pedrini',
     };
     localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(profile));
     sessionStorage.setItem(STORAGE_KEYS.SESSION_TOKEN, password);

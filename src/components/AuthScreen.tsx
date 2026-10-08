@@ -41,7 +41,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     setSuccessMsg(null);
 
     if (!email || !password) {
-      setError('Inserisci sia l\'email che la password.');
+      setError('Inserisci sia lo username/email che la password.');
       return;
     }
 
@@ -169,18 +169,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
-                Email
+                Username o Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-3 w-4 h-4 text-[#7C8B82]" />
                 <input
-                  type="email"
+                  type="text"
                   value={email}
                   autoFocus
                   required
-                  autoComplete="email"
+                  autoComplete="username"
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tua@email.it"
+                  placeholder="odglivio oppure la tua email"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#D5D2CA] text-sm bg-white focus:outline-none focus:border-[#7C8B82] focus:ring-2 focus:ring-[#7C8B82]/20 transition-all"
                 />
               </div>
