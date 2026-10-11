@@ -34,7 +34,6 @@ import { AllCongregationsModal } from './components/AllCongregationsModal';
 import { SecurityPrivacyModal } from './components/SecurityPrivacyModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { SummaryCards } from './components/SummaryCards';
-import { S302AlertBanner } from './components/S302AlertBanner';
 import {
   CongregazioniView,
   AppuntamentiView,
@@ -42,7 +41,6 @@ import {
   ImpostazioniView,
   AiutoView,
 } from './components/OtherViews';
-import { getUpcomingS302Alerts } from './lib/pdfGenerator';
 
 
 // ── KPI Statistics Helper ──
@@ -330,9 +328,6 @@ export const App: React.FC = () => {
         <div className="mt-5">
           {currentTab === 'calendario' && (
             <div className="space-y-5">
-              {/* Banner avviso S-302: mostrato in cima se ci sono visite entro 90 giorni */}
-              <S302AlertBanner alerts={getUpcomingS302Alerts(settimane)} />
-
               <SummaryCards
                 stats={computeKpiStats(settimane, congregazioni)}
                 nextSettimana={

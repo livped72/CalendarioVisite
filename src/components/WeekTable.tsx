@@ -9,12 +9,11 @@ import {
   FileDown,
   Mail,
   Loader2,
-  DownloadCloud,
 } from 'lucide-react';
 import { Settimana } from '../types';
 import { EventBadge } from './EventBadge';
 import { abbreviateMonths } from '../lib/dateUtils';
-import { downloadS302Pdf, emailS302Pdf, isWithin90Days, downloadAll90DaysS302 } from '../lib/pdfGenerator';
+import { downloadS302Pdf, emailS302Pdf } from '../lib/pdfGenerator';
 
 interface WeekTableProps {
   settimane: Settimana[];
@@ -43,13 +42,8 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [emailingId, setEmailingId] = useState<string | null>(null);
-  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   const displayItems = settimane;
-
-  const visitsWithin90Days = displayItems.filter(
-    (w) => w.evento === 'congregazione' && isWithin90Days(w.startDate)
-  );
 
   const handleDownloadSinglePdf = async (item: Settimana, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -77,20 +71,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
     }
   };
 
-  const handleDownloadAll90Days = async () => {
-    if (visitsWithin90Days.length === 0) return;
-    setIsDownloadingAll(true);
-    try {
-      await downloadAll90DaysS302(displayItems);
-    } catch (err) {
-      console.error('Errore download cumulativo:', err);
-      alert('Errore durante il download dei moduli S-302.');
-    } finally {
-      setIsDownloadingAll(false);
-    }
-  };
 
-  // Visit info resolver
   const getVisitInfo = (item: Settimana): { numero: number; isReset?: boolean; motivazione?: string } | null => {
     if (item.evento !== 'congregazione') return null;
     if (visitNumberMap?.has(item.id)) {
@@ -143,29 +124,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           <span className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
             Settimane del Semestre ({settimane.length})
           </span>
-          {visitsWithin90Days.length > 0 && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-              {visitsWithin90Days.length} entro 90 gg
-            </span>
-          )}
         </div>
-
-        {visitsWithin90Days.length > 0 && (
-          <button
-            type="button"
-            onClick={handleDownloadAll90Days}
-            disabled={isDownloadingAll}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-all cursor-pointer self-start sm:self-auto disabled:opacity-50"
-            title="Compila e scarica tutti i moduli S-302 per le visite nei prossimi 90 giorni"
-          >
-            {isDownloadingAll ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <DownloadCloud className="w-3.5 h-3.5 text-blue-600" />
-            )}
-            <span>Scarica tutti gli S-302 ({visitsWithin90Days.length})</span>
-          </button>
-        )}
       </div>
 
       {/* Desktop Table */}
@@ -186,7 +145,6 @@ export const WeekTable: React.FC<WeekTableProps> = ({
               const visitInfo = getVisitInfo(item);
               const visitNum = visitInfo?.numero;
               const isCong = item.evento === 'congregazione';
-              const is90Days = isCong && isWithin90Days(item.startDate);
               const isThisDownloading = downloadingId === item.id;
               const isThisEmailing = emailingId === item.id;
 
@@ -249,43 +207,20 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                   {/* Actions & S-302 */}
                   <td className="py-3 px-3 text-right pr-4 whitespace-nowrap relative">
                     <div className="flex items-center justify-end gap-1.5">
-                      {/* Bottone S-302 download */}
                       {isCong && (
                         <button
                           type="button"
                           onClick={(e) => handleDownloadSinglePdf(item, e)}
                           disabled={isThisDownloading || isThisEmailing}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                            is90Days
-                              ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 shadow-sm'
-                              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-                          }`}
-                          title={`Compila e scarica modello S-302 per ${item.dettagli}${is90Days ? ' (entro 90 giorni)' : ''}`}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200"
+                          title={`Compila e scarica modello S-302 per ${item.dettagli}`}
                         >
                           {isThisDownloading ? (
-                            <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                            <Loader2 className="w-3 h-3 animate-spin text-slate-500" />
                           ) : (
-                            <FileDown className={`w-3.5 h-3.5 ${is90Days ? 'text-blue-600' : 'text-slate-500'}`} />
+                            <FileDown className="w-3.5 h-3.5 text-slate-500" />
                           )}
                           <span>S-302</span>
-                        </button>
-                      )}
-
-                      {/* Bottone email S-302 (solo se entro 90gg) */}
-                      {isCong && is90Days && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleEmailSinglePdf(item, e)}
-                          disabled={isThisEmailing || isThisDownloading}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 transition-all cursor-pointer shadow-sm"
-                          title="Scarica PDF e invia via email"
-                        >
-                          {isThisEmailing ? (
-                            <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                          ) : (
-                            <Mail className="w-3.5 h-3.5 text-blue-500" />
-                          )}
-                          <span>Email</span>
                         </button>
                       )}
 
@@ -319,17 +254,15 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                                   >
                                     <FileDown className="w-3.5 h-3.5 text-blue-600" /> Scarica S-302 (PDF)
                                   </button>
-                                  {is90Days && (
-                                    <button
-                                      onClick={(e) => {
-                                        setActiveMenuId(null);
-                                        handleEmailSinglePdf(item, e);
-                                      }}
-                                      className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-blue-50 text-blue-700 text-left font-semibold cursor-pointer"
-                                    >
-                                      <Mail className="w-3.5 h-3.5 text-blue-600" /> Invia via Email
-                                    </button>
-                                  )}
+                                  <button
+                                    onClick={(e) => {
+                                      setActiveMenuId(null);
+                                      handleEmailSinglePdf(item, e);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-blue-50 text-blue-700 text-left font-semibold cursor-pointer"
+                                  >
+                                    <Mail className="w-3.5 h-3.5 text-blue-600" /> Invia via Email
+                                  </button>
                                   <div className="border-t border-[#E0DED9] my-1" />
                                 </>
                               )}
@@ -371,16 +304,13 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           const visitInfo = getVisitInfo(item);
           const visitNum = visitInfo?.numero;
           const isCong = item.evento === 'congregazione';
-          const is90Days = isCong && isWithin90Days(item.startDate);
           const isThisDownloading = downloadingId === item.id;
           const isThisEmailing = emailingId === item.id;
 
           return (
             <div
               key={item.id}
-              className={`p-4 hover:bg-[#FAF9F7] active:bg-[#F7F5F0] transition-colors ${
-                is90Days ? 'border-l-4 border-l-blue-400' : ''
-              }`}
+              className="p-4 hover:bg-[#FAF9F7] active:bg-[#F7F5F0] transition-colors"
             >
               {/* Riga principale: badge + info + freccia */}
               <div className="flex items-start justify-between gap-3">
@@ -414,11 +344,6 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                           Ciclo 1
                         </span>
                       )}
-                      {is90Days && (
-                        <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-200">
-                          S-302 entro 90gg
-                        </span>
-                      )}
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -445,16 +370,11 @@ export const WeekTable: React.FC<WeekTableProps> = ({
               {/* Riga azioni S-302 (solo per congregazioni) */}
               {isCong && (
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#F0EEE8] flex-wrap">
-                  {/* Scarica PDF */}
                   <button
                     type="button"
                     onClick={(e) => handleDownloadSinglePdf(item, e)}
                     disabled={isThisDownloading || isThisEmailing}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex-1 justify-center ${
-                      is90Days
-                        ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                    } disabled:opacity-50`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex-1 justify-center bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 disabled:opacity-50"
                     title="Scarica S-302 (PDF)"
                   >
                     {isThisDownloading ? (
@@ -465,23 +385,21 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                     <span>Scarica S-302</span>
                   </button>
 
-                  {/* Invia Email (solo se entro 90gg) */}
-                  {is90Days && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleEmailSinglePdf(item, e)}
-                      disabled={isThisEmailing || isThisDownloading}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 transition-all cursor-pointer flex-1 justify-center disabled:opacity-50"
-                      title="Scarica PDF e apri email"
-                    >
-                      {isThisEmailing ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Mail className="w-3.5 h-3.5" />
-                      )}
-                      <span>Invia Email</span>
-                    </button>
-                  )}
+                  {/* Invia Email */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleEmailSinglePdf(item, e)}
+                    disabled={isThisEmailing || isThisDownloading}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all cursor-pointer flex-1 justify-center disabled:opacity-50"
+                    title="Scarica PDF e apri email"
+                  >
+                    {isThisEmailing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Mail className="w-3.5 h-3.5" />
+                    )}
+                    <span>Invia Email</span>
+                  </button>
 
                   {/* Modifica */}
                   <button
