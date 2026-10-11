@@ -7,13 +7,14 @@ import {
   ChevronRight,
   CalendarDays,
   FileDown,
+  Mail,
   Loader2,
   DownloadCloud,
 } from 'lucide-react';
 import { Settimana } from '../types';
 import { EventBadge } from './EventBadge';
 import { abbreviateMonths } from '../lib/dateUtils';
-import { downloadS302Pdf, isWithin90Days, downloadAll90DaysS302 } from '../lib/pdfGenerator';
+import { downloadS302Pdf, emailS302Pdf, isWithin90Days, downloadAll90DaysS302 } from '../lib/pdfGenerator';
 
 interface WeekTableProps {
   settimane: Settimana[];
@@ -41,12 +42,11 @@ export const WeekTable: React.FC<WeekTableProps> = ({
 }) => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [emailingId, setEmailingId] = useState<string | null>(null);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
-  // Mostra sempre tutto il semestre di visite
   const displayItems = settimane;
 
-  // Conta le visite a congregazione entro 90 giorni
   const visitsWithin90Days = displayItems.filter(
     (w) => w.evento === 'congregazione' && isWithin90Days(w.startDate)
   );
@@ -64,6 +64,19 @@ export const WeekTable: React.FC<WeekTableProps> = ({
     }
   };
 
+  const handleEmailSinglePdf = async (item: Settimana, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEmailingId(item.id);
+    try {
+      await emailS302Pdf(item);
+    } catch (err) {
+      console.error('Errore invio email S-302:', err);
+      alert('Impossibile preparare l\'email S-302 per questa settimana.');
+    } finally {
+      setEmailingId(null);
+    }
+  };
+
   const handleDownloadAll90Days = async () => {
     if (visitsWithin90Days.length === 0) return;
     setIsDownloadingAll(true);
@@ -77,7 +90,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
     }
   };
 
-  // Visit info resolver: takes priority from visitNumberMap, then item.numero, then local fallback
+  // Visit info resolver
   const getVisitInfo = (item: Settimana): { numero: number; isReset?: boolean; motivazione?: string } | null => {
     if (item.evento !== 'congregazione') return null;
     if (visitNumberMap?.has(item.id)) {
@@ -105,7 +118,8 @@ export const WeekTable: React.FC<WeekTableProps> = ({
       return <EventBadge tipo="congregazione" customLabel={congName} size="sm" />;
     }
     const customLabel =
-      item.dettagli && item.dettagli !== '-' &&
+      item.dettagli &&
+      item.dettagli !== '-' &&
       ['congresso', 'evento_personalizzato', 'assemblea_circoscrizione'].includes(item.evento)
         ? item.dettagli
         : undefined;
@@ -114,7 +128,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
 
   if (settimane.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-10 text-center">
+      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-sm p-10 text-center">
         <p className="text-sm text-[#888] font-medium">Nessuna settimana pianificata per questo periodo.</p>
         <p className="text-xs text-[#AAA] mt-1">Premi "+ Nuovo" per aggiungere la prima settimana.</p>
       </div>
@@ -122,15 +136,15 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs overflow-hidden">
-      {/* Intestazione Semestre con opzione download cumulativo S-302 */}
+    <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-sm overflow-hidden">
+      {/* Intestazione Semestre */}
       <div className="px-4 py-3 bg-[#FAF9F7] border-b border-[#E0DED9] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
             Settimane del Semestre ({settimane.length})
           </span>
           {visitsWithin90Days.length > 0 && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
               {visitsWithin90Days.length} entro 90 gg
             </span>
           )}
@@ -141,13 +155,13 @@ export const WeekTable: React.FC<WeekTableProps> = ({
             type="button"
             onClick={handleDownloadAll90Days}
             disabled={isDownloadingAll}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold transition-all cursor-pointer self-start sm:self-auto disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-all cursor-pointer self-start sm:self-auto disabled:opacity-50"
             title="Compila e scarica tutti i moduli S-302 per le visite nei prossimi 90 giorni"
           >
             {isDownloadingAll ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <DownloadCloud className="w-3.5 h-3.5 text-purple-600" />
+              <DownloadCloud className="w-3.5 h-3.5 text-blue-600" />
             )}
             <span>Scarica tutti gli S-302 ({visitsWithin90Days.length})</span>
           </button>
@@ -163,7 +177,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
               <th className="py-3 px-4 w-48">Periodo (Mar – Dom)</th>
               <th className="py-3 px-4 w-60">Evento</th>
               <th className="py-3 px-4">Note</th>
-              <th className="py-3 px-3 w-40 text-right pr-4">Azioni</th>
+              <th className="py-3 px-3 w-52 text-right pr-4">Azioni</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#EFECE6] text-[#2F3332]">
@@ -174,14 +188,15 @@ export const WeekTable: React.FC<WeekTableProps> = ({
               const isCong = item.evento === 'congregazione';
               const is90Days = isCong && isWithin90Days(item.startDate);
               const isThisDownloading = downloadingId === item.id;
+              const isThisEmailing = emailingId === item.id;
 
               return (
                 <tr key={item.id} className="hover:bg-[#FAF9F7] transition-colors group">
-                  {/* Badge: numeric only for congregation visits */}
+                  {/* Badge numerico */}
                   <td className="py-3 px-4 text-center">
                     {isCong && visitNum != null ? (
                       <span
-                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[11px] font-bold shadow-2xs ${getBadgeColor(visitNum)}`}
+                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[11px] font-bold shadow-sm ${getBadgeColor(visitNum)}`}
                         title={visitInfo?.motivazione || `Visita #${visitNum}`}
                       >
                         {visitNum}
@@ -193,7 +208,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                     )}
                   </td>
 
-                  {/* Periodo — cliccabile per andare agli appuntamenti */}
+                  {/* Periodo */}
                   <td className="py-3 px-4 font-bold text-[#2F3332] whitespace-nowrap">
                     {onViewAppuntamenti ? (
                       <button
@@ -231,28 +246,46 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                       : <span className="text-[#CCC]">—</span>}
                   </td>
 
-                  {/* Actions & S-302 PDF Download */}
+                  {/* Actions & S-302 */}
                   <td className="py-3 px-3 text-right pr-4 whitespace-nowrap relative">
                     <div className="flex items-center justify-end gap-1.5">
-                      {/* Bottone per compilare e scaricare S-302 */}
+                      {/* Bottone S-302 download */}
                       {isCong && (
                         <button
                           type="button"
                           onClick={(e) => handleDownloadSinglePdf(item, e)}
-                          disabled={isThisDownloading}
+                          disabled={isThisDownloading || isThisEmailing}
                           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                             is90Days
-                              ? 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 shadow-2xs'
+                              ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 shadow-sm'
                               : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
                           }`}
-                          title={`Compila e scarica modello S-302 per ${item.dettagli}${is90Days ? ' (visita entro 90 giorni)' : ''}`}
+                          title={`Compila e scarica modello S-302 per ${item.dettagli}${is90Days ? ' (entro 90 giorni)' : ''}`}
                         >
                           {isThisDownloading ? (
-                            <Loader2 className="w-3 h-3 animate-spin text-purple-600" />
+                            <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
                           ) : (
-                            <FileDown className={`w-3.5 h-3.5 ${is90Days ? 'text-purple-600' : 'text-slate-500'}`} />
+                            <FileDown className={`w-3.5 h-3.5 ${is90Days ? 'text-blue-600' : 'text-slate-500'}`} />
                           )}
                           <span>S-302</span>
+                        </button>
+                      )}
+
+                      {/* Bottone email S-302 (solo se entro 90gg) */}
+                      {isCong && is90Days && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleEmailSinglePdf(item, e)}
+                          disabled={isThisEmailing || isThisDownloading}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 transition-all cursor-pointer shadow-sm"
+                          title="Scarica PDF e invia via email"
+                        >
+                          {isThisEmailing ? (
+                            <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                          ) : (
+                            <Mail className="w-3.5 h-3.5 text-blue-500" />
+                          )}
+                          <span>Email</span>
                         </button>
                       )}
 
@@ -274,7 +307,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                         {isMenuOpen && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
-                            <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-[#E0DED9] py-1 z-50 text-xs animate-in fade-in zoom-in-95">
+                            <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-[#E0DED9] py-1 z-50 text-xs animate-in fade-in zoom-in-95">
                               {isCong && (
                                 <>
                                   <button
@@ -282,10 +315,21 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                                       setActiveMenuId(null);
                                       handleDownloadSinglePdf(item, e);
                                     }}
-                                    className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-purple-50 text-purple-700 text-left font-semibold cursor-pointer"
+                                    className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-blue-50 text-blue-700 text-left font-semibold cursor-pointer"
                                   >
-                                    <FileDown className="w-3.5 h-3.5 text-purple-600" /> Scarica S-302 (PDF)
+                                    <FileDown className="w-3.5 h-3.5 text-blue-600" /> Scarica S-302 (PDF)
                                   </button>
+                                  {is90Days && (
+                                    <button
+                                      onClick={(e) => {
+                                        setActiveMenuId(null);
+                                        handleEmailSinglePdf(item, e);
+                                      }}
+                                      className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-blue-50 text-blue-700 text-left font-semibold cursor-pointer"
+                                    >
+                                      <Mail className="w-3.5 h-3.5 text-blue-600" /> Invia via Email
+                                    </button>
+                                  )}
                                   <div className="border-t border-[#E0DED9] my-1" />
                                 </>
                               )}
@@ -321,7 +365,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
         </table>
       </div>
 
-      {/* Mobile Cards */}
+      {/* Mobile / Tablet Cards */}
       <div className="lg:hidden divide-y divide-[#EFECE6]">
         {displayItems.map((item) => {
           const visitInfo = getVisitInfo(item);
@@ -329,106 +373,145 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           const isCong = item.evento === 'congregazione';
           const is90Days = isCong && isWithin90Days(item.startDate);
           const isThisDownloading = downloadingId === item.id;
+          const isThisEmailing = emailingId === item.id;
 
           return (
             <div
               key={item.id}
-              className="p-3.5 hover:bg-[#FAF9F7] active:bg-[#F7F5F0] transition-colors flex items-center justify-between gap-3"
+              className={`p-4 hover:bg-[#FAF9F7] active:bg-[#F7F5F0] transition-colors ${
+                is90Days ? 'border-l-4 border-l-blue-400' : ''
+              }`}
             >
-              <div
-                className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
-                onClick={() => onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item)}
-                title={onViewAppuntamenti ? 'Vedi appuntamenti di questa settimana' : 'Modifica'}
-              >
-                {/* Badge Numerico o Simbolo Evento */}
-                {isCong && visitNum != null ? (
-                  <div className="flex flex-col items-center shrink-0">
-                    <span
-                      className={`w-7 h-7 rounded-xl text-white text-xs font-extrabold flex items-center justify-center shadow-2xs ring-2 ring-white ${getBadgeColor(
-                        visitNum
-                      )}`}
-                    >
-                      {visitNum}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="w-7 h-7 rounded-xl bg-[#F0EEE8] text-[#888] text-xs font-bold flex items-center justify-center shrink-0 ring-2 ring-white">
-                    —
-                  </span>
-                )}
-
-                {/* Contenuto a due livelli: Data del periodo sopra, Nome/Badge evento sotto */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-bold text-[#7C8B82] uppercase tracking-wider">
-                      {abbreviateMonths(item.periodo)}
-                    </span>
-                    {visitInfo?.isReset && (
-                      <span className="text-[9px] font-extrabold text-[#7C8B82] uppercase bg-[#EBF1ED] px-1.5 py-0.5 rounded-md">
-                        Ciclo 1
-                      </span>
-                    )}
-                    {is90Days && (
-                      <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
-                        Entro 90gg
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    {renderEventCell(item)}
-                  </div>
-
-                  {item.note && item.note !== '-' && (
-                    <div className="text-[11px] text-[#777] truncate mt-1">
-                      {item.note}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Tasti azione su mobile */}
-              <div className="flex items-center gap-1 shrink-0 pl-1">
-                {isCong && (
-                  <button
-                    type="button"
-                    onClick={(e) => handleDownloadSinglePdf(item, e)}
-                    disabled={isThisDownloading}
-                    className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                      is90Days
-                        ? 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                    }`}
-                    title="Scarica S-302 (PDF)"
-                    aria-label="Scarica S-302"
-                  >
-                    {isThisDownloading ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
-                    ) : (
-                      <FileDown className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditWeek(item);
-                  }}
-                  className="p-2 rounded-xl text-[#777] hover:text-[#2F3332] hover:bg-[#FAF9F7] active:bg-[#EFECE6] transition-colors cursor-pointer"
-                  title="Modifica settimana"
-                  aria-label="Modifica settimana"
+              {/* Riga principale: badge + info + freccia */}
+              <div className="flex items-start justify-between gap-3">
+                <div
+                  className="flex items-start gap-3 min-w-0 flex-1 cursor-pointer"
+                  onClick={() => onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item)}
                 >
-                  <Pencil className="w-4 h-4" />
-                </button>
+                  {/* Badge numero visita */}
+                  {isCong && visitNum != null ? (
+                    <div className="flex flex-col items-center shrink-0 pt-0.5">
+                      <span
+                        className={`w-8 h-8 rounded-xl text-white text-xs font-extrabold flex items-center justify-center shadow-sm ring-2 ring-white ${getBadgeColor(visitNum)}`}
+                      >
+                        {visitNum}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="w-8 h-8 rounded-xl bg-[#F0EEE8] text-[#888] text-xs font-bold flex items-center justify-center shrink-0 ring-2 ring-white mt-0.5">
+                      —
+                    </span>
+                  )}
 
+                  {/* Info */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                      <span className="text-[12px] font-bold text-[#2F3332] uppercase tracking-wider">
+                        {abbreviateMonths(item.periodo)}
+                      </span>
+                      {visitInfo?.isReset && (
+                        <span className="text-[9px] font-extrabold text-[#7C8B82] uppercase bg-[#EBF1ED] px-1.5 py-0.5 rounded-md">
+                          Ciclo 1
+                        </span>
+                      )}
+                      {is90Days && (
+                        <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-200">
+                          S-302 entro 90gg
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {renderEventCell(item)}
+                    </div>
+
+                    {item.note && item.note !== '-' && (
+                      <div className="text-[11px] text-[#777] truncate mt-1">
+                        {item.note}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Freccia navigazione */}
                 <div
                   onClick={() => onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item)}
-                  className="p-1 cursor-pointer text-[#BBB] hover:text-[#5B6760] transition-colors"
+                  className="p-1 cursor-pointer text-[#BBB] hover:text-[#5B6760] transition-colors shrink-0 mt-1"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
+
+              {/* Riga azioni S-302 (solo per congregazioni) */}
+              {isCong && (
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#F0EEE8] flex-wrap">
+                  {/* Scarica PDF */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleDownloadSinglePdf(item, e)}
+                    disabled={isThisDownloading || isThisEmailing}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex-1 justify-center ${
+                      is90Days
+                        ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    } disabled:opacity-50`}
+                    title="Scarica S-302 (PDF)"
+                  >
+                    {isThisDownloading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <FileDown className="w-3.5 h-3.5" />
+                    )}
+                    <span>Scarica S-302</span>
+                  </button>
+
+                  {/* Invia Email (solo se entro 90gg) */}
+                  {is90Days && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleEmailSinglePdf(item, e)}
+                      disabled={isThisEmailing || isThisDownloading}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 transition-all cursor-pointer flex-1 justify-center disabled:opacity-50"
+                      title="Scarica PDF e apri email"
+                    >
+                      {isThisEmailing ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Mail className="w-3.5 h-3.5" />
+                      )}
+                      <span>Invia Email</span>
+                    </button>
+                  )}
+
+                  {/* Modifica */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditWeek(item);
+                    }}
+                    className="p-2 rounded-xl text-[#777] hover:text-[#2F3332] hover:bg-[#FAF9F7] active:bg-[#EFECE6] transition-colors cursor-pointer border border-transparent hover:border-[#E0DED9]"
+                    title="Modifica settimana"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Riga azione solo modifica per eventi non-congregazione */}
+              {!isCong && (
+                <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-[#F0EEE8]">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditWeek(item);
+                    }}
+                    className="p-2 rounded-xl text-[#777] hover:text-[#2F3332] hover:bg-[#FAF9F7] active:bg-[#EFECE6] transition-colors cursor-pointer"
+                    title="Modifica settimana"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}

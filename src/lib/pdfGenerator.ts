@@ -13,7 +13,6 @@ export function formatDateToS302(dateStr?: string): string {
     const day = parts[2].padStart(2, '0');
     return `${day}-${month}-${year}`;
   }
-  // Fallback for Date objects or other formats
   const d = new Date(dateStr);
   if (!isNaN(d.getTime())) {
     const day = String(d.getDate()).padStart(2, '0');
@@ -25,8 +24,9 @@ export function formatDateToS302(dateStr?: string): string {
 }
 
 /**
- * Verifica se una data di inizio visita è entro i 90 giorni da oggi
- * (inclusa la settimana in corso e i successivi 90 giorni)
+ * Verifica se una visita richiede l'invio dell'S-302 adesso:
+ * la visita è futura (o della settimana corrente) ed è entro 90 giorni da oggi.
+ * Esempio: visita a febbraio 2027 → alert attivo da inizio novembre 2026 (90gg prima).
  */
 export function isWithin90Days(startDate?: string): boolean {
   if (!startDate) return false;
@@ -36,12 +36,33 @@ export function isWithin90Days(startDate?: string): boolean {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  // Differenza in giorni tra la data di visita e la data odierna
   const diffTime = start.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  // Consideriamo da -7 giorni (visita della settimana corrente) fino a 90 giorni futuri
+  // Da -7 giorni (settimana in corso) fino a 90 giorni nel futuro
   return diffDays >= -7 && diffDays <= 90;
+}
+
+/**
+ * Calcola il numero di giorni che mancano alla visita (negativo = già passata)
+ */
+export function daysUntilVisit(startDate?: string): number {
+  if (!startDate) return Infinity;
+  const start = new Date(startDate);
+  if (isNaN(start.getTime())) return Infinity;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Restituisce tutte le visite a congregazione che richiedono l'invio dell'S-302
+ * entro 90 giorni, ordinate per data crescente.
+ */
+export function getUpcomingS302Alerts(settimane: Settimana[]): Settimana[] {
+  return settimane
+    .filter((w) => w.evento === 'congregazione' && isWithin90Days(w.startDate))
+    .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
 }
 
 /**
@@ -56,7 +77,6 @@ export async function generateS302PdfBytes(settimana: Settimana): Promise<Uint8A
   const pdfDoc = await PDFDocument.load(templateBytes);
   const form = pdfDoc.getForm();
 
-  // Nome congregazione
   const congName = (settimana.dettagli && settimana.dettagli !== '-' ? settimana.dettagli : 'CONGREGAZIONE')
     .trim()
     .toUpperCase();
@@ -72,7 +92,6 @@ export async function generateS302PdfBytes(settimana: Settimana): Promise<Uint8A
     console.warn('Dropdown1 non trovato o errore:', e);
   }
 
-  // Date
   const startFormatted = formatDateToS302(settimana.startDate);
   const endFormatted = formatDateToS302(settimana.endDate);
 
@@ -90,7 +109,6 @@ export async function generateS302PdfBytes(settimana: Settimana): Promise<Uint8A
     console.warn('Campo data fine non trovato:', e);
   }
 
-  // Se ci sono altri campi per il sorvegliante o la firma
   try {
     const tSorvegliante = form.getTextField('Text1');
     if (tSorvegliante) tSorvegliante.setText('Livio Pedrini');
@@ -120,17 +138,54 @@ export async function downloadS302Pdf(settimana: Settimana): Promise<void> {
  * Scarica automaticamente tutti i moduli S-302 per le visite entro 90 giorni
  */
 export async function downloadAll90DaysS302(settimane: Settimana[]): Promise<number> {
-  const eligible = settimane.filter(
-    (w) => w.evento === 'congregazione' && isWithin90Days(w.startDate)
-  );
+  const eligible = getUpcomingS302Alerts(settimane);
 
   for (let i = 0; i < eligible.length; i++) {
     await downloadS302Pdf(eligible[i]);
-    // Breve pausa per evitare blocchi del browser sui download multipli
     if (i < eligible.length - 1) {
       await new Promise((resolve) => setTimeout(resolve, 400));
     }
   }
 
   return eligible.length;
+}
+
+/**
+ * Invia il modulo S-302 via email.
+ * Prima genera e scarica il PDF localmente, poi apre il client email pre-compilato.
+ * L'utente dovrà allegare manualmente il PDF scaricato (limitazione dei browser).
+ */
+export async function emailS302Pdf(
+  settimana: Settimana,
+  recipientEmail?: string
+): Promise<void> {
+  // Scarica prima il PDF sul dispositivo
+  await downloadS302Pdf(settimana);
+
+  const congName =
+    settimana.dettagli && settimana.dettagli !== '-' ? settimana.dettagli : 'Congregazione';
+
+  const fmt = (d?: string) =>
+    d
+      ? new Date(d).toLocaleDateString('it-IT', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        })
+      : '';
+
+  const sanitizedName = congName.replace(/[/\\?%*:|"<>]/g, '_');
+
+  const subject = encodeURIComponent(`Avviso S-302 – ${congName} – ${fmt(settimana.startDate)}`);
+  const body = encodeURIComponent(
+    `Gentile Sorvegliante,\n\n` +
+      `Le invio in allegato il modulo S-302 compilato per la visita alla congregazione di ${congName}.\n\n` +
+      `Periodo visita: ${fmt(settimana.startDate)} – ${fmt(settimana.endDate)}\n\n` +
+      `Il file "S-302-${sanitizedName}.pdf" è stato scaricato automaticamente sul suo dispositivo.\n` +
+      `La preghiamo di allegarlo a questa email prima di inviarla.\n\n` +
+      `Cordiali saluti,\nLivio Pedrini\nSorvegliante di Circoscrizione`
+  );
+
+  const mailto = `mailto:${recipientEmail || ''}?subject=${subject}&body=${body}`;
+  window.open(mailto, '_blank');
 }

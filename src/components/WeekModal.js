@@ -1,10 +1,10 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useState, useEffect } from 'react';
-import { X, Building2, CalendarDays, Calendar, BookMarked, Plane, BookOpen, Users, Star, FileDown, } from 'lucide-react';
+import { X, Building2, CalendarDays, Calendar, BookMarked, Plane, BookOpen, Users, Star, FileDown, Mail, } from 'lucide-react';
 import { abbreviateMonths } from '../lib/dateUtils';
 import { predictVisitNumber } from '../lib/visitNumbering';
 import { getAllStoredSettimane } from '../lib/storage';
-import { downloadS302Pdf } from '../lib/pdfGenerator';
+import { downloadS302Pdf, emailS302Pdf } from '../lib/pdfGenerator';
 const ALTRO_EVENTO_OPTIONS = [
     {
         tipo: 'settimana_libera',
@@ -204,9 +204,13 @@ export const WeekModal = ({ isOpen, onClose, onSave, onDelete, editingWeek, cong
                                                         onDelete(editingWeek.id);
                                                         onClose();
                                                     }
-                                                }, className: "px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer", children: "Elimina" })), editingWeek && isCongregazione && (_jsxs("button", { type: "button", onClick: () => downloadS302Pdf({
-                                                    ...editingWeek,
-                                                    dettagli: selectedCongregazione || editingWeek.dettagli,
-                                                    startDate: selectedStartDate || editingWeek.startDate,
-                                                }), className: "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl cursor-pointer", title: "Scarica il modulo S-302 compilato per questa visita", children: [_jsx(FileDown, { className: "w-3.5 h-3.5" }), _jsx("span", { children: "Scarica S-302" })] }))] }), _jsxs("div", { className: "flex gap-2", children: [_jsx("button", { type: "button", onClick: onClose, className: "px-4 py-2 text-xs font-bold text-[#666] hover:bg-stone-100 rounded-xl cursor-pointer", children: "Annulla" }), _jsx("button", { type: "submit", className: "px-5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#7C8B82] hover:bg-[#68766E] rounded-xl shadow-xs cursor-pointer", children: "Salva" })] })] })] })] })] }));
+                                                }, className: "px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer", children: "Elimina" })), editingWeek && isCongregazione && (_jsxs(_Fragment, { children: [_jsxs("button", { type: "button", onClick: () => downloadS302Pdf({
+                                                            ...editingWeek,
+                                                            dettagli: selectedCongregazione || editingWeek.dettagli,
+                                                            startDate: selectedStartDate || editingWeek.startDate,
+                                                        }), className: "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl cursor-pointer", title: "Scarica il modulo S-302 compilato per questa visita", children: [_jsx(FileDown, { className: "w-3.5 h-3.5" }), _jsx("span", { children: "Scarica S-302" })] }), _jsxs("button", { type: "button", onClick: () => emailS302Pdf({
+                                                            ...editingWeek,
+                                                            dettagli: selectedCongregazione || editingWeek.dettagli,
+                                                            startDate: selectedStartDate || editingWeek.startDate,
+                                                        }), className: "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-xl cursor-pointer", title: "Scarica il PDF e prepara l'email S-302", children: [_jsx(Mail, { className: "w-3.5 h-3.5" }), _jsx("span", { children: "Invia Email" })] })] }))] }), _jsxs("div", { className: "flex gap-2", children: [_jsx("button", { type: "button", onClick: onClose, className: "px-4 py-2 text-xs font-bold text-[#666] hover:bg-stone-100 rounded-xl cursor-pointer", children: "Annulla" }), _jsx("button", { type: "submit", className: "px-5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#7C8B82] hover:bg-[#68766E] rounded-xl shadow-xs cursor-pointer", children: "Salva" })] })] })] })] })] }));
 };

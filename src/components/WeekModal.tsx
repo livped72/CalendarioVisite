@@ -10,12 +10,13 @@ import {
   Users,
   Star,
   FileDown,
+  Mail,
 } from 'lucide-react';
 import { Settimana, TipoEvento, Congregazione, Semestre, AnnoSemestre, PeriodoKey } from '../types';
 import { abbreviateMonths } from '../lib/dateUtils';
 import { predictVisitNumber } from '../lib/visitNumbering';
 import { getAllStoredSettimane } from '../lib/storage';
-import { downloadS302Pdf } from '../lib/pdfGenerator';
+import { downloadS302Pdf, emailS302Pdf } from '../lib/pdfGenerator';
 
 interface WeekModalProps {
   isOpen: boolean;
@@ -445,19 +446,34 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                 </button>
               )}
               {editingWeek && isCongregazione && (
-                <button
-                  type="button"
-                  onClick={() => downloadS302Pdf({
-                    ...editingWeek,
-                    dettagli: selectedCongregazione || editingWeek.dettagli,
-                    startDate: selectedStartDate || editingWeek.startDate,
-                  })}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl cursor-pointer"
-                  title="Scarica il modulo S-302 compilato per questa visita"
-                >
-                  <FileDown className="w-3.5 h-3.5" />
-                  <span>Scarica S-302</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => downloadS302Pdf({
+                      ...editingWeek,
+                      dettagli: selectedCongregazione || editingWeek.dettagli,
+                      startDate: selectedStartDate || editingWeek.startDate,
+                    })}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl cursor-pointer"
+                    title="Scarica il modulo S-302 compilato per questa visita"
+                  >
+                    <FileDown className="w-3.5 h-3.5" />
+                    <span>Scarica S-302</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => emailS302Pdf({
+                      ...editingWeek,
+                      dettagli: selectedCongregazione || editingWeek.dettagli,
+                      startDate: selectedStartDate || editingWeek.startDate,
+                    })}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-xl cursor-pointer"
+                    title="Scarica il PDF e prepara l'email S-302"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Invia Email</span>
+                  </button>
+                </>
               )}
             </div>
             <div className="flex gap-2">

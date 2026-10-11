@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Download, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Download, Mail, Loader2 } from 'lucide-react';
 import { KPIStats, Settimana } from '../types';
-import { downloadS302Pdf, isWithin90Days } from '../lib/pdfGenerator';
+import { downloadS302Pdf, emailS302Pdf, isWithin90Days } from '../lib/pdfGenerator';
 
 interface SummaryCardsProps {
   stats: KPIStats;
@@ -15,6 +15,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   onPlanNextWeek,
 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEmailing, setIsEmailing] = useState(false);
 
   const canDownloadS302 =
     nextSettimana &&
@@ -34,36 +35,50 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
     }
   };
 
+  const handleEmailS302 = async () => {
+    if (!nextSettimana) return;
+    setIsEmailing(true);
+    try {
+      await emailS302Pdf(nextSettimana);
+    } catch (err) {
+      console.error('Errore durante la preparazione email S-302:', err);
+      alert('Errore durante la preparazione dell\'email S-302');
+    } finally {
+      setIsEmailing(false);
+    }
+  };
+
   return (
     <div className="space-y-2 pt-2">
       <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
         Informazioni periodo corrente
       </h3>
 
-      {/* Visualizzazione unica della visita successiva */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-purple-200 transition-all">
-        <div className="flex items-start sm:items-center gap-4 min-w-0">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100 shadow-2xs">
-            <Calendar className="w-6 h-6" />
+      {/* Card prossima visita */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 flex flex-col gap-4 hover:border-blue-200 transition-all">
+        {/* Riga superiore: icona + testo */}
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100 shadow-sm">
+            <Calendar className="w-5 h-5" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 Prossima visita
               </span>
               {canDownloadS302 && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Entro 90 giorni
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  S-302 entro 90 giorni
                 </span>
               )}
             </div>
 
-            <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5 tracking-tight">
+            <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5 tracking-tight leading-snug">
               {stats.prossimaSettimana.periodo}
             </div>
 
-            <div className="flex items-center gap-1.5 mt-1 text-sm font-semibold text-purple-700">
-              <MapPin className="w-4 h-4 shrink-0 text-purple-500" />
+            <div className="flex items-center gap-1.5 mt-1 text-sm font-semibold text-blue-700">
+              <MapPin className="w-4 h-4 shrink-0 text-blue-500" />
               <button
                 type="button"
                 onClick={onPlanNextWeek}
@@ -76,14 +91,17 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
           </div>
         </div>
 
-        {/* Azioni rapide */}
-        <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
-          {canDownloadS302 && (
+        {/* Riga inferiore: azioni S-302 */}
+        {canDownloadS302 && (
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
+            <span className="text-[11px] text-slate-500 font-medium mr-auto hidden sm:block">
+              Modulo S-302 disponibile per questa visita
+            </span>
             <button
               type="button"
               onClick={handleDownloadS302}
               disabled={isDownloading}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 active:scale-95 text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
               title="Scarica avviso S-302 compilato per questa visita"
             >
               {isDownloading ? (
@@ -91,18 +109,38 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               ) : (
                 <Download className="w-3.5 h-3.5" />
               )}
-              <span>Scarica Avviso S-302</span>
+              <span>Scarica S-302</span>
             </button>
-          )}
 
-          <button
-            type="button"
-            onClick={onPlanNextWeek}
-            className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition-colors cursor-pointer"
-          >
-            Modifica / Dettagli
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleEmailS302}
+              disabled={isEmailing || isDownloading}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-blue-300 text-blue-700 hover:bg-blue-50 text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              title="Scarica PDF e apri email pre-compilata per invio"
+            >
+              {isEmailing ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Mail className="w-3.5 h-3.5" />
+              )}
+              <span>Invia via Email</span>
+            </button>
+          </div>
+        )}
+
+        {/* Azioni base quando non è periodo S-302 */}
+        {!canDownloadS302 && (
+          <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={onPlanNextWeek}
+              className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition-colors cursor-pointer"
+            >
+              Modifica / Dettagli
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
