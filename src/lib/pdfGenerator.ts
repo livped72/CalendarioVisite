@@ -24,9 +24,17 @@ export function formatDateToS302(dateStr?: string): string {
 }
 
 /**
- * Verifica se una visita richiede l'invio dell'S-302 adesso:
- * la visita è futura (o della settimana corrente) ed è entro 90 giorni da oggi.
- * Esempio: visita a febbraio 2027 → alert attivo da inizio novembre 2026 (90gg prima).
+ * Verifica se la visita deve mostrare l'avviso S-302.
+ *
+ * LOGICA CORRETTA (per mese):
+ * L'avviso scatta 90 giorni prima del PRIMO GIORNO del mese della visita,
+ * e vale per TUTTE le visite di quel mese insieme.
+ *
+ * Esempio: visite a febbraio 2027
+ *   → 1° febbraio 2027 − 90 giorni = ~3 novembre 2026
+ *   → dal 3 novembre 2026 in poi, tutte le visite di febbraio lampeggiano.
+ *
+ * Il lampeggio cessa quando il mese è già passato (mese < mese corrente).
  */
 export function isWithin90Days(startDate?: string): boolean {
   if (!startDate) return false;
@@ -36,11 +44,17 @@ export function isWithin90Days(startDate?: string): boolean {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  const diffTime = start.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  // Primo giorno del mese della visita
+  const firstOfMonth = new Date(start.getFullYear(), start.getMonth(), 1);
 
-  // Da -7 giorni (settimana in corso) fino a 90 giorni nel futuro
-  return diffDays >= -7 && diffDays <= 90;
+  // Giorni che mancano al primo del mese della visita
+  const daysToMonthStart = Math.ceil(
+    (firstOfMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Alert attivo se: siamo entro 90 giorni dal 1° del mese
+  // e il mese non è già completamente passato (daysToMonthStart > -31)
+  return daysToMonthStart >= -31 && daysToMonthStart <= 90;
 }
 
 /**
@@ -56,8 +70,10 @@ export function daysUntilVisit(startDate?: string): number {
 }
 
 /**
- * Restituisce tutte le visite a congregazione che richiedono l'invio dell'S-302
- * entro 90 giorni, ordinate per data crescente.
+ * Restituisce tutte le visite a congregazione che richiedono l'invio dell'S-302.
+ * Raggruppa per mese: se almeno una visita di un mese è entro 90 giorni
+ * dal 1° del mese, TUTTE le visite di quel mese vengono incluse.
+ * Ordinate per data crescente.
  */
 export function getUpcomingS302Alerts(settimane: Settimana[]): Settimana[] {
   return settimane
