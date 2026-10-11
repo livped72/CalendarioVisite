@@ -34,6 +34,7 @@ import { AllCongregationsModal } from './components/AllCongregationsModal';
 import { SecurityPrivacyModal } from './components/SecurityPrivacyModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { SummaryCards } from './components/SummaryCards';
+import { S302AlertBanner } from './components/S302AlertBanner';
 import {
   CongregazioniView,
   AppuntamentiView,
@@ -112,10 +113,16 @@ export const App: React.FC = () => {
   const [congregazioni, setCongregazioni] = useState<Congregazione[]>([]);
   const [appuntamenti, setAppuntamenti] = useState<Appuntamento[]>([]);
 
-  // ── Unified Service Year Visit Numbering (1st and 2nd Semester Continuity & Reset) ──
+  // ── Unified Service Year Visit Numbering ──
   const visitNumberMap = useMemo(
     () => computeServiceYearVisitNumbers(periodo.anno, allSettimaneMap),
     [periodo.anno, allSettimaneMap]
+  );
+
+  // ── Tutte le settimane di tutti i periodi (per banner S-302) ──
+  const allSettimaneFlat = useMemo(
+    () => Object.values(allSettimaneMap).flat(),
+    [allSettimaneMap]
   );
 
   // ── Sync State ──
@@ -328,6 +335,9 @@ export const App: React.FC = () => {
         <div className="mt-5">
           {currentTab === 'calendario' && (
             <div className="space-y-5">
+              {/* Banner S-302: visite del mese corrente +4 da inviare via email */}
+              <S302AlertBanner allSettimane={allSettimaneFlat} />
+
               <SummaryCards
                 stats={computeKpiStats(settimane, congregazioni)}
                 nextSettimana={

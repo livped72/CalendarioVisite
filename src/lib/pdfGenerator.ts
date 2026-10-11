@@ -82,6 +82,43 @@ export function getUpcomingS302Alerts(settimane: Settimana[]): Settimana[] {
 }
 
 /**
+ * Calcola il mese target per l'invio degli S-302 via email.
+ * Logica: mese corrente + 4 mesi.
+ *   Ottobre   → Febbraio
+ *   Novembre  → Marzo
+ *   Dicembre  → Aprile
+ *   ...e così via ogni mese.
+ */
+export function getS302TargetMonth(): { year: number; month: number; label: string } {
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth() + 4, 1);
+  const MESI_IT = [
+    'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+  ];
+  return {
+    year: target.getFullYear(),
+    month: target.getMonth(),
+    label: `${MESI_IT[target.getMonth()]} ${target.getFullYear()}`,
+  };
+}
+
+/**
+ * Restituisce le visite a congregazione del mese target (mese corrente + 4).
+ * Cerca in TUTTE le settimane passate (tutti i periodi).
+ */
+export function getS302TargetMonthAlerts(allSettimane: Settimana[]): Settimana[] {
+  const { year, month } = getS302TargetMonth();
+  return allSettimane
+    .filter((w) => {
+      if (w.evento !== 'congregazione' || !w.startDate) return false;
+      const d = new Date(w.startDate);
+      return d.getFullYear() === year && d.getMonth() === month;
+    })
+    .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
+}
+
+/**
  * Genera il buffer del PDF S-302 compilato per una determinata settimana di visita
  */
 export async function generateS302PdfBytes(settimana: Settimana): Promise<Uint8Array> {
