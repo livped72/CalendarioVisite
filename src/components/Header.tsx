@@ -50,13 +50,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={onOpenMobileMenu}
-              className="p-2 rounded-xl text-[#555] hover:text-[#2F3332] bg-white border border-[#E0DED9] hover:bg-[#FAF9F7] active:scale-95 transition-all cursor-pointer shrink-0 shadow-2xs"
+              className="p-2 rounded-xl text-slate-300 hover:text-white bg-[#0F172A] border border-[#1E3A5F] hover:bg-[#162544] active:scale-95 transition-all cursor-pointer shrink-0 shadow-2xs"
               aria-label="Menu di navigazione"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-extrabold text-[#2F3332] tracking-tight">
+              <span className="text-sm font-extrabold text-white tracking-tight">
                 Calendario Visite
               </span>
             </div>
@@ -68,10 +68,10 @@ export const Header: React.FC<HeaderProps> = ({
             <div
               className={`p-1.5 rounded-xl border text-[10px] font-bold transition-colors ${
                 isSyncing
-                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                  ? 'bg-blue-950 border-blue-700 text-blue-200'
                   : isOnline
-                  ? 'bg-[#EBF1ED] border-[#D5E1D9] text-[#3E5949]'
-                  : 'bg-stone-50 border-stone-200 text-stone-500'
+                  ? 'bg-[#0F2248] border-blue-800 text-blue-300'
+                  : 'bg-slate-900 border-slate-700 text-slate-400'
               }`}
               title={isSyncing ? 'Sincronizzazione in corso…' : isOnline ? 'Dati sincronizzati' : 'Offline – dati in locale'}
             >
@@ -85,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Security */}
             <button
               onClick={onOpenSecurity}
-              className="p-1.5 rounded-xl bg-white border border-[#E0DED9] text-[#5B6760] hover:bg-[#FAF9F7] active:scale-95 transition-all cursor-pointer shadow-2xs"
+              className="p-1.5 rounded-xl bg-[#0F172A] border border-[#1E3A5F] text-blue-300 hover:bg-[#162544] hover:text-white active:scale-95 transition-all cursor-pointer shadow-2xs"
               title="Sicurezza & Privacy"
             >
               <ShieldCheck className="w-4 h-4" />
@@ -94,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* + Nuovo */}
             <button
               onClick={onNewWeek}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#7C8B82] hover:bg-[#68766E] text-white text-xs font-bold uppercase tracking-wider active:scale-95 transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider active:scale-95 transition-all shadow-md shadow-blue-950/50 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Nuovo</span>
@@ -103,18 +103,18 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Mobile Period Navigator: Full-Width Clean Pill */}
-        <div className="flex items-center justify-between bg-white border border-[#E0DED9] rounded-2xl p-1 shadow-2xs">
+        <div className="flex items-center justify-between bg-[#0F172A] border border-[#1E3A5F] rounded-2xl p-1 shadow-2xs">
           <button
             onClick={onPrev}
-            className="p-2 rounded-xl text-[#777] hover:text-[#2F3332] hover:bg-[#FAF9F7] active:bg-[#F2EFEB] transition-colors cursor-pointer shrink-0"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#162544] active:bg-[#1B2D54] transition-colors cursor-pointer shrink-0"
             title="Periodo precedente"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
           <div className="flex items-center gap-1.5 px-2 text-center min-w-0">
-            <Calendar className="w-3.5 h-3.5 text-[#7C8B82] shrink-0" />
-            <span className="text-xs font-extrabold text-[#2F3332] truncate">
+            <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <span className="text-xs font-extrabold text-white truncate">
               {label}
             </span>
           </div>
@@ -122,13 +122,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={onToday}
-              className="px-2.5 py-1 text-[11px] font-bold text-[#5B6760] hover:text-[#2F3332] hover:bg-[#FAF9F7] rounded-lg transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-[11px] font-bold text-blue-300 hover:text-white hover:bg-[#162544] rounded-lg transition-colors cursor-pointer"
             >
               Oggi
             </button>
             <button
               onClick={onNext}
-              className="p-2 rounded-xl text-[#777] hover:text-[#2F3332] hover:bg-[#FAF9F7] active:bg-[#F2EFEB] transition-colors cursor-pointer shrink-0"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#162544] active:bg-[#1B2D54] transition-colors cursor-pointer shrink-0"
               title="Periodo successivo"
             >
               <ChevronRight className="w-4 h-4" />
@@ -143,29 +143,29 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenMobileMenu}
-            className="lg:hidden p-2 rounded-xl text-[#888] hover:text-[#2F3332] bg-white border border-[#E0DED9] hover:bg-[#FAF9F7] transition-all cursor-pointer shrink-0 shadow-2xs"
+            className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white bg-[#0F172A] border border-[#1E3A5F] hover:bg-[#162544] transition-all cursor-pointer shrink-0 shadow-2xs"
             aria-label="Menu di navigazione"
           >
             <Menu className="w-5 h-5" />
           </button>
 
           {/* Period Navigation */}
-          <div className="flex items-center gap-1 bg-white border border-[#E0DED9] rounded-2xl px-2 py-1.5 shadow-2xs">
+          <div className="flex items-center gap-1 bg-[#0F172A] border border-[#1E3A5F] rounded-2xl px-2 py-1.5 shadow-2xs">
             <button
               onClick={onPrev}
-              className="p-1.5 rounded-lg text-[#888] hover:text-[#2F3332] hover:bg-[#FAF9F7] transition-colors cursor-pointer shrink-0"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#162544] transition-colors cursor-pointer shrink-0"
               title="Periodo precedente"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
             <div className="px-3 text-center min-w-[170px] truncate">
-              <span className="text-xs font-bold text-[#2F3332] tracking-wide">{label}</span>
+              <span className="text-xs font-bold text-white tracking-wide">{label}</span>
             </div>
 
             <button
               onClick={onNext}
-              className="p-1.5 rounded-lg text-[#888] hover:text-[#2F3332] hover:bg-[#FAF9F7] transition-colors cursor-pointer shrink-0"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#162544] transition-colors cursor-pointer shrink-0"
               title="Periodo successivo"
             >
               <ChevronRight className="w-4 h-4" />
@@ -175,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Today button */}
           <button
             onClick={onToday}
-            className="inline-flex items-center px-3 py-2 rounded-xl bg-white border border-[#E0DED9] text-xs font-bold text-[#5B6760] hover:bg-[#FAF9F7] transition-colors cursor-pointer shadow-2xs shrink-0"
+            className="inline-flex items-center px-3 py-2 rounded-xl bg-[#0F172A] border border-[#1E3A5F] text-xs font-bold text-blue-200 hover:bg-[#162544] hover:text-white transition-colors cursor-pointer shadow-2xs shrink-0"
           >
             Oggi
           </button>
@@ -187,10 +187,10 @@ export const Header: React.FC<HeaderProps> = ({
           <div
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold transition-colors ${
               isSyncing
-                ? 'bg-amber-50 border-amber-200 text-amber-700'
+                ? 'bg-blue-950 border-blue-700 text-blue-200'
                 : isOnline
-                ? 'bg-[#EBF1ED] border-[#D5E1D9] text-[#3E5949]'
-                : 'bg-stone-50 border-stone-200 text-stone-500'
+                ? 'bg-[#0F2248] border-blue-800 text-blue-300'
+                : 'bg-slate-900 border-slate-700 text-slate-400'
             }`}
             title={isSyncing ? 'Sincronizzazione in corso…' : isOnline ? 'Dati sincronizzati' : 'Offline – dati in locale'}
           >
@@ -205,8 +205,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* User badge */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#EBF1ED] rounded-xl border border-[#D5E1D9] text-xs font-bold text-[#3E5949]">
-            <UserCircle2 className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0F2248] rounded-xl border border-blue-800 text-xs font-bold text-blue-200">
+            <UserCircle2 className="w-4 h-4 text-blue-400" />
             <span className="hidden md:inline">{username}</span>
           </div>
 
@@ -214,10 +214,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="btn-security"
             onClick={onOpenSecurity}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E0DED9] text-xs font-bold text-[#5B6760] hover:bg-[#FAF9F7] transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F172A] border border-[#1E3A5F] text-xs font-bold text-blue-200 hover:bg-[#162544] hover:text-white transition-colors cursor-pointer shadow-2xs"
             title="Sicurezza & Privacy"
           >
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4 text-blue-400" />
             <span className="hidden lg:inline">Sicurezza</span>
           </button>
 
@@ -225,7 +225,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="btn-new-week"
             onClick={onNewWeek}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#7C8B82] hover:bg-[#68766E] text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-md shadow-blue-950/50"
           >
             <Plus className="w-4 h-4" />
             <span>Nuovo</span>

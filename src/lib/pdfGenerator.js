@@ -22,7 +22,6 @@ export function formatDateToS302(dateStr) {
     return dateStr;
 }
 /**
- * Verifica se una visita richiede l'invio dell'S-302 adesso:
  * Verifica se la visita deve mostrare l'avviso S-302.
  *
  * LOGICA CORRETTA (per mese):
@@ -32,6 +31,8 @@ export function formatDateToS302(dateStr) {
  * Esempio: visite a febbraio 2027
  *   → 1° febbraio 2027 − 90 giorni = ~3 novembre 2026
  *   → dal 3 novembre 2026 in poi, tutte le visite di febbraio lampeggiano.
+ *
+ * Il lampeggio cessa quando il mese è già passato (mese < mese corrente).
  */
 export function isWithin90Days(startDate) {
     if (!startDate)
@@ -44,9 +45,7 @@ export function isWithin90Days(startDate) {
     // Primo giorno del mese della visita
     const firstOfMonth = new Date(start.getFullYear(), start.getMonth(), 1);
     // Giorni che mancano al primo del mese della visita
-    const daysToMonthStart = Math.ceil(
-        (firstOfMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const daysToMonthStart = Math.ceil((firstOfMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     // Alert attivo se: siamo entro 90 giorni dal 1° del mese
     // e il mese non è già completamente passato (daysToMonthStart > -31)
     return daysToMonthStart >= -31 && daysToMonthStart <= 90;
@@ -73,6 +72,42 @@ export function daysUntilVisit(startDate) {
 export function getUpcomingS302Alerts(settimane) {
     return settimane
         .filter((w) => w.evento === 'congregazione' && isWithin90Days(w.startDate))
+        .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
+}
+/**
+ * Calcola il mese target per l'invio degli S-302 via email.
+ * Logica: mese corrente + 4 mesi.
+ *   Ottobre   → Febbraio
+ *   Novembre  → Marzo
+ *   Dicembre  → Aprile
+ *   ...e così via ogni mese.
+ */
+export function getS302TargetMonth() {
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth() + 4, 1);
+    const MESI_IT = [
+        'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+        'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+    ];
+    return {
+        year: target.getFullYear(),
+        month: target.getMonth(),
+        label: `${MESI_IT[target.getMonth()]} ${target.getFullYear()}`,
+    };
+}
+/**
+ * Restituisce le visite a congregazione del mese target (mese corrente + 4).
+ * Cerca in TUTTE le settimane passate (tutti i periodi).
+ */
+export function getS302TargetMonthAlerts(allSettimane) {
+    const { year, month } = getS302TargetMonth();
+    return allSettimane
+        .filter((w) => {
+        if (w.evento !== 'congregazione' || !w.startDate)
+            return false;
+        const d = new Date(w.startDate);
+        return d.getFullYear() === year && d.getMonth() === month;
+    })
         .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
 }
 /**

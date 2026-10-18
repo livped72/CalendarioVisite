@@ -86,28 +86,28 @@ export const CongregazioniView: React.FC<{
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Box Inserimento Nuova Congregazione */}
-      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-[#E0DED9] shadow-xs space-y-4">
+      <div className="bg-[#0F1A30] p-5 sm:p-6 rounded-3xl border border-[#1E3A5F] shadow-lg space-y-4">
         <div>
-          <h2 className="text-base font-black text-[#2F3332] uppercase tracking-wider">
+          <h2 className="text-base font-black text-white uppercase tracking-wider">
             Gestione Congregazioni
           </h2>
-          <p className="text-xs text-[#7C8B82] mt-0.5">
+          <p className="text-xs text-blue-300/80 mt-0.5">
             Inserisci nuove congregazioni o elimina quelle esistenti dalla circoscrizione.
           </p>
         </div>
 
-        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-[#EFECE6]">
+        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-[#1E3A5F]">
           <input
             type="text"
             value={newNome}
             onChange={(e) => setNewNome(e.target.value)}
             placeholder="Nome nuova congregazione (es. Salerno Fratte)..."
-            className="flex-1 px-4 py-2.5 rounded-xl border border-[#D5D2CA] text-sm focus:outline-none focus:ring-2 focus:ring-[#7C8B82] bg-[#FAF9F7]"
+            className="flex-1 px-4 py-2.5 rounded-xl border border-[#1E3A5F] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#0B1426] text-white placeholder-slate-500"
           />
           <button
             type="submit"
             disabled={!newNome.trim()}
-            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#7C8B82] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#68766E] active:scale-95 transition-all shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-blue-500 active:scale-95 transition-all shadow-md shadow-blue-950/50 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Inserisci</span>
@@ -116,13 +116,13 @@ export const CongregazioniView: React.FC<{
       </div>
 
       {/* Elenco Congregazioni su UNA SOLA COLONNA */}
-      <div className="bg-white rounded-3xl border border-[#E0DED9] shadow-xs overflow-hidden">
-        <div className="p-4 sm:p-5 border-b border-[#E0DED9] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF9F7]/70">
+      <div className="bg-[#0F1A30] rounded-3xl border border-[#1E3A5F] shadow-lg overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-[#1E3A5F] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#142342]">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
+            <span className="text-xs font-bold text-blue-200 uppercase tracking-wider">
               Elenco Congregazioni
             </span>
-            <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-[#EBF1ED] text-[#475E50]">
+            <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-blue-950/80 border border-blue-800 text-blue-300">
               {congregazioni.length}
             </span>
           </div>
@@ -133,34 +133,34 @@ export const CongregazioniView: React.FC<{
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
               placeholder="Cerca congregazione..."
-              className="px-3 py-1.5 rounded-lg border border-[#D5D2CA] text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#7C8B82] w-full sm:w-56"
+              className="px-3 py-1.5 rounded-lg border border-[#1E3A5F] text-xs bg-[#0B1426] text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 w-full sm:w-56"
             />
           )}
         </div>
 
         {visibleCongregazioni.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#888]">
+          <div className="p-8 text-center text-xs text-slate-400">
             {congregazioni.length === 0
               ? 'Nessuna congregazione presente. Inseriscine una dal modulo sopra.'
               : 'Nessuna congregazione corrisponde alla ricerca.'}
           </div>
         ) : (
-          <div className="divide-y divide-[#EFECE6]">
+          <div className="divide-y divide-[#172646]">
             {visibleCongregazioni.map((c, index) => (
               <div
                 key={c.id}
-                className="p-4 flex items-center justify-between gap-3 hover:bg-[#FAF9F7] transition-colors"
+                className="p-4 flex items-center justify-between gap-3 hover:bg-[#162544] transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="w-7 h-7 rounded-lg bg-[#FAF9F7] text-[#7C8B82] border border-[#E0DED9] text-xs font-bold flex items-center justify-center shrink-0">
+                  <span className="w-7 h-7 rounded-lg bg-[#142342] text-blue-300 border border-[#1E3A5F] text-xs font-bold flex items-center justify-center shrink-0">
                     {index + 1}
                   </span>
                   <div className="min-w-0">
-                    <span className="text-sm font-bold text-[#2F3332] truncate block">
+                    <span className="text-sm font-bold text-white truncate block">
                       {c.nome}
                     </span>
                     {c.citta && (
-                      <span className="text-xs text-[#7C8B82] block truncate">
+                      <span className="text-xs text-slate-400 block truncate">
                         {c.citta}
                       </span>
                     )}
@@ -171,7 +171,7 @@ export const CongregazioniView: React.FC<{
                 <button
                   type="button"
                   onClick={() => handleDelete(c.id, c.nome)}
-                  className="p-2 rounded-xl text-[#888] hover:text-rose-700 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all cursor-pointer shrink-0"
+                  className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 border border-transparent hover:border-rose-900/50 transition-all cursor-pointer shrink-0"
                   title={`Elimina ${c.nome}`}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -381,31 +381,31 @@ export const ImpostazioniView: React.FC<{
   };
 
   return (
-    <div className="space-y-6 max-w-2xl text-[#2F3332]">
+    <div className="space-y-6 max-w-2xl text-white">
       <div>
-        <h2 className="text-base font-bold text-[#2F3332] uppercase tracking-wider">
+        <h2 className="text-base font-bold text-white uppercase tracking-wider">
           Impostazioni Account &amp; Sincronizzazione
         </h2>
-        <p className="text-xs text-[#7C8B82] mt-1">
+        <p className="text-xs text-blue-300/80 mt-1">
           Gestisci il tuo profilo, la sicurezza della password e la sincronizzazione cloud.
         </p>
       </div>
 
       {/* Scheda Account Attivo */}
-      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-6">
+      <div className="bg-[#0F1A30] rounded-2xl border border-[#1E3A5F] shadow-lg p-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#7C8B82]/20 text-[#5B6760] border border-[#7C8B82]/30 flex items-center justify-center font-bold text-base shadow-2xs">
+            <div className="w-12 h-12 rounded-2xl bg-blue-900/60 text-blue-300 border border-blue-500/50 flex items-center justify-center font-bold text-base shadow-sm">
               {user.avatarInitials}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-[#2F3332]">{account?.nome || user.nome}</h3>
-                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                <h3 className="font-bold text-sm text-white">{account?.nome || user.nome}</h3>
+                <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded-full">
                   Account Attivo
                 </span>
               </div>
-              <p className="text-xs text-[#777] font-mono mt-0.5">{account?.email || user.email}</p>
+              <p className="text-xs text-slate-400 font-mono mt-0.5">{account?.email || user.email}</p>
             </div>
           </div>
 
@@ -413,7 +413,7 @@ export const ImpostazioniView: React.FC<{
             <button
               type="button"
               onClick={onLogout}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 text-xs font-bold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-900/60 text-rose-400 bg-rose-950/40 hover:bg-rose-900/40 text-xs font-bold transition-colors cursor-pointer"
             >
               <LogOut size={13} />
               <span>Esci</span>
@@ -423,28 +423,28 @@ export const ImpostazioniView: React.FC<{
       </div>
 
       {/* Accesso Rapido Biometrico (Touch ID / Face ID) */}
-      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-6 space-y-4">
+      <div className="bg-[#0F1A30] rounded-2xl border border-[#1E3A5F] shadow-lg p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#7C8B82]/20 text-[#5B6760] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-950/80 text-blue-400 border border-blue-800 flex items-center justify-center shrink-0">
               <Fingerprint size={22} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                   Accesso Rapido Biometrico
                 </h3>
                 {bioEnrolled ? (
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle2 size={12} className="text-emerald-600" /> Attivo
+                  <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle2 size={12} className="text-emerald-400" /> Attivo
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold text-stone-600 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold text-slate-400 bg-slate-900 border border-slate-700 px-2 py-0.5 rounded-full">
                     {bioSupported ? 'Disponibile' : 'Non rilevato'}
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-[#777] mt-0.5">
+              <p className="text-[11px] text-slate-400 mt-0.5">
                 Accedi istantaneamente con Face ID, Touch ID o Windows Hello senza digitare la password.
               </p>
             </div>
@@ -452,29 +452,29 @@ export const ImpostazioniView: React.FC<{
         </div>
 
         {bioMsg && (
-          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+          <div className="p-3 rounded-xl bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-xs flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
             <span>{bioMsg}</span>
           </div>
         )}
 
         {bioError && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <ShieldCheck size={16} className="text-rose-600 shrink-0" />
+          <div className="p-3 rounded-xl bg-rose-950/70 border border-rose-800 text-rose-300 text-xs flex items-center gap-2">
+            <ShieldCheck size={16} className="text-rose-400 shrink-0" />
             <span>{bioError}</span>
           </div>
         )}
 
-        <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E0DED9] space-y-3">
+        <div className="p-4 bg-[#142342] rounded-xl border border-[#1E3A5F] space-y-3">
           {bioEnrolled ? (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                <span className="text-[#666]">Stato sensore su questo dispositivo:</span>
-                <span className="font-bold text-emerald-700">
+                <span className="text-slate-300">Stato sensore su questo dispositivo:</span>
+                <span className="font-bold text-emerald-400">
                   Configurato per {bioUserLabel || account?.email || user.email}
                 </span>
               </div>
-              <p className="text-[11px] text-[#666] leading-relaxed">
+              <p className="text-[11px] text-slate-300 leading-relaxed">
                 Alla schermata di accesso potrai utilizzare il pulsante rapido per entrare istantaneamente con l'impronta digitale o il volto.
               </p>
               <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -482,7 +482,7 @@ export const ImpostazioniView: React.FC<{
                   type="button"
                   onClick={handleTestBiometrics}
                   disabled={bioLoading}
-                  className="px-4 py-2 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs flex items-center gap-1.5"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-md shadow-blue-950/50 flex items-center gap-1.5"
                 >
                   <Fingerprint size={15} />
                   <span>{bioLoading ? 'Scansione…' : 'Testa Riconoscimento'}</span>
@@ -490,7 +490,7 @@ export const ImpostazioniView: React.FC<{
                 <button
                   type="button"
                   onClick={handleDisableBiometrics}
-                  className="px-4 py-2 bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs"
+                  className="px-4 py-2 bg-[#0B1426] border border-rose-900/60 hover:bg-rose-950/40 text-rose-400 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs"
                 >
                   Disattiva su questo dispositivo
                 </button>
@@ -498,13 +498,13 @@ export const ImpostazioniView: React.FC<{
             </div>
           ) : bioSupported ? (
             <div className="space-y-3">
-              <p className="text-[11px] text-[#666] leading-relaxed">
+              <p className="text-[11px] text-slate-300 leading-relaxed">
                 Il tuo dispositivo dispone di un sensore biometrico compatibile (Touch ID, Face ID o Windows Hello). Puoi abilitare l'accesso rapido adesso con un solo tocco!
               </p>
 
               {showManualBioInput ? (
                 <div className="space-y-2 pt-1">
-                  <label className="block text-xs font-bold text-[#2F3332]">
+                  <label className="block text-xs font-bold text-blue-200">
                     Inserisci la password del tuo account per confermare:
                   </label>
                   <div className="flex items-center gap-2">
@@ -513,20 +513,20 @@ export const ImpostazioniView: React.FC<{
                       value={manualBioPwd}
                       onChange={(e) => setManualBioPwd(e.target.value)}
                       placeholder="Password account..."
-                      className="px-3 py-2 text-xs rounded-xl border border-[#D5D2CA] bg-white flex-1"
+                      className="px-3 py-2 text-xs rounded-xl border border-[#1E3A5F] bg-[#0B1426] text-white flex-1"
                     />
                     <button
                       type="button"
                       onClick={() => handleEnableBiometrics(manualBioPwd)}
                       disabled={bioLoading || !manualBioPwd}
-                      className="px-4 py-2 bg-[#7C8B82] hover:bg-[#68766E] text-white rounded-xl text-xs font-bold uppercase disabled:opacity-50 cursor-pointer"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase disabled:opacity-50 cursor-pointer shadow-md shadow-blue-950/50"
                     >
                       {bioLoading ? 'Configurazione…' : 'Conferma'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowManualBioInput(false)}
-                      className="px-3 py-2 text-xs text-[#888] hover:text-[#2F3332] cursor-pointer"
+                      className="px-3 py-2 text-xs text-slate-400 hover:text-white cursor-pointer"
                     >
                       Annulla
                     </button>
@@ -538,7 +538,7 @@ export const ImpostazioniView: React.FC<{
                     type="button"
                     onClick={() => handleEnableBiometrics()}
                     disabled={bioLoading}
-                    className="px-4 py-2 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs flex items-center gap-1.5"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-md shadow-blue-950/50 flex items-center gap-1.5"
                   >
                     <Fingerprint size={15} />
                     <span>{bioLoading ? 'Registrazione sensore…' : 'Attiva Face ID / Touch ID adesso'}</span>
@@ -547,7 +547,7 @@ export const ImpostazioniView: React.FC<{
               )}
             </div>
           ) : (
-            <p className="text-[11px] text-[#888] italic">
+            <p className="text-[11px] text-slate-500 italic">
               Il browser o il dispositivo corrente non supporta l'autenticazione biometrica della piattaforma o il protocollo WebAuthn.
             </p>
           )}
@@ -555,30 +555,30 @@ export const ImpostazioniView: React.FC<{
       </div>
 
       {/* Sincronizzazione Cloud Multi-Dispositivo */}
-      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-6 space-y-4">
+      <div className="bg-[#0F1A30] rounded-2xl border border-[#1E3A5F] shadow-lg p-6 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#7C8B82]/20 text-[#5B6760] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-blue-950/80 text-blue-400 border border-blue-800 flex items-center justify-center shrink-0">
             <Cloud size={22} />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
               Sincronizzazione Automatica Multi-Dispositivo
             </h3>
-            <p className="text-[11px] text-[#777] mt-0.5">
+            <p className="text-[11px] text-slate-400 mt-0.5">
               I dati vengono sincronizzati con il tuo account usando la crittografia <strong>AES-256 (Zero-Knowledge)</strong>.
             </p>
           </div>
         </div>
 
-        <div className="p-4 bg-[#FAF9F7] rounded-xl border border-[#E0DED9] space-y-3">
+        <div className="p-4 bg-[#142342] rounded-xl border border-[#1E3A5F] space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span className="text-[#666]">Stato sincronizzazione:</span>
-            <span className="font-bold text-[#2F3332]">
+            <span className="text-slate-300">Stato sincronizzazione:</span>
+            <span className="font-bold text-white">
               Ultimo salvataggio: {getAccountLastSyncTime()}
             </span>
           </div>
 
-          <p className="text-[11px] text-[#666] leading-relaxed">
+          <p className="text-[11px] text-slate-300 leading-relaxed">
             💡 <strong>Come continuare il lavoro su un altro dispositivo:</strong> Apri Calendario Visite sullo smartphone, tablet o su un altro computer e clicca su <strong>Accedi</strong> inserendo la tua email (<em>{account?.email}</em>) e la tua password. Tutti i dati compariranno all'istante!
           </p>
 
@@ -586,8 +586,8 @@ export const ImpostazioniView: React.FC<{
             <div
               className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
                 isSyncSuccess
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                  : 'bg-rose-50 border-rose-200 text-rose-800'
+                  ? 'bg-emerald-950/70 border-emerald-800 text-emerald-300'
+                  : 'bg-rose-950/70 border-rose-800 text-rose-300'
               }`}
             >
               {isSyncSuccess ? <CheckCircle2 size={16} /> : <ShieldCheck size={16} />}
@@ -600,7 +600,7 @@ export const ImpostazioniView: React.FC<{
               type="button"
               onClick={handleManualPushSync}
               disabled={isSyncSaving}
-              className="px-4 py-2 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs flex items-center gap-1.5"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-md shadow-blue-950/50 flex items-center gap-1.5"
             >
               <CloudUpload size={15} />
               <span>{isSyncSaving ? 'Invio in corso…' : 'Salva su Cloud'}</span>
@@ -610,7 +610,7 @@ export const ImpostazioniView: React.FC<{
               type="button"
               onClick={handleManualPullSync}
               disabled={isSyncSaving}
-              className="px-4 py-2 bg-white border border-[#E0DED9] hover:bg-[#FAF9F7] text-[#2F3332] rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs flex items-center gap-1.5"
+              className="px-4 py-2 bg-[#0B1426] border border-[#1E3A5F] hover:bg-[#1A2C52] text-blue-200 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors shadow-2xs flex items-center gap-1.5"
             >
               <CloudDownload size={15} />
               <span>Scarica dal Cloud</span>
@@ -620,25 +620,25 @@ export const ImpostazioniView: React.FC<{
       </div>
 
       {/* Cambio Password Account */}
-      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-6 space-y-3">
+      <div className="bg-[#0F1A30] rounded-2xl border border-[#1E3A5F] shadow-lg p-6 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Key size={18} className="text-[#7C8B82]" />
-            <h3 className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">
+            <Key size={18} className="text-blue-400" />
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
               Sicurezza &amp; Modifica Password
             </h3>
           </div>
           <button
             type="button"
             onClick={() => { setShowPwdForm(!showPwdForm); setPwdError(null); setPwdSuccess(false); }}
-            className="text-xs font-bold text-[#5B6760] hover:text-[#2F3332] hover:underline cursor-pointer"
+            className="text-xs font-bold text-blue-400 hover:text-blue-300 hover:underline cursor-pointer"
           >
             {showPwdForm ? 'Annulla' : 'Modifica Password'}
           </button>
         </div>
 
         {!showPwdForm && (
-          <p className="text-xs text-[#888]">
+          <p className="text-xs text-slate-400">
             Puoi modificare la password del tuo account in qualsiasi momento. La nuova password verrà usata per ricifrare in sicurezza i dati del calendario.
           </p>
         )}
@@ -646,16 +646,16 @@ export const ImpostazioniView: React.FC<{
         {showPwdForm && (
           <form onSubmit={handleChangePassword} className="space-y-3 pt-2">
             {pwdError && (
-              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">{pwdError}</div>
+              <div className="p-2.5 rounded-xl bg-rose-950/70 border border-rose-800 text-rose-300 text-xs">{pwdError}</div>
             )}
             {pwdSuccess && (
-              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-1.5 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Password aggiornata e dati ricifrati con successo!
+              <div className="p-2.5 rounded-xl bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-xs flex items-center gap-1.5 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Password aggiornata e dati ricifrati con successo!
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-bold uppercase text-[#2F3332] mb-1">
+              <label className="block text-xs font-bold uppercase text-blue-200 mb-1">
                 Password Attuale
               </label>
               <input
@@ -664,12 +664,12 @@ export const ImpostazioniView: React.FC<{
                 onChange={(e) => setCurrentPwd(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:border-[#7C8B82] bg-[#FAF9F7]"
+                className="w-full px-3 py-2 rounded-xl border border-[#1E3A5F] text-sm focus:border-blue-500 bg-[#0B1426] text-white placeholder-slate-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-[#2F3332] mb-1">
+              <label className="block text-xs font-bold uppercase text-blue-200 mb-1">
                 Nuova Password (min. 6 caratteri)
               </label>
               <input
@@ -679,12 +679,12 @@ export const ImpostazioniView: React.FC<{
                 placeholder="Almeno 6 caratteri"
                 required
                 minLength={6}
-                className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:border-[#7C8B82] bg-[#FAF9F7]"
+                className="w-full px-3 py-2 rounded-xl border border-[#1E3A5F] text-sm focus:border-blue-500 bg-[#0B1426] text-white placeholder-slate-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-[#2F3332] mb-1">
+              <label className="block text-xs font-bold uppercase text-blue-200 mb-1">
                 Conferma Nuova Password
               </label>
               <input
@@ -693,7 +693,7 @@ export const ImpostazioniView: React.FC<{
                 onChange={(e) => setConfirmPwd(e.target.value)}
                 placeholder="Ripeti la nuova password"
                 required
-                className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:border-[#7C8B82] bg-[#FAF9F7]"
+                className="w-full px-3 py-2 rounded-xl border border-[#1E3A5F] text-sm focus:border-blue-500 bg-[#0B1426] text-white placeholder-slate-500"
               />
             </div>
 
@@ -701,7 +701,7 @@ export const ImpostazioniView: React.FC<{
               <button
                 type="submit"
                 disabled={pwdLoading}
-                className="px-5 py-2 bg-[#7C8B82] hover:bg-[#68766E] disabled:opacity-60 text-white text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer shadow-xs flex items-center gap-1.5"
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer shadow-md shadow-blue-950/50 flex items-center gap-1.5"
               >
                 {pwdLoading && <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" />}
                 Aggiorna Password
@@ -712,23 +712,23 @@ export const ImpostazioniView: React.FC<{
       </div>
 
       {/* Backup e Ripristino JSON su File */}
-      <div className="bg-white rounded-2xl border border-[#E0DED9] shadow-2xs p-6 space-y-4">
-        <h3 className="text-xs font-bold text-[#2F3332] uppercase tracking-wider">Copia di Sicurezza su File</h3>
-        <p className="text-xs text-[#666]">
+      <div className="bg-[#0F1A30] rounded-2xl border border-[#1E3A5F] shadow-lg p-6 space-y-4">
+        <h3 className="text-xs font-bold text-white uppercase tracking-wider">Copia di Sicurezza su File</h3>
+        <p className="text-xs text-slate-400">
           Puoi scaricare una copia di sicurezza del calendario in formato JSON oppure ripristinare un backup locale.
         </p>
 
         <div className="flex flex-wrap gap-3 pt-2">
           <button
             onClick={exportBackupJSON}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2F3332] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#1E2421] transition-colors shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-blue-500 transition-colors shadow-md shadow-blue-950/50 cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>Esporta Backup JSON</span>
           </button>
 
-          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E0DED9] text-[#2F3332] text-xs font-bold uppercase tracking-wider hover:bg-[#FAF9F7] transition-colors shadow-2xs cursor-pointer">
-            <Upload className="w-4 h-4 text-[#7C8B82]" />
+          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#142342] border border-[#1E3A5F] text-blue-200 text-xs font-bold uppercase tracking-wider hover:bg-[#1A2C52] hover:text-white transition-colors shadow-2xs cursor-pointer">
+            <Upload className="w-4 h-4 text-blue-400" />
             <span>Ripristina da File</span>
             <input type="file" accept=".json" onChange={handleFileImport} className="sr-only" />
           </label>
@@ -741,7 +741,7 @@ export const ImpostazioniView: React.FC<{
                 alert('Dati ripristinati con successo!');
               }
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FAF9F7] border border-[#E0DED9] text-[#666] text-xs font-bold uppercase tracking-wider hover:bg-stone-100 transition-colors shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0B1426] border border-[#1E3A5F] text-slate-400 text-xs font-bold uppercase tracking-wider hover:bg-rose-950/40 hover:text-rose-300 hover:border-rose-900/50 transition-colors shadow-2xs cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" />
             <span>Ripristina Dati Iniziali</span>
@@ -755,34 +755,34 @@ export const ImpostazioniView: React.FC<{
 // Aiuto Tab View
 export const AiutoView: React.FC = () => {
   return (
-    <div className="space-y-6 max-w-2xl text-[#2F3332]">
+    <div className="space-y-6 max-w-2xl text-white">
       <div>
-        <h2 className="text-base font-bold text-[#2F3332] uppercase tracking-wider">
+        <h2 className="text-base font-bold text-white uppercase tracking-wider">
           Guida e Supporto Calendario Visite
         </h2>
-        <p className="text-xs text-[#7C8B82] mt-1">
+        <p className="text-xs text-blue-300/80 mt-1">
           Istruzioni sull'uso e sul funzionamento della pianificazione semestrale.
         </p>
       </div>
 
       <div className="space-y-4">
-        <div className="bg-white p-5 rounded-2xl border border-[#E0DED9] shadow-2xs">
-          <h3 className="font-bold text-[#2F3332] text-xs uppercase tracking-wider mb-1">Come funziona la sincronizzazione con l'account?</h3>
-          <p className="text-xs text-[#666] leading-relaxed">
+        <div className="bg-[#0F1A30] p-5 rounded-2xl border border-[#1E3A5F] shadow-lg">
+          <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-1">Come funziona la sincronizzazione con l'account?</h3>
+          <p className="text-xs text-slate-300 leading-relaxed">
             Ogni volta che aggiungi, modifichi o elimini una visita o congregazione, i tuoi dati vengono cifrati sul tuo browser con la tua password e sincronizzati automaticamente con il tuo account. Quando accedi da un altro dispositivo con la tua email e password, tutto il calendario viene scaricato e decifrato all'istante.
           </p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#E0DED9] shadow-2xs">
-          <h3 className="font-bold text-[#2F3332] text-xs uppercase tracking-wider mb-1">I miei dati sono protetti?</h3>
-          <p className="text-xs text-[#666] leading-relaxed">
+        <div className="bg-[#0F1A30] p-5 rounded-2xl border border-[#1E3A5F] shadow-lg">
+          <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-1">I miei dati sono protetti?</h3>
+          <p className="text-xs text-slate-300 leading-relaxed">
             Sì, utilizziamo una crittografia End-to-End (AES-256-GCM). Solo chi è in possesso della tua password può decifrare e visualizzare il calendario.
           </p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#E0DED9] shadow-2xs">
-          <h3 className="font-bold text-[#2F3332] text-xs uppercase tracking-wider mb-1">Come viene calcolato il numero della settimana?</h3>
-          <p className="text-xs text-[#666] leading-relaxed">
+        <div className="bg-[#0F1A30] p-5 rounded-2xl border border-[#1E3A5F] shadow-lg">
+          <h3 className="font-bold text-white text-xs uppercase tracking-wider mb-1">Come viene calcolato il numero della settimana?</h3>
+          <p className="text-xs text-slate-300 leading-relaxed">
             Il numero progressivo (1, 2, 3...) si applica <strong>esclusivamente alle visite alle congregazioni</strong>. Per tutti gli altri eventi (come settimana libera, settimana pioniere, assenze o assemblee), non viene assegnato il numero progressivo di visita.
           </p>
         </div>

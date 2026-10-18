@@ -45,64 +45,64 @@ const ALTRO_EVENTO_OPTIONS: AltroEventoOption[] = [
     tipo: 'settimana_libera',
     label: 'SETTIMANA LIBERA',
     icon: Calendar,
-    bg: 'bg-emerald-50/70 hover:bg-emerald-100/60',
-    border: 'border-emerald-200',
-    text: 'text-emerald-800',
-    selectedStyle: 'ring-2 ring-emerald-600 border-emerald-400 bg-emerald-100 font-extrabold shadow-xs',
+    bg: 'bg-emerald-950/60 hover:bg-emerald-900/60',
+    border: 'border-emerald-800',
+    text: 'text-emerald-300',
+    selectedStyle: 'ring-2 ring-emerald-500 border-emerald-400 bg-emerald-900/80 font-extrabold shadow-sm',
   },
   {
     tipo: 'settimana_pioniere',
     label: 'SETTIMANA PIONIERE',
     icon: BookMarked,
-    bg: 'bg-violet-50/70 hover:bg-violet-100/60',
-    border: 'border-violet-200',
-    text: 'text-violet-800',
-    selectedStyle: 'ring-2 ring-violet-600 border-violet-400 bg-violet-100 font-extrabold shadow-xs',
+    bg: 'bg-indigo-950/60 hover:bg-indigo-900/60',
+    border: 'border-indigo-800',
+    text: 'text-indigo-300',
+    selectedStyle: 'ring-2 ring-indigo-500 border-indigo-400 bg-indigo-900/80 font-extrabold shadow-sm',
   },
   {
     tipo: 'assenza',
     label: 'ASSENZA',
     icon: Plane,
-    bg: 'bg-sky-50/70 hover:bg-sky-100/60',
-    border: 'border-sky-200',
-    text: 'text-sky-800',
-    selectedStyle: 'ring-2 ring-sky-600 border-sky-400 bg-sky-100 font-extrabold shadow-xs',
+    bg: 'bg-sky-950/60 hover:bg-sky-900/60',
+    border: 'border-sky-800',
+    text: 'text-sky-300',
+    selectedStyle: 'ring-2 ring-sky-500 border-sky-400 bg-sky-900/80 font-extrabold shadow-sm',
   },
   {
     tipo: 'scuola_pionieri',
     label: 'SCUOLA PIONIERI',
     icon: BookOpen,
-    bg: 'bg-purple-50/70 hover:bg-purple-100/60',
-    border: 'border-purple-200',
-    text: 'text-purple-800',
-    selectedStyle: 'ring-2 ring-purple-600 border-purple-400 bg-purple-100 font-extrabold shadow-xs',
+    bg: 'bg-purple-950/60 hover:bg-purple-900/60',
+    border: 'border-purple-800',
+    text: 'text-purple-300',
+    selectedStyle: 'ring-2 ring-purple-500 border-purple-400 bg-purple-900/80 font-extrabold shadow-sm',
   },
   {
     tipo: 'assemblea_circoscrizione',
     label: 'ASSEMBLEA CIRCOSCRIZIONE',
     icon: Users,
-    bg: 'bg-amber-50/70 hover:bg-amber-100/60',
-    border: 'border-amber-200',
-    text: 'text-amber-800',
-    selectedStyle: 'ring-2 ring-amber-600 border-amber-400 bg-amber-100 font-extrabold shadow-xs',
+    bg: 'bg-amber-950/60 hover:bg-amber-900/60',
+    border: 'border-amber-800',
+    text: 'text-amber-300',
+    selectedStyle: 'ring-2 ring-amber-500 border-amber-400 bg-amber-900/80 font-extrabold shadow-sm',
   },
   {
     tipo: 'congresso',
     label: 'CONGRESSO',
     icon: Users,
-    bg: 'bg-rose-50/70 hover:bg-rose-100/60',
-    border: 'border-rose-200',
-    text: 'text-rose-800',
-    selectedStyle: 'ring-2 ring-rose-600 border-rose-400 bg-rose-100 font-extrabold shadow-xs',
+    bg: 'bg-rose-950/60 hover:bg-rose-900/60',
+    border: 'border-rose-800',
+    text: 'text-rose-300',
+    selectedStyle: 'ring-2 ring-rose-500 border-rose-400 bg-rose-900/80 font-extrabold shadow-sm',
   },
   {
     tipo: 'evento_personalizzato',
     label: 'EVENTO PERSONALIZZATO',
     icon: Star,
-    bg: 'bg-stone-100/80 hover:bg-stone-200/60',
-    border: 'border-stone-300',
-    text: 'text-stone-800',
-    selectedStyle: 'ring-2 ring-stone-600 border-stone-400 bg-stone-200 font-extrabold shadow-xs',
+    bg: 'bg-slate-800/80 hover:bg-slate-700/80',
+    border: 'border-slate-700',
+    text: 'text-slate-200',
+    selectedStyle: 'ring-2 ring-slate-400 border-slate-300 bg-slate-800 font-extrabold shadow-sm',
   },
 ];
 
@@ -240,15 +240,15 @@ export const WeekModal: React.FC<WeekModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-xs" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-xs" onClick={onClose} />
 
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-[#E0DED9] animate-in fade-in zoom-in-95 duration-150 text-[#2F3332]">
+      <div className="relative bg-[#0F1A30] rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-[#1E3A5F] animate-in fade-in zoom-in-95 duration-150 text-[#F8FAFC]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E0DED9] bg-[#FAF9F7]">
-          <h3 className="text-sm font-bold text-[#2F3332] uppercase tracking-wider">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E3A5F] bg-[#142342]">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
             {editingWeek ? 'Modifica Settimana' : 'Aggiungi Settimana'}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-lg text-[#888] hover:text-[#333] hover:bg-stone-100 cursor-pointer">
+          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-[#1A2C52] cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -257,7 +257,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
           {/* Periodo */}
           <div>
-            <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">
+            <label className="block text-xs font-bold text-blue-200 uppercase mb-1">
               Data Inizio Settimana (Martedì)
             </label>
             <input
@@ -265,29 +265,29 @@ export const WeekModal: React.FC<WeekModalProps> = ({
               value={selectedStartDate}
               onChange={(e) => setSelectedStartDate(e.target.value)}
               required
-              className="w-full px-3 py-2.5 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] transition-colors"
+              className="w-full px-3 py-2.5 rounded-xl border border-[#1E3A5F] bg-[#0B1426] text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
             />
             {selectedStartDate && (
-              <p className="text-xs text-[#666] mt-1.5 ml-1">
-                Periodo calcolato: <strong className="text-[#2F3332]">{computePeriodoPreview(selectedStartDate)}</strong>
+              <p className="text-xs text-slate-400 mt-1.5 ml-1">
+                Periodo calcolato: <strong className="text-blue-300">{computePeriodoPreview(selectedStartDate)}</strong>
               </p>
             )}
           </div>
 
           {/* Tipo attività: 2 big buttons */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-[#2F3332] uppercase">Tipo di Attività</label>
+            <label className="block text-xs font-bold text-blue-200 uppercase">Tipo di Attività</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setIsCongregazione(true)}
                 className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold uppercase transition-all cursor-pointer ${
                   isCongregazione
-                    ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-2 ring-[#7C8B82] shadow-xs'
-                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'
+                    ? 'border-blue-500 bg-blue-950/80 text-blue-200 ring-2 ring-blue-500 shadow-sm'
+                    : 'border-[#1E3A5F] bg-[#0B1426] text-slate-400 hover:bg-[#142342] hover:text-white'
                 }`}
               >
-                <Building2 className="w-4 h-4 text-[#5B6760]" />
+                <Building2 className="w-4 h-4 text-blue-400" />
                 <span>VISITA CONGREGAZIONE</span>
               </button>
               <button
@@ -295,11 +295,11 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                 onClick={() => setIsCongregazione(false)}
                 className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold uppercase transition-all cursor-pointer ${
                   !isCongregazione
-                    ? 'border-[#7C8B82] bg-[#7C8B82]/15 text-[#3C4A42] ring-2 ring-[#7C8B82] shadow-xs'
-                    : 'border-[#E0DED9] bg-white text-[#666] hover:bg-[#FAF9F7]'
+                    ? 'border-blue-500 bg-blue-950/80 text-blue-200 ring-2 ring-blue-500 shadow-sm'
+                    : 'border-[#1E3A5F] bg-[#0B1426] text-slate-400 hover:bg-[#142342] hover:text-white'
                 }`}
               >
-                <CalendarDays className="w-4 h-4 text-[#7C8B82]" />
+                <CalendarDays className="w-4 h-4 text-blue-400" />
                 <span>ALTRO EVENTO</span>
               </button>
             </div>
@@ -307,12 +307,12 @@ export const WeekModal: React.FC<WeekModalProps> = ({
 
           {/* Congregation selector */}
           {isCongregazione ? (
-            <div className="space-y-2 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]">
-              <label className="block text-xs font-bold text-[#2F3332] uppercase">Nome Congregazione</label>
+            <div className="space-y-2 p-3.5 bg-[#142342] rounded-xl border border-[#1E3A5F]">
+              <label className="block text-xs font-bold text-blue-200 uppercase">Nome Congregazione</label>
               <select
                 value={selectedCongregazione}
                 onChange={(e) => setSelectedCongregazione(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] bg-white font-semibold"
+                className="w-full px-3 py-2 rounded-xl border border-[#1E3A5F] text-sm focus:outline-none focus:border-blue-500 bg-[#0B1426] text-white font-semibold"
               >
                 <option value="Da definire">DA DEFINIRE</option>
                 {congregazioni.map((c) => (
@@ -326,31 +326,31 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                 placeholder="Oppure inserisci un altro nome..."
                 value={selectedCongregazione}
                 onChange={(e) => setSelectedCongregazione(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]"
+                className="w-full px-3 py-1.5 rounded-xl border border-[#1E3A5F] text-xs bg-[#0B1426] text-white focus:outline-none focus:border-blue-500 placeholder-slate-500"
               />
 
               {/* Box Numerazione Visita Calcolata */}
               {visitPrediction && (
-                <div className="p-3 bg-white rounded-xl border border-[#E0DED9] space-y-2 mt-2 shadow-2xs">
+                <div className="p-3 bg-[#0B1426] rounded-xl border border-[#1E3A5F] space-y-2 mt-2 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#555] uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       Numero Visita Calcolato
                     </span>
-                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-[#7C8B82] text-white text-xs font-extrabold shadow-2xs">
+                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-xs font-extrabold shadow-2xs">
                       #{visitPrediction.numero}
                     </span>
                   </div>
-                  <p className="text-xs text-[#555] leading-relaxed">
+                  <p className="text-xs text-slate-300 leading-relaxed">
                     {visitPrediction.motivazione}
                   </p>
-                  <label className="flex items-center gap-2 pt-1.5 border-t border-[#F0EEEA] cursor-pointer">
+                  <label className="flex items-center gap-2 pt-1.5 border-t border-[#1E3A5F] cursor-pointer">
                     <input
                       type="checkbox"
                       checked={forceResetNumerazione}
                       onChange={(e) => setForceResetNumerazione(e.target.checked)}
-                      className="rounded border-[#E0DED9] text-[#7C8B82] focus:ring-[#7C8B82] w-4 h-4 cursor-pointer accent-[#7C8B82]"
+                      className="rounded border-[#1E3A5F] text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer accent-blue-600"
                     />
-                    <span className="text-xs font-semibold text-[#2F3332]">
+                    <span className="text-xs font-semibold text-slate-300">
                       Riavvia la numerazione da 1 per questa visita
                     </span>
                   </label>
@@ -359,8 +359,8 @@ export const WeekModal: React.FC<WeekModalProps> = ({
             </div>
           ) : (
             /* Alternative events panel */
-            <div className="space-y-3 p-3.5 bg-[#FAF9F7] rounded-xl border border-[#E0DED9]">
-              <label className="block text-xs font-bold text-[#2F3332] uppercase">Evento Sostitutivo</label>
+            <div className="space-y-3 p-3.5 bg-[#142342] rounded-xl border border-[#1E3A5F]">
+              <label className="block text-xs font-bold text-blue-200 uppercase">Evento Sostitutivo</label>
               <div className="grid grid-cols-2 gap-2">
                 {ALTRO_EVENTO_OPTIONS.map((opt, idx) => {
                   const isSelected = altroEvento === opt.tipo;
@@ -397,7 +397,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
 
               {hasExtraDetail && (
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#555] mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
                     Dettaglio opzionale
                   </label>
                   <input
@@ -409,7 +409,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                       : altroEvento === 'congresso' ? 'es. Congresso 2026 – Roma'
                       : 'es. Visita Betel'
                     }
-                    className="w-full px-3 py-1.5 rounded-xl border border-[#E0DED9] text-xs bg-white focus:outline-none focus:border-[#7C8B82]"
+                    className="w-full px-3 py-1.5 rounded-xl border border-[#1E3A5F] text-xs bg-[#0B1426] text-white focus:outline-none focus:border-blue-500 placeholder-slate-500"
                   />
                 </div>
               )}
@@ -418,18 +418,18 @@ export const WeekModal: React.FC<WeekModalProps> = ({
 
           {/* Note */}
           <div>
-            <label className="block text-xs font-bold text-[#2F3332] uppercase mb-1">Note</label>
+            <label className="block text-xs font-bold text-blue-200 uppercase mb-1">Note</label>
             <textarea
               rows={3}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="es. Portare il materiale..."
-              className="w-full px-3 py-2 rounded-xl border border-[#E0DED9] text-sm focus:outline-none focus:border-[#7C8B82] resize-none"
+              className="w-full px-3 py-2 rounded-xl border border-[#1E3A5F] text-sm focus:outline-none focus:border-blue-500 bg-[#0B1426] text-white resize-none placeholder-slate-500"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-[#E0DED9] flex-wrap gap-2">
+          <div className="flex items-center justify-between pt-3 border-t border-[#1E3A5F] flex-wrap gap-2">
             <div className="flex items-center gap-2">
               {editingWeek && onDelete && (
                 <button
@@ -440,7 +440,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                       onClose();
                     }
                   }}
-                  className="px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-bold text-rose-400 hover:bg-rose-950/40 rounded-xl cursor-pointer"
                 >
                   Elimina
                 </button>
@@ -454,10 +454,10 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                       dettagli: selectedCongregazione || editingWeek.dettagli,
                       startDate: selectedStartDate || editingWeek.startDate,
                     })}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-200 bg-[#142342] hover:bg-[#1A2C52] hover:text-white border border-[#1E3A5F] rounded-xl cursor-pointer"
                     title="Scarica il modulo S-302 compilato per questa visita"
                   >
-                    <FileDown className="w-3.5 h-3.5" />
+                    <FileDown className="w-3.5 h-3.5 text-blue-400" />
                     <span>Scarica S-302</span>
                   </button>
                   <button
@@ -467,7 +467,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                       dettagli: selectedCongregazione || editingWeek.dettagli,
                       startDate: selectedStartDate || editingWeek.startDate,
                     })}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 rounded-xl cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl cursor-pointer shadow-md shadow-blue-950/50"
                     title="Scarica il PDF e prepara l'email S-302"
                   >
                     <Mail className="w-3.5 h-3.5" />
@@ -477,12 +477,12 @@ export const WeekModal: React.FC<WeekModalProps> = ({
               )}
             </div>
             <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-[#666] hover:bg-stone-100 rounded-xl cursor-pointer">
+              <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-[#142342] rounded-xl cursor-pointer">
                 Annulla
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#7C8B82] hover:bg-[#68766E] rounded-xl shadow-xs cursor-pointer"
+                className="px-5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-md shadow-blue-950/50 cursor-pointer"
               >
                 Salva
               </button>

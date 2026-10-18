@@ -7,9 +7,9 @@ export const eventiConfig = {
     congregazione: {
         tipo: 'congregazione',
         label: 'Congregazione',
-        badgeBg: 'bg-[#7C8B82]/15',
-        badgeBorder: 'border-[#7C8B82]/30',
-        badgeText: 'text-[#47574E]',
+        badgeBg: 'bg-blue-950/70',
+        badgeBorder: 'border-blue-700/60',
+        badgeText: 'text-blue-200',
         iconName: 'Home',
     },
     assemblea_circoscrizione: {

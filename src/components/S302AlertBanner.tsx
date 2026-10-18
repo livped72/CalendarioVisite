@@ -60,25 +60,25 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
 
   return (
     <div
-      className="rounded-2xl border border-indigo-200 bg-indigo-50 shadow-sm overflow-hidden"
+      className="rounded-2xl border border-blue-800/80 bg-[#0C1B38] shadow-lg overflow-hidden"
       role="alert"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
-            <Send className="w-4 h-4 text-indigo-600" />
+          <div className="w-9 h-9 rounded-xl bg-blue-900/60 border border-blue-700/60 flex items-center justify-center shrink-0">
+            <Send className="w-4 h-4 text-blue-400" />
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-black text-indigo-900 uppercase tracking-wide">
+              <span className="text-sm font-black text-white uppercase tracking-wide">
                 Moduli S-302 — {monthLabel}
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-600 text-white">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs">
                 {alerts.length} {alerts.length === 1 ? 'visita' : 'visite'}
               </span>
             </div>
-            <p className="text-xs mt-0.5 text-indigo-700 font-medium">
+            <p className="text-xs mt-0.5 text-blue-200 font-medium">
               Invia i moduli S-302 per le visite di {monthLabel}
             </p>
           </div>
@@ -90,7 +90,7 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
             type="button"
             onClick={handleEmailAll}
             disabled={emailingAll}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-blue-950/50 disabled:opacity-50"
             title={`Invia email S-302 per tutte le ${alerts.length} visite di ${monthLabel}`}
           >
             {emailingAll ? (
@@ -106,7 +106,7 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="p-2 rounded-xl bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-[#142342] border border-[#1E3A5F] text-blue-300 hover:bg-[#1A2C52] hover:text-white transition-colors cursor-pointer"
             title={expanded ? 'Comprimi' : 'Espandi'}
           >
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -133,12 +133,12 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
             return (
               <div
                 key={item.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-white border border-indigo-100 shadow-xs"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-[#102042] border border-[#1E3A5F] shadow-xs"
               >
                 {/* Info */}
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-indigo-900 truncate">{congName}</div>
-                  <div className="text-[11px] text-slate-500 truncate">{dateLabel}</div>
+                  <div className="text-xs font-bold text-white truncate">{congName}</div>
+                  <div className="text-[11px] text-slate-400 truncate">{dateLabel}</div>
                 </div>
 
                 {/* Azioni */}
@@ -148,7 +148,7 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
                     type="button"
                     onClick={() => handleDownload(item)}
                     disabled={isDownloading || isEmailing}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#142342] border border-[#1E3A5F] text-blue-200 hover:bg-[#1A2C52] hover:text-white transition-all cursor-pointer disabled:opacity-50"
                     title="Scarica PDF S-302"
                   >
                     {isDownloading ? (
@@ -164,7 +164,7 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
                     type="button"
                     onClick={() => handleEmail(item)}
                     disabled={isEmailing || isDownloading}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-all cursor-pointer shadow-md shadow-blue-950/50 disabled:opacity-50"
                     title="Scarica PDF e prepara email S-302"
                   >
                     {isEmailing ? (
@@ -179,7 +179,7 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
             );
           })}
 
-          <p className="text-[11px] text-indigo-600 mt-2 leading-relaxed">
+          <p className="text-[11px] text-blue-300/90 mt-2 leading-relaxed">
             ℹ️ Il PDF viene scaricato automaticamente, poi si apre il programma email pre-compilato. Allega il PDF prima di inviare.
           </p>
         </div>
