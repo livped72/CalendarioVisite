@@ -2,21 +2,25 @@
 
 @layer base {
   :root {
-    --bg-main: #090E17;
-    --bg-card: #0F172A;
-    --bg-card-subtle: #142240;
-    --border-color: #1E3A5F;
+    --bg-main: #F1F5F9;
+    --bg-card: #FFFFFF;
+    --bg-card-subtle: #F8FAFC;
+    --border-color: #E2E8F0;
     --color-primary: #2563EB;
     --color-primary-hover: #1D4ED8;
     --color-primary-dark: #1E40AF;
-    --color-text-main: #F8FAFC;
-    --color-text-muted: #94A3B8;
+    --color-text-main: #0F172A;
+    --color-text-muted: #64748B;
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #090E17;
-    color: #F8FAFC;
+    font-family: 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F1F5F9;
+    background-image: radial-gradient(#cbd5e1 0.75px, transparent 0.75px), radial-gradient(#cbd5e1 0.75px, #f1f5f9 0.75px);
+    background-size: 30px 30px;
+    background-position: 0 0, 15px 15px;
+    background-attachment: fixed;
+    color: #0F172A;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
@@ -26,23 +30,23 @@
   }
 }
 
-/* Custom scrollbar in dark blue tone-on-tone style */
+/* Custom scrollbar in clean light slate style */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090E17;
+  background: #F1F5F9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E3A5F;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563EB;
+  background: #94A3B8;
 }
 
 .transition-badge {

@@ -8,73 +8,73 @@ export const EventBadge = ({ tipo, size = 'md', showIcon = true, customLabel, })
                 return {
                     defaultLabel: 'CONGREGAZIONE',
                     icon: _jsx(Home, { className: iconClass }),
-                    bg: 'bg-blue-950/70',
-                    border: 'border-blue-700/60',
-                    text: 'text-blue-200',
+                    bg: 'bg-blue-50',
+                    border: 'border-blue-200',
+                    text: 'text-blue-700',
                 };
             case 'settimana_libera':
                 return {
                     defaultLabel: 'SETTIMANA LIBERA',
                     icon: _jsx(Calendar, { className: iconClass }),
-                    bg: 'bg-emerald-950/70',
-                    border: 'border-emerald-700/60',
-                    text: 'text-emerald-300',
+                    bg: 'bg-emerald-50',
+                    border: 'border-emerald-200',
+                    text: 'text-emerald-700',
                 };
             case 'assenza':
                 return {
                     defaultLabel: 'ASSENZA',
                     icon: _jsx(Plane, { className: iconClass }),
-                    bg: 'bg-sky-950/70',
-                    border: 'border-sky-700/60',
-                    text: 'text-sky-300',
+                    bg: 'bg-sky-50',
+                    border: 'border-sky-200',
+                    text: 'text-sky-700',
                 };
             case 'scuola_pionieri':
                 return {
                     defaultLabel: 'SCUOLA PIONIERI',
                     icon: _jsx(BookOpen, { className: iconClass }),
-                    bg: 'bg-purple-950/70',
-                    border: 'border-purple-700/60',
-                    text: 'text-purple-300',
+                    bg: 'bg-purple-50',
+                    border: 'border-purple-200',
+                    text: 'text-purple-700',
                 };
             case 'settimana_pioniere':
                 return {
                     defaultLabel: 'SETTIMANA PIONIERE',
                     icon: _jsx(BookMarked, { className: iconClass }),
-                    bg: 'bg-indigo-950/70',
-                    border: 'border-indigo-700/60',
-                    text: 'text-indigo-300',
+                    bg: 'bg-indigo-50',
+                    border: 'border-indigo-200',
+                    text: 'text-indigo-700',
                 };
             case 'assemblea_circoscrizione':
                 return {
                     defaultLabel: 'ASSEMBLEA CIRCOSCRIZIONE',
                     icon: _jsx(Users, { className: iconClass }),
-                    bg: 'bg-amber-950/70',
-                    border: 'border-amber-700/60',
-                    text: 'text-amber-300',
+                    bg: 'bg-amber-50',
+                    border: 'border-amber-300',
+                    text: 'text-amber-800',
                 };
             case 'congresso':
                 return {
                     defaultLabel: 'CONGRESSO',
                     icon: _jsx(Users, { className: iconClass }),
-                    bg: 'bg-rose-950/70',
-                    border: 'border-rose-700/60',
-                    text: 'text-rose-300',
+                    bg: 'bg-rose-50',
+                    border: 'border-rose-200',
+                    text: 'text-rose-700',
                 };
             case 'evento_personalizzato':
                 return {
                     defaultLabel: 'EVENTO PERSONALIZZATO',
                     icon: _jsx(Star, { className: iconClass }),
-                    bg: 'bg-slate-800/80',
-                    border: 'border-slate-600',
-                    text: 'text-slate-200',
+                    bg: 'bg-slate-100',
+                    border: 'border-slate-300',
+                    text: 'text-slate-700',
                 };
             default:
                 return {
                     defaultLabel: tipo,
                     icon: null,
-                    bg: 'bg-slate-900',
-                    border: 'border-slate-700',
-                    text: 'text-slate-300',
+                    bg: 'bg-slate-100',
+                    border: 'border-slate-300',
+                    text: 'text-slate-700',
                 };
         }
     };

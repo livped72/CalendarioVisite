@@ -307,7 +307,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#090E17] text-[#F8FAFC] selection:bg-blue-600 selection:text-white pb-24 lg:pb-8">
+    <div className="min-h-screen flex text-slate-800 selection:bg-blue-600 selection:text-white pb-24 lg:pb-8">
       <Sidebar
         currentTab={currentTab}
         onSelectTab={setCurrentTab}

@@ -157,18 +157,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090E17] flex flex-col justify-center items-center p-4 text-[#F8FAFC]">
-      <div className="w-full max-w-md bg-[#0F1A30] rounded-3xl border border-[#1E3A5F] shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4 text-slate-800">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
         {/* Logo & Header */}
         <div className="flex flex-col items-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-blue-950/80 flex items-center justify-center border border-blue-800/60 mb-3 shadow-lg shadow-blue-950/50">
-            <ShieldCheck size={36} className="text-blue-400" />
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center border border-blue-200 mb-3 shadow-xs">
+            <ShieldCheck size={36} className="text-blue-600" />
           </div>
-          <span className="text-[10px] font-bold tracking-widest text-blue-300 uppercase bg-[#0B1426] px-3 py-1 rounded-full border border-[#1E3A5F] mb-1.5 flex items-center gap-1">
+          <span className="text-[10px] font-bold tracking-widest text-blue-700 uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-200 mb-1.5 flex items-center gap-1">
             <span>🛡️ Portale Riservato &amp; Cifrato</span>
           </span>
-          <h1 className="text-xl font-black text-white">Calendario Visite</h1>
-          <p className="text-xs text-slate-400 text-center mt-1">
+          <h1 className="text-xl font-black text-slate-900">Calendario Visite</h1>
+          <p className="text-xs text-slate-500 text-center mt-1">
             {mode === 'login'
               ? 'Accedi con le tue credenziali autorizzate'
               : 'Registrazione ad accesso protetto: codice invito richiesto'}
@@ -176,14 +176,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 p-1 bg-[#0B1426] rounded-2xl border border-[#1E3A5F] mb-5">
+        <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl border border-slate-200/80 mb-5">
           <button
             type="button"
             onClick={() => { setMode('login'); setError(null); }}
             className={`py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
               mode === 'login'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-950/50'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-blue-600 shadow-xs border border-slate-200/60'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             Accedi
@@ -193,25 +193,25 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             onClick={() => { setMode('register'); setError(null); }}
             className={`py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 ${
               mode === 'register'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-950/50'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-blue-600 shadow-xs border border-slate-200/60'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             <span>Registrati</span>
-            <Lock className="w-3 h-3 text-blue-300" />
+            <Lock className="w-3 h-3 text-slate-400" />
           </button>
         </div>
 
         {/* Error / Success Notifications */}
         {error && (
-          <div className="mb-4 p-3 rounded-2xl bg-rose-950/40 border border-rose-900/60 text-rose-300 text-xs flex items-start gap-2 animate-in fade-in">
-            <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-400" />
+          <div className="mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 animate-in fade-in">
+            <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-600" />
             <span className="leading-relaxed">{error}</span>
           </div>
         )}
         {successMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-emerald-950/40 border border-emerald-900/60 text-emerald-300 text-xs flex items-center gap-2 font-medium animate-in fade-in">
-            <CheckCircle2 size={16} className="shrink-0 text-emerald-400" />
+          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-medium animate-in fade-in">
+            <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -221,20 +221,20 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           <div className="space-y-4">
             {/* Box Accesso Rapido Biometrico (se già abilitato sul dispositivo) */}
             {bioEnrolled && (
-              <div className="p-4 rounded-2xl bg-[#142342] text-white shadow-md border border-[#1E3A5F] animate-in fade-in">
+              <div className="p-4 rounded-2xl bg-blue-50/60 text-slate-800 shadow-xs border border-blue-200/80 animate-in fade-in">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-blue-950/80 border border-blue-800/60 flex items-center justify-center text-blue-400">
+                    <div className="w-9 h-9 rounded-xl bg-blue-100/80 border border-blue-200 flex items-center justify-center text-blue-600">
                       <Fingerprint size={22} />
                     </div>
                     <div>
-                      <h2 className="text-xs font-bold uppercase tracking-wider text-white">Accesso Biometrico</h2>
-                      <p className="text-[11px] text-slate-300">
+                      <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900">Accesso Biometrico</h2>
+                      <p className="text-[11px] text-slate-500">
                         {bioUserLabel ? `Dispositivo autorizzato per ${bioUserLabel}` : 'Touch ID / Face ID configurato'}
                       </p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-950/80 text-blue-300 border border-blue-800/60">
+                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-100/80 text-blue-700 border border-blue-200">
                     Pronto
                   </span>
                 </div>
@@ -243,7 +243,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   type="button"
                   onClick={handleBiometricLogin}
                   disabled={bioLoading}
-                  className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-blue-950/50 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                  className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold text-xs uppercase tracking-wider shadow-sm shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
                 >
                   {bioLoading ? (
                     <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" />
@@ -255,7 +255,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   )}
                 </button>
 
-                <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-400">
+                <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-500">
                   <span>Sblocco rapido senza password</span>
                   <button
                     type="button"
@@ -264,7 +264,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                       setBioEnrolled(false);
                       setBioUserLabel('');
                     }}
-                    className="hover:text-blue-300 underline cursor-pointer"
+                    className="hover:text-blue-600 underline cursor-pointer"
                   >
                     Rimuovi da questo dispositivo
                   </button>
@@ -274,8 +274,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
             {bioEnrolled && (
               <div className="relative my-2 flex items-center justify-center">
-                <div className="border-t border-[#172646] w-full" />
-                <span className="bg-[#0F1A30] px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider absolute">
+                <div className="border-t border-slate-200 w-full" />
+                <span className="bg-white px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider absolute">
                   oppure con credenziali
                 </span>
               </div>
@@ -283,11 +283,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Username o Email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-3 w-4 h-4 text-blue-400" />
+                  <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
                     value={email}
@@ -296,17 +296,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                     autoComplete="username"
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="odglivio oppure la tua email"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#1E3A5F] text-sm bg-[#0B1426] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3 w-4 h-4 text-blue-400" />
+                  <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
@@ -314,12 +314,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                     autoComplete="current-password"
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#1E3A5F] text-sm bg-[#0B1426] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer"
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer"
                     aria-label="Mostra o nascondi password"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -329,15 +329,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
               {/* Opzione per attivare biometria se il dispositivo è compatibile ma non ancora configurato */}
               {bioSupported && !bioEnrolled && (
-                <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0B1426] border border-[#1E3A5F] cursor-pointer hover:bg-[#142342] transition-colors select-none">
+                <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors select-none">
                   <input
                     type="checkbox"
                     checked={enableBiometricsCheckbox}
                     onChange={(e) => setEnableBiometricsCheckbox(e.target.checked)}
                     className="w-4 h-4 rounded text-blue-600 accent-blue-600 cursor-pointer shrink-0"
                   />
-                  <div className="flex items-center gap-1.5 text-xs text-slate-200">
-                    <Fingerprint className="w-4 h-4 text-blue-400 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-xs text-slate-700">
+                    <Fingerprint className="w-4 h-4 text-blue-600 shrink-0" />
                     <span>
                       Attiva <strong>Face ID / Touch ID</strong> per i prossimi accessi
                     </span>
@@ -348,7 +348,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-md shadow-blue-950/50 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
               >
                 {loading ? (
                   <span className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin inline-block" />
@@ -366,12 +366,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         {mode === 'register' && (
           <form onSubmit={handleRegister} className="space-y-3.5">
             {/* Blocco Codice di Autorizzazione obbligatorio */}
-            <div className="p-3 bg-[#0B1426] rounded-2xl border border-[#1E3A5F] space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-black text-white uppercase tracking-wider">
-                <KeyRound className="w-4 h-4 text-blue-400" />
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-black text-slate-800 uppercase tracking-wider">
+                <KeyRound className="w-4 h-4 text-blue-600" />
                 <span>Codice Autorizzazione Amministratore *</span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-tight">
+              <p className="text-[11px] text-slate-500 leading-tight">
                 La registrazione autonoma è disabilitata. Inserisci il codice segreto fornito dall'amministratore.
               </p>
               <input
@@ -380,16 +380,16 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                 value={codiceInvito}
                 onChange={(e) => setCodiceInvito(e.target.value)}
                 placeholder="Codice autorizzazione..."
-                className="w-full px-3.5 py-2 rounded-xl border border-[#1E3A5F] text-xs sm:text-sm bg-[#142342] font-bold tracking-wider focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 text-white placeholder-slate-500"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white font-bold tracking-wider focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-800 placeholder-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                 Nome e Cognome *
               </label>
               <div className="relative">
-                <User className="absolute left-3.5 top-2.5 w-4 h-4 text-blue-400" />
+                <User className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   value={nome}
@@ -397,17 +397,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="name"
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="es. Livio Pedrini"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-[#1E3A5F] text-sm bg-[#0B1426] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                 Email *
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-2.5 w-4 h-4 text-blue-400" />
+                <Mail className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
                 <input
                   type="email"
                   value={email}
@@ -415,17 +415,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="email"
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tua@email.it"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-[#1E3A5F] text-sm bg-[#0B1426] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                 Password (min. 6 caratteri) *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-2.5 w-4 h-4 text-blue-400" />
+                <Lock className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -434,12 +434,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="new-password"
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2 rounded-xl border border-[#1E3A5F] text-sm bg-[#0B1426] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
                   aria-label="Mostra o nascondi password"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -448,11 +448,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                 Conferma Password *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-2.5 w-4 h-4 text-blue-400" />
+                <Lock className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
@@ -460,7 +460,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   autoComplete="new-password"
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-[#1E3A5F] text-sm bg-[#0B1426] text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
@@ -468,7 +468,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-md shadow-blue-950/50 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm shadow-blue-500/25 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin inline-block" />
@@ -482,13 +482,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         )}
 
         {/* Footer info */}
-        <div className="mt-5 pt-4 border-t border-[#172646] text-center text-xs text-slate-400">
+        <div className="mt-5 pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
           {mode === 'login' ? (
             <span>
               Hai un codice di autorizzazione per registrarti?{' '}
               <button
                 onClick={() => { setMode('register'); setError(null); }}
-                className="text-blue-400 font-bold hover:underline cursor-pointer"
+                className="text-blue-600 font-bold hover:underline cursor-pointer"
               >
                 Registrati qui
               </button>
@@ -498,7 +498,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
               Hai già un account registrato?{' '}
               <button
                 onClick={() => { setMode('login'); setError(null); }}
-                className="text-blue-400 font-bold hover:underline cursor-pointer"
+                className="text-blue-600 font-bold hover:underline cursor-pointer"
               >
                 Torna al Login
               </button>
@@ -507,7 +507,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         </div>
 
         {/* Privacy badge */}
-        <p className="mt-4 text-[10px] text-slate-500 text-center leading-relaxed">
+        <p className="mt-4 text-[10px] text-slate-400 text-center leading-relaxed">
           Accesso riservato e protetto da crittografia AES-256. L'amministratore del sistema rilascia le autorizzazioni di accesso.
         </p>
       </div>

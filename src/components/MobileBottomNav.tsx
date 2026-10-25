@@ -16,11 +16,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const isAppuntamenti = currentTab === 'appuntamenti' || currentTab === ('situazione' as TabNav);
 
   return (
-    <div className="lg:hidden fixed bottom-0 inset-x-0 bg-[#0C1424]/95 backdrop-blur-md border-t border-[#192744] z-40 pt-1.5 pb-[max(env(safe-area-inset-bottom),0.6rem)] px-3 flex items-center justify-around shadow-2xl">
+    <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-slate-200 z-40 pt-1.5 pb-[max(env(safe-area-inset-bottom),0.6rem)] px-3 flex items-center justify-around shadow-lg">
       <button
         onClick={() => onSelectTab('calendario')}
         className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-colors cursor-pointer min-w-[64px] ${
-          currentTab === 'calendario' ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white'
+          currentTab === 'calendario' ? 'text-blue-600 font-bold' : 'text-slate-400 hover:text-slate-700'
         }`}
       >
         <CalendarDays className="w-5 h-5" />
@@ -30,7 +30,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       <button
         onClick={() => onSelectTab('congregazioni')}
         className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-colors cursor-pointer min-w-[64px] ${
-          currentTab === 'congregazioni' ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white'
+          currentTab === 'congregazioni' ? 'text-blue-600 font-bold' : 'text-slate-400 hover:text-slate-700'
         }`}
       >
         <Users className="w-5 h-5" />
@@ -40,7 +40,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       <button
         onClick={() => onSelectTab('appuntamenti')}
         className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-colors cursor-pointer min-w-[64px] ${
-          isAppuntamenti ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white'
+          isAppuntamenti ? 'text-blue-600 font-bold' : 'text-slate-400 hover:text-slate-700'
         }`}
       >
         <CalendarCheck2 className="w-5 h-5" />
@@ -49,7 +49,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
       <button
         onClick={onOpenMore}
-        className="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer min-w-[64px]"
+        className="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-slate-400 hover:text-slate-700 transition-colors cursor-pointer min-w-[64px]"
       >
         <MoreHorizontal className="w-5 h-5" />
         <span className="text-[10px] uppercase font-bold tracking-wider">Altro</span>

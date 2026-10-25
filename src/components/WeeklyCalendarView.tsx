@@ -12,6 +12,7 @@ import {
   Table as TableIcon,
   Phone,
   Info,
+  Home,
 } from 'lucide-react';
 import { Settimana, Congregazione, Appuntamento } from '../types';
 import { EventBadge } from './EventBadge';
@@ -157,9 +158,9 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
 
   if (settimane.length === 0) {
     return (
-      <div className="bg-[#0F1A30] rounded-3xl border border-[#1E3A5F] shadow-2xs p-12 text-center">
-        <Calendar className="w-10 h-10 text-blue-400 mx-auto mb-3 opacity-80" />
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Nessuna settimana pianificata</h3>
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-12 text-center">
+        <Calendar className="w-10 h-10 text-blue-500 mx-auto mb-3 opacity-80" />
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Nessuna settimana pianificata</h3>
         <p className="text-xs text-slate-400 mt-1">
           Aggiungi le settimane dal Calendario Principale per visualizzare e gestire gli appuntamenti.
         </p>
@@ -172,15 +173,15 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
   return (
     <div className="space-y-4">
       {/* ── TOP CONTROL BAR EVOLUTA ── */}
-      <div className="bg-[#0F1A30] p-4 sm:p-5 rounded-3xl border border-[#1E3A5F] shadow-xs space-y-3.5">
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3.5">
         {/* Riga 1: Selettore Settimana Evidenziato & Pulsanti Stepper */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
           {/* Pulsanti Step: < Oggi > */}
-          <div className="flex items-center justify-between sm:justify-start gap-1 bg-[#0B1426] rounded-2xl border border-[#1E3A5F] p-1 shrink-0 shadow-2xs">
+          <div className="flex items-center justify-between sm:justify-start gap-1 bg-slate-100 rounded-2xl border border-slate-200 p-1 shrink-0 shadow-2xs">
             <button
               onClick={handlePrevWeek}
               disabled={selectedWeekIndex === 0}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#142342] disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
               title="Settimana precedente"
               aria-label="Settimana precedente"
             >
@@ -188,14 +189,14 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
             </button>
             <button
               onClick={handleJumpToToday}
-              className="px-3 py-1.5 text-xs font-extrabold text-blue-400 hover:text-blue-300 hover:bg-[#142342] rounded-xl transition-colors cursor-pointer"
+              className="px-3 py-1.5 text-xs font-black text-blue-600 hover:text-blue-800 hover:bg-white rounded-xl transition-colors cursor-pointer"
             >
               Oggi
             </button>
             <button
               onClick={handleNextWeek}
               disabled={selectedWeekIndex === settimane.length - 1}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#142342] disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer transition-colors"
               title="Settimana successiva"
               aria-label="Settimana successiva"
             >
@@ -209,16 +210,16 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
               <select
                 value={selectedWeekIndex}
                 onChange={(e) => setSelectedWeekIndex(parseInt(e.target.value, 10))}
-                className="w-full appearance-none pl-3.5 pr-10 py-2.5 rounded-2xl border-2 border-[#1E3A5F] hover:border-blue-500 bg-[#0B1426] text-xs sm:text-sm font-black text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-xs cursor-pointer truncate transition-all"
+                className="w-full appearance-none pl-3.5 pr-10 py-2.5 rounded-2xl border-2 border-slate-200 hover:border-blue-500 bg-slate-50 text-xs sm:text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 shadow-xs cursor-pointer truncate transition-all"
                 title="Seleziona la settimana di visita"
               >
                 {settimane.map((w, idx) => (
-                  <option key={w.id} value={idx} className="bg-[#0B1426] text-white">
+                  <option key={w.id} value={idx} className="bg-white text-slate-900">
                     Sett. {idx + 1}: {abbreviateMonths(w.periodo)} — {w.dettagli !== '-' ? w.dettagli : w.evento}
                   </option>
                 ))}
               </select>
-              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-blue-400">
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
                 <ChevronDown className="w-4 h-4" />
               </div>
             </div>
@@ -226,29 +227,29 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
         </div>
 
         {/* Riga 2: Pulsanti di Azione e Switcher Vista per Mobile & Desktop */}
-        <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-[#172646]">
+        <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-slate-100">
           {/* Switcher Vista Settimana / Riepilogo */}
-          <div className="flex items-center bg-[#0B1426] p-1 rounded-2xl border border-[#1E3A5F] text-xs font-bold shadow-2xs">
+          <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold shadow-2xs">
             <button
               onClick={() => setViewMode('calendar')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                 viewMode === 'calendar'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-950/50 font-extrabold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-sm font-extrabold'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              <CalendarDays className="w-3.5 h-3.5 text-blue-300" />
+              <CalendarDays className="w-3.5 h-3.5" />
               <span>Settimana</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                 viewMode === 'table'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-950/50 font-extrabold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-white shadow-sm font-extrabold'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              <TableIcon className="w-3.5 h-3.5 text-blue-300" />
+              <TableIcon className="w-3.5 h-3.5" />
               <span>Riepilogo</span>
             </button>
           </div>
@@ -257,17 +258,17 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
             {/* Sincronizza Calendario */}
             <button
               onClick={() => setIsSyncModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#1E3A5F] hover:border-blue-400 bg-[#142342] hover:bg-[#1A2C52] text-xs font-bold text-blue-200 transition-colors shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-blue-400 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors shadow-2xs cursor-pointer"
               title="Sincronizza con Apple Calendar, Google o Outlook"
             >
-              <Calendar className="w-3.5 h-3.5 text-blue-400" />
+              <Calendar className="w-3.5 h-3.5 text-blue-600" />
               <span className="hidden sm:inline">Sincronizza</span>
             </button>
 
             {/* + Nuovo Evento */}
             <button
               onClick={() => openNewAppointment()}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-md shadow-blue-950/50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Nuovo Evento</span>
@@ -280,10 +281,10 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
         <>
           {/* ── BANNER PANORAMICA SETTIMANA ── */}
           {activeWeek && (
-            <div className="bg-[#0F1A30] rounded-3xl border border-[#1E3A5F] shadow-xs p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div className="space-y-1.5 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-extrabold text-blue-400 uppercase tracking-wider">
+                  <span className="text-xs font-extrabold text-blue-600 uppercase tracking-wider">
                     {abbreviateMonths(activeWeek.periodo)}
                   </span>
                   {activeWeek.evento === 'congregazione' && activeWeek.numero > 0 && (
@@ -301,22 +302,22 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 pt-0.5">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-0.5">
                   {congActive?.citta && (
                     <span className="inline-flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                      <strong className="text-slate-300">Zona:</strong> {congActive.citta}
+                      <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                      <strong className="text-slate-700">Zona:</strong> {congActive.citta}
                     </span>
                   )}
                   {congActive?.contatto && (
                     <span className="inline-flex items-center gap-1">
-                      <Phone className="w-3.5 h-3.5 text-blue-400" />
-                      <strong className="text-slate-300">Referente:</strong> {congActive.contatto}
+                      <Phone className="w-3.5 h-3.5 text-blue-600" />
+                      <strong className="text-slate-700">Referente:</strong> {congActive.contatto}
                     </span>
                   )}
                   {activeWeek.note && activeWeek.note !== '-' && (
-                    <span className="inline-flex items-center gap-1 italic text-slate-400">
-                      <Info className="w-3.5 h-3.5 text-blue-400" />
+                    <span className="inline-flex items-center gap-1 italic text-slate-500">
+                      <Info className="w-3.5 h-3.5 text-blue-600" />
                       {activeWeek.note}
                     </span>
                   )}
@@ -324,8 +325,8 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
               </div>
 
               <div className="shrink-0">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0B1426] border border-[#1E3A5F] text-xs text-slate-300">
-                  <span className="font-extrabold text-blue-400 text-sm">{weekAppsCount}</span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-700 font-semibold">
+                  <span className="font-extrabold text-blue-600 text-sm">{weekAppsCount}</span>
                   <span>{weekAppsCount === 1 ? 'evento pianificato' : 'eventi pianificati'}</span>
                 </div>
               </div>
@@ -344,21 +345,21 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                   key={day.iso}
                   className={`rounded-3xl border flex flex-col md:flex-row transition-all overflow-hidden ${
                     day.isToday
-                      ? 'bg-[#0F1A30] border-blue-500 ring-2 ring-blue-500/30 shadow-md shadow-blue-950/40'
-                      : 'bg-[#0F1A30] border-[#1E3A5F] shadow-2xs hover:border-blue-500/50'
+                      ? 'bg-white border-2 border-blue-500 ring-4 ring-blue-500/10 shadow-md'
+                      : 'bg-white border-slate-200 shadow-2xs hover:border-slate-300'
                   }`}
                 >
                   {/* Testata Giorno (Desktop: Colonna Sinistra | Mobile: Barra Superiore) */}
                   <div
                     className={`p-3.5 sm:p-4 md:w-44 shrink-0 md:border-r border-b md:border-b-0 flex md:flex-col items-center md:items-start justify-between md:justify-start gap-2 ${
                       day.isToday
-                        ? 'bg-[#142342] border-blue-500/30 text-blue-200'
-                        : 'bg-[#0B1426] border-[#1E3A5F] text-slate-200'
+                        ? 'bg-blue-50/60 border-blue-200 text-blue-900'
+                        : 'bg-slate-50/80 border-slate-200 text-slate-700'
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-400">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600">
                           {day.dayName}
                         </span>
                         {day.isToday && (
@@ -367,17 +368,17 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                           </span>
                         )}
                       </div>
-                      <div className="text-xl md:text-2xl font-black mt-0.5 tracking-tight text-white">
-                        {day.dayNumber} <span className="text-sm font-semibold text-slate-400">{day.monthShort}</span>
+                      <div className="text-xl md:text-2xl font-black mt-0.5 tracking-tight text-slate-900">
+                        {day.dayNumber} <span className="text-sm font-semibold text-slate-500">{day.monthShort}</span>
                       </div>
                     </div>
 
                     <button
                       onClick={() => openNewAppointment(day.iso)}
-                      className="py-1.5 px-2.5 rounded-xl border border-dashed border-[#1E3A5F] hover:border-blue-400 bg-[#142342] hover:bg-[#1A2C52] text-[11px] font-bold text-slate-300 hover:text-white flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                      className="py-1.5 px-2.5 rounded-xl border border-slate-200 hover:border-blue-500 bg-white hover:bg-blue-50 text-[11px] font-bold text-slate-700 hover:text-blue-700 flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
                       title={`Aggiungi appuntamento per ${day.dayName}`}
                     >
-                      <Plus className="w-3.5 h-3.5 text-blue-400" />
+                      <Plus className="w-3.5 h-3.5 text-blue-600" />
                       <span>Aggiungi</span>
                     </button>
                   </div>
@@ -387,30 +388,42 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                     {dayApps.length === 0 ? (
                       <button
                         onClick={() => openNewAppointment(day.iso)}
-                        className="w-full h-full min-h-[56px] flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-blue-300 hover:bg-[#142342]/40 rounded-2xl border border-dashed border-[#1E3A5F] transition-colors p-3 cursor-pointer group"
+                        className="w-full h-full min-h-[56px] flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-2xl border border-dashed border-slate-200 transition-colors p-3 cursor-pointer group"
                       >
-                        <Plus className="w-3.5 h-3.5 text-slate-500 group-hover:text-blue-400 transition-colors" />
+                        <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition-colors" />
                         <span className="font-medium">Nessun evento in programma. Tocca per aggiungere.</span>
                       </button>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                        {dayApps.map((app) => (
+                        {dayApps.map((app) => {
+                          const appCong = app.congregazioneId ? congMap.get(app.congregazioneId) : undefined;
+                          return (
                           <div
                             key={app.id}
                             onClick={() => openEditAppointment(app)}
-                            className="p-3.5 rounded-2xl border border-[#1E3A5F] bg-[#142342] hover:border-blue-400 hover:bg-[#1A2C52] hover:shadow-md hover:shadow-blue-950/40 transition-all cursor-pointer group relative flex flex-col justify-between min-h-[80px]"
+                            className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:border-blue-400 hover:bg-white hover:shadow-md transition-all cursor-pointer group relative flex flex-col justify-between min-h-[80px]"
                           >
                             <div>
                               {/* Orario di inizio */}
-                              <div className="flex items-center justify-between gap-1 mb-1.5">
-                                <span className="inline-flex items-center gap-1.5 font-black text-xs text-blue-300 bg-[#0B1426] border border-[#1E3A5F] px-2 py-0.5 rounded-lg">
-                                  <Clock className="w-3.5 h-3.5 text-blue-400" />
+                              <div className="flex items-center justify-between gap-1 mb-2">
+                                <span className="inline-flex items-center gap-1.5 font-black text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg">
+                                  <Clock className="w-3.5 h-3.5 text-blue-600" />
                                   {app.oraInizio}
                                 </span>
                               </div>
 
+                              {/* Congregazione — badge grande evidenziato */}
+                              {appCong && (
+                                <div className="mb-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 shadow-2xs">
+                                  <Home className="w-4 h-4 text-blue-600 shrink-0" />
+                                  <span className="font-extrabold text-sm text-blue-800 leading-tight truncate">
+                                    {appCong.nome}
+                                  </span>
+                                </div>
+                              )}
+
                               {/* Titolo Appuntamento */}
-                              <div className="font-extrabold text-white text-sm leading-snug group-hover:text-blue-200 transition-colors">
+                              <div className="font-extrabold text-slate-900 text-sm leading-snug group-hover:text-blue-700 transition-colors">
                                 {app.titolo}
                               </div>
                             </div>
@@ -418,8 +431,8 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                             <div className="mt-2 space-y-1">
                               {/* Luogo */}
                               {app.luogo && (
-                                <div className="flex items-center gap-1.5 text-[11px] text-slate-300 truncate">
-                                  <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 truncate">
+                                  <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                                   <span className="truncate">{app.luogo}</span>
                                 </div>
                               )}
@@ -433,11 +446,12 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                             </div>
 
                             {/* Icona modifica su hover */}
-                            <div className="absolute right-2.5 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg bg-[#0B1426] border border-[#1E3A5F] shadow-xs">
-                              <Pencil className="w-3 h-3 text-slate-300" />
+                            <div className="absolute right-2.5 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg bg-white border border-slate-200 shadow-xs">
+                              <Pencil className="w-3 h-3 text-slate-500" />
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -448,25 +462,25 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
         </>
       ) : (
         /* ── TABELLA RIEPILOGO COPERTURA ── */
-        <div className="bg-[#0F1A30] rounded-3xl border border-[#1E3A5F] shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-[#1E3A5F] bg-[#0B1426] font-bold text-xs text-slate-300 uppercase tracking-wider grid grid-cols-12 gap-2">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-200 bg-slate-50 font-bold text-xs text-slate-500 uppercase tracking-wider grid grid-cols-12 gap-2">
             <div className="col-span-4">Congregazione</div>
             <div className="col-span-3">Ultima Visita</div>
             <div className="col-span-3">Tempo Trascorso</div>
             <div className="col-span-2 text-right">Stato</div>
           </div>
-          <div className="divide-y divide-[#172646]">
+          <div className="divide-y divide-slate-100">
             {congregazioni.map((c) => {
               const isCritical = c.settimaneTrascorse >= 12;
               const isMedium = c.settimaneTrascorse >= 6 && c.settimaneTrascorse < 12;
               return (
-                <div key={c.id} className="p-4 text-xs grid grid-cols-12 gap-2 items-center hover:bg-[#142342]/40 transition-colors">
-                  <div className="col-span-4 font-bold text-white">{c.nome}</div>
-                  <div className="col-span-3 text-slate-300">{abbreviateMonths(c.ultimaVisita)}</div>
+                <div key={c.id} className="p-4 text-xs grid grid-cols-12 gap-2 items-center hover:bg-slate-50 transition-colors">
+                  <div className="col-span-4 font-bold text-slate-900">{c.nome}</div>
+                  <div className="col-span-3 text-slate-600">{abbreviateMonths(c.ultimaVisita)}</div>
                   <div className="col-span-3">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-200">{c.settimaneTrascorse} sett.</span>
-                      <div className="w-16 bg-[#0B1426] border border-[#1E3A5F] h-1.5 rounded-full overflow-hidden hidden sm:block">
+                      <span className="font-bold text-slate-700">{c.settimaneTrascorse} sett.</span>
+                      <div className="w-16 bg-slate-100 border border-slate-200 h-1.5 rounded-full overflow-hidden hidden sm:block">
                         <div
                           className={`h-full ${
                             isCritical ? 'bg-rose-500' : isMedium ? 'bg-amber-500' : 'bg-blue-500'
@@ -480,10 +494,10 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
                     <span
                       className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                         isCritical
-                          ? 'bg-rose-950/60 border border-rose-800/60 text-rose-300'
+                          ? 'bg-rose-50 border border-rose-200 text-rose-700'
                           : isMedium
-                          ? 'bg-amber-950/60 border border-amber-800/60 text-amber-300'
-                          : 'bg-blue-950/60 border border-blue-800/60 text-blue-300'
+                          ? 'bg-amber-50 border border-amber-200 text-amber-800'
+                          : 'bg-blue-50 border border-blue-200 text-blue-700'
                       }`}
                     >
                       {isCritical ? 'Urgente' : isMedium ? 'In attesa' : 'Regolare'}

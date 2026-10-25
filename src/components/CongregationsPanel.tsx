@@ -44,41 +44,41 @@ export const CongregationsPanel: React.FC<CongregationsPanelProps> = ({
       case 0:
       case 1:
         return {
-          badgeBg: 'bg-rose-600 text-white shadow-xs',
-          textClass: 'text-rose-400 font-bold',
-          borderClass: 'border-rose-900/60 bg-[#171E36]',
-          linkClass: 'text-rose-300 hover:text-rose-200',
+          badgeBg: 'bg-rose-500 text-white shadow-2xs',
+          textClass: 'text-rose-600 font-bold',
+          borderClass: 'border-rose-200/80 bg-rose-50/50 hover:bg-rose-50/80',
+          linkClass: 'text-rose-700 hover:text-rose-800',
         };
       case 2:
       case 3:
         return {
-          badgeBg: 'bg-amber-600 text-white shadow-xs',
-          textClass: 'text-amber-400 font-bold',
-          borderClass: 'border-amber-900/60 bg-[#16223C]',
-          linkClass: 'text-amber-300 hover:text-amber-200',
+          badgeBg: 'bg-amber-500 text-white shadow-2xs',
+          textClass: 'text-amber-600 font-bold',
+          borderClass: 'border-amber-200/80 bg-amber-50/50 hover:bg-amber-50/80',
+          linkClass: 'text-amber-700 hover:text-amber-800',
         };
       default:
         return {
-          badgeBg: 'bg-blue-600 text-white shadow-xs',
-          textClass: 'text-blue-400 font-bold',
-          borderClass: 'border-[#1E3A5F] bg-[#142342]',
-          linkClass: 'text-blue-300 hover:text-white',
+          badgeBg: 'bg-blue-600 text-white shadow-2xs',
+          textClass: 'text-blue-600 font-bold',
+          borderClass: 'border-slate-200/80 bg-slate-50/70 hover:bg-slate-100/70',
+          linkClass: 'text-slate-800 hover:text-blue-600',
         };
     }
   };
 
   return (
-    <div className="bg-[#0F1A30] rounded-3xl border border-[#1E3A5F] shadow-2xs p-5 text-[#F8FAFC]">
+    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-5 text-slate-800">
       {/* Header with Title and "Vedi tutte" */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#172646] mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
             Congregazioni per tempo dall'ultima visita
           </h3>
           <div className="relative">
             <button
               onClick={() => setShowInfo(!showInfo)}
-              className="text-slate-400 hover:text-white transition-colors p-1 cursor-pointer"
+              className="text-slate-400 hover:text-slate-700 transition-colors p-1 cursor-pointer"
               title="Informazioni classifica"
             >
               <Info className="w-4 h-4" />
@@ -86,7 +86,7 @@ export const CongregationsPanel: React.FC<CongregationsPanelProps> = ({
             {showInfo && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setShowInfo(false)} />
-                <div className="absolute left-0 sm:left-auto sm:right-0 mt-1 w-72 p-3 bg-[#0B1426] text-slate-200 text-xs rounded-2xl shadow-xl z-30 leading-relaxed border border-[#1E3A5F]">
+                <div className="absolute left-0 sm:left-auto sm:right-0 mt-1 w-72 p-3 bg-white text-slate-700 text-xs rounded-2xl shadow-xl z-30 leading-relaxed border border-slate-200">
                   Le congregazioni sono ordinate in base al numero di settimane trascorse dall'ultima visita completata.
                   I colori evidenziano l'urgenza di ripianificazione.
                   Clicca sul nome per navigare direttamente alla settimana pianificata nel calendario.
@@ -98,7 +98,7 @@ export const CongregationsPanel: React.FC<CongregationsPanelProps> = ({
 
         <button
           onClick={onViewAll}
-          className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 transition-colors hover:underline cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700 transition-colors hover:underline cursor-pointer self-start sm:self-auto"
         >
           <span>Vedi tutte le {congregazioni.length} congregazioni</span>
           <ExternalLink className="w-3.5 h-3.5" />
@@ -136,13 +136,13 @@ export const CongregationsPanel: React.FC<CongregationsPanelProps> = ({
                       }
                     }}
                     className={`text-xs font-bold truncate block w-full text-left transition-colors underline decoration-dotted underline-offset-2 cursor-pointer ${
-                      onNavigateToSettimana ? style.linkClass : 'text-white hover:text-blue-300'
+                      onNavigateToSettimana ? style.linkClass : 'text-slate-800 hover:text-blue-600'
                     }`}
                     title={linkedSettimana ? `Vai alla settimana: ${linkedSettimana.periodo}` : 'Vai agli appuntamenti'}
                   >
                     {c.nome}
                   </button>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-[10px] text-slate-500">
                     Ultima: {formattedUltimaVisita}
                   </div>
                 </div>

@@ -39,15 +39,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const content = (
-    <aside className="w-64 bg-[#0A101D] text-[#CBD5E1] flex flex-col h-full select-none shadow-2xl border-r border-[#192744]">
+    <aside className="w-64 bg-white/95 backdrop-blur-md text-slate-700 flex flex-col h-full select-none shadow-lg border-r border-slate-200">
       {/* Brand Header */}
-      <div className="p-5 flex items-center gap-3 border-b border-[#192744]">
-        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-950/50 ring-1 ring-white/10">
+      <div className="p-5 flex items-center gap-3 border-b border-slate-100">
+        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm ring-1 ring-blue-500/20">
           <CalendarCheck2 className="w-5 h-5" />
         </div>
         <div className="flex flex-col">
-          <span className="text-white font-bold text-base leading-tight tracking-tight">Calendario</span>
-          <span className="text-blue-400 font-medium text-xs leading-tight">Visite</span>
+          <span className="text-slate-900 font-extrabold text-base leading-tight tracking-tight">Calendario</span>
+          <span className="text-blue-600 font-bold text-xs leading-tight">Visite</span>
         </div>
       </div>
 
@@ -66,11 +66,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }}
               className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer ${
                 isActive
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-950/50 font-semibold'
-                  : 'text-slate-300 hover:text-white hover:bg-[#142342]'
+                  ? 'bg-blue-600 text-white shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-blue-400/80'}`} />
+              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
               <span>{item.label}</span>
             </button>
           );
@@ -78,34 +78,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Security Quick Button & User Profile Footer */}
-      <div className="p-3 border-t border-[#192744] space-y-2 bg-[#070D18]">
+      <div className="p-3 border-t border-slate-100 space-y-2 bg-slate-50/50">
         {onOpenSecurity && (
           <button
             onClick={() => { onOpenSecurity(); onCloseMobile?.(); }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#101D36] text-blue-200 hover:bg-[#16274A] hover:text-white transition-colors cursor-pointer border border-[#1E3A5F]"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200 shadow-2xs"
           >
-            <ShieldCheck className="w-4 h-4 text-blue-400" />
+            <ShieldCheck className="w-4 h-4 text-blue-600" />
             <span>Sicurezza &amp; Privacy</span>
           </button>
         )}
 
         <button
           onClick={() => onSelectTab('impostazioni')}
-          className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-[#101D36] transition-colors text-left group cursor-pointer"
+          className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white hover:shadow-xs transition-all text-left group cursor-pointer border border-transparent hover:border-slate-200"
         >
-          <div className="w-8 h-8 rounded-full bg-blue-900/60 border border-blue-500/50 flex items-center justify-center text-xs font-bold text-white shrink-0">
+          <div className="w-8 h-8 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-xs font-extrabold text-blue-700 shrink-0">
             {user.avatarInitials}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-white truncate leading-tight">{user.nome}</div>
-            <div className="text-[11px] text-slate-400 truncate leading-tight mt-0.5">{user.email}</div>
+            <div className="text-xs font-bold text-slate-800 truncate leading-tight">{user.nome}</div>
+            <div className="text-[11px] text-slate-500 truncate leading-tight mt-0.5">{user.email}</div>
           </div>
         </button>
 
         {onLogout && (
           <button
             onClick={() => { onLogout(); onCloseMobile?.(); }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 transition-colors cursor-pointer"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span>Esci (Logout)</span>
