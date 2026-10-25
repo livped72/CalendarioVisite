@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from 'react';
 import { Mail, FileDown, Loader2, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import { downloadS302Pdf, emailS302Pdf, getS302TargetMonth, getS302TargetMonthAlerts } from '../lib/pdfGenerator';
-export const S302AlertBanner = ({ allSettimane }) => {
+export const S302AlertBanner = ({ allSettimane, senderName }) => {
     const [expanded, setExpanded] = useState(true);
     const [downloadingId, setDownloadingId] = useState(null);
     const [emailingId, setEmailingId] = useState(null);
@@ -27,7 +27,7 @@ export const S302AlertBanner = ({ allSettimane }) => {
     const handleEmail = async (item) => {
         setEmailingId(item.id);
         try {
-            await emailS302Pdf(item);
+            await emailS302Pdf(item, undefined, senderName);
         }
         catch {
             alert("Errore nella preparazione dell'email S-302.");
@@ -40,7 +40,7 @@ export const S302AlertBanner = ({ allSettimane }) => {
         setEmailingAll(true);
         try {
             for (let i = 0; i < alerts.length; i++) {
-                await emailS302Pdf(alerts[i]);
+                await emailS302Pdf(alerts[i], undefined, senderName);
                 if (i < alerts.length - 1) {
                     await new Promise((r) => setTimeout(r, 600));
                 }

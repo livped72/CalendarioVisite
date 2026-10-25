@@ -23,6 +23,7 @@ interface WeekTableProps {
   visitNumberMap?: Map<string, { numero: number; isReset?: boolean; motivazione?: string }>;
   /** Naviga al tab appuntamenti per questa settimana */
   onViewAppuntamenti?: (settimanaId: string) => void;
+  senderName?: string;
 }
 
 const BADGE_COLORS = [
@@ -38,6 +39,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   onDuplicateWeek,
   visitNumberMap,
   onViewAppuntamenti,
+  senderName,
 }) => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
     e?.stopPropagation();
     setEmailingId(item.id);
     try {
-      await emailS302Pdf(item);
+      await emailS302Pdf(item, undefined, senderName);
     } catch (err) {
       console.error('Errore invio email S-302:', err);
       alert('Impossibile preparare l\'email S-302 per questa settimana.');

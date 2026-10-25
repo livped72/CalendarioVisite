@@ -336,7 +336,7 @@ export const App: React.FC = () => {
           {currentTab === 'calendario' && (
             <div className="space-y-5">
               {/* Banner S-302: visite del mese corrente +4 da inviare via email */}
-              <S302AlertBanner allSettimane={allSettimaneFlat} />
+              <S302AlertBanner allSettimane={allSettimaneFlat} senderName={user.nome} />
 
               <SummaryCards
                 stats={computeKpiStats(settimane, congregazioni)}
@@ -346,6 +346,7 @@ export const App: React.FC = () => {
                     .sort((a, b) => a.startDate.localeCompare(b.startDate))[0]
                 }
                 onPlanNextWeek={() => { setEditingWeek(null); setIsWeekModalOpen(true); }}
+                senderName={user.nome}
               />
               <WeekTable
                 settimane={settimane}
@@ -354,6 +355,7 @@ export const App: React.FC = () => {
                 onDuplicateWeek={handleDuplicateWeek}
                 visitNumberMap={visitNumberMap}
                 onViewAppuntamenti={handleNavigateToSettimana}
+                senderName={user.nome}
               />
             </div>
           )}
@@ -413,6 +415,7 @@ export const App: React.FC = () => {
         periodo={periodo}
         settimane={settimane}
         allSettimaneMap={allSettimaneMap}
+        senderName={user.nome}
       />
 
       <AllCongregationsModal

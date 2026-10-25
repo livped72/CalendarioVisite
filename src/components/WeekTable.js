@@ -9,7 +9,7 @@ const BADGE_COLORS = [
     'bg-blue-800', 'bg-cyan-700', 'bg-indigo-700', 'bg-blue-500',
     'bg-sky-700', 'bg-indigo-500', 'bg-blue-900', 'bg-cyan-600',
 ];
-export const WeekTable = ({ settimane, onEditWeek, onDeleteWeek, onDuplicateWeek, visitNumberMap, onViewAppuntamenti, }) => {
+export const WeekTable = ({ settimane, onEditWeek, onDeleteWeek, onDuplicateWeek, visitNumberMap, onViewAppuntamenti, senderName, }) => {
     const [activeMenuId, setActiveMenuId] = useState(null);
     const [downloadingId, setDownloadingId] = useState(null);
     const [emailingId, setEmailingId] = useState(null);
@@ -41,7 +41,7 @@ export const WeekTable = ({ settimane, onEditWeek, onDeleteWeek, onDuplicateWeek
         e?.stopPropagation();
         setEmailingId(item.id);
         try {
-            await emailS302Pdf(item);
+            await emailS302Pdf(item, undefined, senderName);
         }
         catch (err) {
             console.error('Errore invio email S-302:', err);

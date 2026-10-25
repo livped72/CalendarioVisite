@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from 'react';
 import { Calendar, MapPin, Download, Mail, Loader2 } from 'lucide-react';
 import { downloadS302Pdf, emailS302Pdf, isWithin90Days } from '../lib/pdfGenerator';
-export const SummaryCards = ({ stats, nextSettimana, onPlanNextWeek, }) => {
+export const SummaryCards = ({ stats, nextSettimana, onPlanNextWeek, senderName, }) => {
     const [isDownloading, setIsDownloading] = useState(false);
     const [isEmailing, setIsEmailing] = useState(false);
     const canDownloadS302 = nextSettimana &&
@@ -28,7 +28,7 @@ export const SummaryCards = ({ stats, nextSettimana, onPlanNextWeek, }) => {
             return;
         setIsEmailing(true);
         try {
-            await emailS302Pdf(nextSettimana);
+            await emailS302Pdf(nextSettimana, undefined, senderName);
         }
         catch (err) {
             console.error('Errore durante la preparazione email S-302:', err);

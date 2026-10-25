@@ -190,28 +190,34 @@ export async function downloadAll90DaysS302(settimane) {
 }
 /**
  * Invia il modulo S-302 via email.
- * Prima genera e scarica il PDF localmente, poi apre il client email pre-compilato.
- * L'utente dovrà allegare manualmente il PDF scaricato (limitazione dei browser).
+ * Scarica il PDF automaticamente (copia di conferma allegato), poi apre il client
+ * email pre-compilato con il messaggio formattato secondo il modello ufficiale.
+ *
+ * NOTA: I browser non permettono allegati automatici via mailto.
+ * Il PDF viene scaricato sul dispositivo: l'utente deve allegarlo manualmente.
  */
-export async function emailS302Pdf(settimana, recipientEmail) {
-    // Scarica prima il PDF sul dispositivo
+export async function emailS302Pdf(settimana, recipientEmail, senderName) {
+    // Scarica il PDF come copia di conferma
     await downloadS302Pdf(settimana);
     const congName = settimana.dettagli && settimana.dettagli !== '-' ? settimana.dettagli : 'Congregazione';
-    const fmt = (d) => d
-        ? new Date(d).toLocaleDateString('it-IT', {
-            day: '2-digit',
+    const fmt = (d) => {
+        if (!d)
+            return '';
+        // Forza interpretazione locale (evita offset UTC)
+        const [year, month, day] = d.split('-').map(Number);
+        return new Date(year, month - 1, day).toLocaleDateString('it-IT', {
+            day: 'numeric',
             month: 'long',
             year: 'numeric',
-        })
-        : '';
-    const sanitizedName = congName.replace(/[/\\?%*:|"<>]/g, '_');
-    const subject = encodeURIComponent(`Avviso S-302 – ${congName} – ${fmt(settimana.startDate)}`);
-    const body = encodeURIComponent(`Gentile Sorvegliante,\n\n` +
-        `Le invio in allegato il modulo S-302 compilato per la visita alla congregazione di ${congName}.\n\n` +
-        `Periodo visita: ${fmt(settimana.startDate)} – ${fmt(settimana.endDate)}\n\n` +
-        `Il file "S-302-${sanitizedName}.pdf" è stato scaricato automaticamente sul suo dispositivo.\n` +
-        `La preghiamo di allegarlo a questa email prima di inviarla.\n\n` +
-        `Cordiali saluti,\nLivio Pedrini\nSorvegliante di Circoscrizione`);
+        });
+    };
+    const firmatario = senderName || 'Livio Pedrini';
+    const subject = encodeURIComponent(`Modulo S-302 – ${congName}`);
+    const body = encodeURIComponent(`Caro fratello,\n\n` +
+        `Ti invio in allegato il modulo S-302 compilato per la visita alla congregazione di ${congName}.\n\n` +
+        `Periodo visita: ${fmt(settimana.startDate)} \u2013 ${fmt(settimana.endDate)}\n\n\n` +
+        `${firmatario}\n` +
+        `Sorvegliante di Circoscrizione`);
     const mailto = `mailto:${recipientEmail || ''}?subject=${subject}&body=${body}`;
     window.open(mailto, '_blank');
 }

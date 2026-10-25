@@ -6,9 +6,11 @@ import { downloadS302Pdf, emailS302Pdf, getS302TargetMonth, getS302TargetMonthAl
 interface S302AlertBannerProps {
   /** Tutte le settimane di tutti i periodi (allSettimaneMap appiattita) */
   allSettimane: Settimana[];
+  /** Nome del firmatario per l'email (es. "Livio Pedrini") */
+  senderName?: string;
 }
 
-export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }) => {
+export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane, senderName }) => {
   const [expanded, setExpanded] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [emailingId, setEmailingId] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
   const handleEmail = async (item: Settimana) => {
     setEmailingId(item.id);
     try {
-      await emailS302Pdf(item);
+      await emailS302Pdf(item, undefined, senderName);
     } catch {
       alert("Errore nella preparazione dell'email S-302.");
     } finally {
@@ -46,7 +48,7 @@ export const S302AlertBanner: React.FC<S302AlertBannerProps> = ({ allSettimane }
     setEmailingAll(true);
     try {
       for (let i = 0; i < alerts.length; i++) {
-        await emailS302Pdf(alerts[i]);
+        await emailS302Pdf(alerts[i], undefined, senderName);
         if (i < alerts.length - 1) {
           await new Promise((r) => setTimeout(r, 600));
         }

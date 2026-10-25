@@ -7,12 +7,14 @@ interface SummaryCardsProps {
   stats: KPIStats;
   nextSettimana?: Settimana;
   onPlanNextWeek?: () => void;
+  senderName?: string;
 }
 
 export const SummaryCards: React.FC<SummaryCardsProps> = ({
   stats,
   nextSettimana,
   onPlanNextWeek,
+  senderName,
 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEmailing, setIsEmailing] = useState(false);
@@ -39,7 +41,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
     if (!nextSettimana) return;
     setIsEmailing(true);
     try {
-      await emailS302Pdf(nextSettimana);
+      await emailS302Pdf(nextSettimana, undefined, senderName);
     } catch (err) {
       console.error('Errore durante la preparazione email S-302:', err);
       alert('Errore durante la preparazione dell\'email S-302');

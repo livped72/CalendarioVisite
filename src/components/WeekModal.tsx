@@ -28,6 +28,7 @@ interface WeekModalProps {
   periodo: AnnoSemestre;
   settimane?: Settimana[];
   allSettimaneMap?: Record<PeriodoKey, Settimana[]>;
+  senderName?: string;
 }
 
 interface AltroEventoOption {
@@ -116,6 +117,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
   periodo,
   settimane = [],
   allSettimaneMap,
+  senderName,
 }) => {
   const [selectedStartDate, setSelectedStartDate] = useState('');
   const [isCongregazione, setIsCongregazione] = useState(true);
@@ -466,7 +468,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                       ...editingWeek,
                       dettagli: selectedCongregazione || editingWeek.dettagli,
                       startDate: selectedStartDate || editingWeek.startDate,
-                    })}
+                    }, undefined, senderName)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl cursor-pointer shadow-sm"
                     title="Scarica il PDF e prepara l'email S-302"
                   >
