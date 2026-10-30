@@ -102,17 +102,26 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   const getBadgeColor = (visitNum: number) =>
     BADGE_COLORS[(Math.max(1, visitNum) - 1) % BADGE_COLORS.length];
 
-  const renderEventCell = (item: Settimana) => {
+  const formatMobilePeriodo = (periodoStr: string): string => {
+    const abbr = abbreviateMonths(periodoStr);
+    return abbr.replace(/\s+\d{4}$/, '');
+  };
+
+  const renderEventCell = (item: Settimana, isMobile = false) => {
     if (item.evento === 'congregazione') {
       const congName = item.dettagli && item.dettagli !== '-' ? item.dettagli : 'Congregazione';
       return <EventBadge tipo="congregazione" customLabel={congName} size="sm" />;
     }
-    const customLabel =
+    let customLabel: string | undefined = undefined;
+    if (
       item.dettagli &&
       item.dettagli !== '-' &&
       ['congresso', 'evento_personalizzato', 'assemblea_circoscrizione'].includes(item.evento)
-        ? item.dettagli
-        : undefined;
+    ) {
+      customLabel = item.dettagli;
+    } else if (isMobile && item.evento === 'assemblea_circoscrizione') {
+      customLabel = 'ASSEMBLEA CIRC.';
+    }
     return <EventBadge tipo={item.evento} customLabel={customLabel} size="sm" />;
   };
 
@@ -345,7 +354,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
       </div>
 
       {/* ── MOBILE / SMARTPHONE & TABLET CARDS (COMPATTI, INTUITIVI, PANORAMICA COMPLETA) ── */}
-      <div className="lg:hidden p-2.5 sm:p-3.5 space-y-2 bg-[#F8FAFC]">
+      <div className="lg:hidden p-2 sm:p-3.5 space-y-1.5 sm:space-y-2 bg-[#F8FAFC]">
         {displayItems.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200">
             Nessuna settimana corrisponde al filtro selezionato.
@@ -361,10 +370,10 @@ export const WeekTable: React.FC<WeekTableProps> = ({
 
             if (isCong) {
               return (
-                /* Card Visita Congregazione — Compatta, Chiara, Panoramica Immediata */
+                /* Card Visita Congregazione — Rigorosamente 2 Righe: Row 1 = Meta & Azioni, Row 2 = Congregazione */
                 <div
                   key={item.id}
-                  className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs p-2.5 sm:p-3 transition-all relative overflow-hidden"
+                  className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs px-2.5 py-2 sm:p-3 transition-all relative overflow-hidden"
                 >
                   {/* Bordo colorato verticale a sinistra */}
                   <div
@@ -374,12 +383,12 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                   />
 
                   <div className="pl-1.5 sm:pl-2">
-                    {/* Riga 1: Badge Visita + Data + Azioni Rapide S-302 / Email / Modifica */}
-                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                    {/* Riga 1: Badge Visita + Data + Azioni Rapide S-302 / Email / Modifica (NON VA MAI A CAPO) */}
+                    <div className="flex items-center justify-between gap-1 flex-nowrap w-full">
+                      <div className="flex items-center gap-1.5 min-w-0 shrink flex-nowrap overflow-hidden">
                         {visitNum != null && (
                           <span
-                            className={`inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-md text-white text-[10px] sm:text-[11px] font-black shrink-0 ${getBadgeColor(
+                            className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1 rounded text-white text-[10px] sm:text-[11px] font-black shrink-0 ${getBadgeColor(
                               visitNum
                             )}`}
                             title={visitInfo?.motivazione || `Visita #${visitNum}`}
@@ -388,26 +397,26 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                           </span>
                         )}
 
-                        <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md shrink-0">
+                        <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
                           <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
-                          <span>{abbreviateMonths(item.periodo)}</span>
+                          <span>{formatMobilePeriodo(item.periodo)}</span>
                         </span>
 
                         {visitInfo?.isReset && (
-                          <span className="text-[9px] font-extrabold text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded shrink-0">
+                          <span className="text-[9px] font-extrabold text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1 py-0.2 rounded shrink-0 whitespace-nowrap">
                             Ciclo 1
                           </span>
                         )}
                       </div>
 
-                      {/* Azioni compatte per smartphone e tablet */}
-                      <div className="flex items-center gap-1 shrink-0">
+                      {/* Azioni compatte per smartphone e tablet (Fisse su Riga 1, non vanno a capo) */}
+                      <div className="flex items-center gap-1 shrink-0 flex-nowrap">
                         {/* Tap S-302 compatto */}
                         <button
                           type="button"
                           onClick={(e) => handleDownloadSinglePdf(item, e)}
                           disabled={isThisDownloading || isThisEmailing}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md sm:rounded-lg text-[10px] sm:text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                          className="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shrink-0"
                           title="Scarica S-302 (PDF)"
                         >
                           {isThisDownloading ? (
@@ -423,7 +432,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                           type="button"
                           onClick={(e) => handleEmailSinglePdf(item, e)}
                           disabled={isThisEmailing || isThisDownloading}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md sm:rounded-lg text-[10px] sm:text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50"
+                          className="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50 shrink-0"
                           title="Prepara email S-302"
                         >
                           {isThisEmailing ? (
@@ -438,7 +447,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                           <button
                             type="button"
                             onClick={() => onViewAppuntamenti(item.id)}
-                            className="p-1 rounded-md sm:rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
+                            className="p-1 rounded text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
                             title="Vedi appuntamenti della settimana"
                           >
                             <CalendarDays className="w-3.5 h-3.5" />
@@ -451,7 +460,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                             e.stopPropagation();
                             onEditWeek(item);
                           }}
-                          className="p-1 rounded-md sm:rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                          className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
                           title="Modifica settimana"
                         >
                           <Pencil className="w-3.5 h-3.5" />
@@ -459,7 +468,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                       </div>
                     </div>
 
-                    {/* Riga 2: Nome Congregazione in evidenza */}
+                    {/* Riga 2: Nome Congregazione in evidenza — SEMPRE E SOLO SULLA SECONDA RIGA */}
                     <div
                       className="mt-1 cursor-pointer group/title flex items-center justify-between gap-2"
                       onClick={() => (onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item))}
@@ -485,19 +494,19 @@ export const WeekTable: React.FC<WeekTableProps> = ({
             return (
               <div
                 key={item.id}
-                className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs p-2.5 sm:p-3 transition-all cursor-pointer"
+                className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs px-2.5 py-2 sm:p-3 transition-all cursor-pointer"
                 onClick={() => (onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item))}
               >
-                <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                  <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                    {renderEventCell(item)}
-                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100/90 px-2 py-0.5 rounded-md shrink-0">
+                <div className="flex items-center justify-between gap-1 flex-nowrap w-full">
+                  <div className="flex items-center gap-1.5 min-w-0 shrink flex-nowrap overflow-hidden">
+                    {renderEventCell(item, true)}
+                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
                       <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
-                      <span>{abbreviateMonths(item.periodo)}</span>
+                      <span>{formatMobilePeriodo(item.periodo)}</span>
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0 flex-nowrap">
                     {onViewAppuntamenti && (
                       <button
                         type="button"
@@ -505,7 +514,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                           e.stopPropagation();
                           onViewAppuntamenti(item.id);
                         }}
-                        className="p-1 rounded-md sm:rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
+                        className="p-1 rounded text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
                         title="Vedi appuntamenti dell'evento"
                       >
                         <CalendarDays className="w-3.5 h-3.5" />
@@ -517,7 +526,7 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                         e.stopPropagation();
                         onEditWeek(item);
                       }}
-                      className="p-1 rounded-md sm:rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                      className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
                       title="Modifica evento"
                     >
                       <Pencil className="w-3.5 h-3.5" />
