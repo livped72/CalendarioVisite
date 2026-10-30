@@ -1,14 +1,17 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState, useEffect } from 'react';
-import { Download, Upload, RefreshCw, CheckCircle2, ShieldCheck, Cloud, CloudUpload, CloudDownload, Key, LogOut, Trash2, Plus, Fingerprint, } from 'lucide-react';
+import { Download, Upload, RefreshCw, CheckCircle2, ShieldCheck, Cloud, CloudUpload, CloudDownload, Key, LogOut, Pencil, Trash2, Plus, Fingerprint, } from 'lucide-react';
 import { exportBackupJSON, importBackupJSON, resetToDefaults } from '../lib/storage';
 import { getCurrentUser, changeAccountPassword, syncAccountData, pullAccountData, getAccountLastSyncTime, getSessionPassword, } from '../lib/accountAuth';
 import { isBiometricsSupported, isBiometricsEnrolled, getBiometricUserLabel, enrollBiometrics, loginWithBiometrics, removeBiometrics, updateBiometricPassword, } from '../lib/biometrics';
+import { CongregazioneModal } from './CongregazioneModal';
 import { WeeklyCalendarView } from './WeeklyCalendarView';
-// Congregazioni Tab View - Layout a singola colonna per inserimento ed eliminazione
+// Congregazioni Tab View - Layout a singola colonna per inserimento, modifica ed eliminazione
 export const CongregazioniView = ({ congregazioni, onSaveCongregazioni }) => {
     const [newNome, setNewNome] = useState('');
     const [searchFilter, setSearchFilter] = useState('');
+    const [editingCongregazione, setEditingCongregazione] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const handleAdd = (e) => {
         e.preventDefault();
         const trimmed = newNome.trim();
@@ -30,17 +33,48 @@ export const CongregazioniView = ({ congregazioni, onSaveCongregazioni }) => {
         onSaveCongregazioni([...congregazioni, nuova]);
         setNewNome('');
     };
+    const handleEdit = (c) => {
+        setEditingCongregazione(c);
+        setIsModalOpen(true);
+    };
+    const handleSaveModal = (savedCong) => {
+        const exists = congregazioni.some((c) => c.id === savedCong.id);
+        if (exists) {
+            onSaveCongregazioni(congregazioni.map((c) => (c.id === savedCong.id ? savedCong : c)));
+        }
+        else {
+            onSaveCongregazioni([...congregazioni, savedCong]);
+        }
+        setIsModalOpen(false);
+        setEditingCongregazione(null);
+    };
+    const handleDeleteModal = (id) => {
+        onSaveCongregazioni(congregazioni.filter((c) => c.id !== id));
+        setIsModalOpen(false);
+        setEditingCongregazione(null);
+    };
     const handleDelete = (id, nome) => {
         if (confirm(`Sei sicuro di voler eliminare la congregazione "${nome}"?`)) {
             onSaveCongregazioni(congregazioni.filter((c) => c.id !== id));
         }
     };
     const visibleCongregazioni = congregazioni
-        .filter((c) => c.nome.toLowerCase().includes(searchFilter.toLowerCase()))
+        .filter((c) => {
+        const q = searchFilter.toLowerCase();
+        return (c.nome.toLowerCase().includes(q) ||
+            (c.citta && c.citta.toLowerCase().includes(q)) ||
+            (c.contatto && c.contatto.toLowerCase().includes(q)));
+    })
         .sort((a, b) => a.nome.localeCompare(b.nome));
-    return (_jsxs("div", { className: "max-w-2xl mx-auto space-y-6", children: [_jsxs("div", { className: "bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-base font-black text-slate-900 uppercase tracking-wider", children: "Gestione Congregazioni" }), _jsx("p", { className: "text-xs text-slate-500 mt-0.5", children: "Inserisci nuove congregazioni o elimina quelle esistenti dalla circoscrizione." })] }), _jsxs("form", { onSubmit: handleAdd, className: "flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-slate-100", children: [_jsx("input", { type: "text", value: newNome, onChange: (e) => setNewNome(e.target.value), placeholder: "Nome nuova congregazione (es. Salerno Fratte)...", className: "flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 font-medium transition-all" }), _jsxs("button", { type: "submit", disabled: !newNome.trim(), className: "inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-500/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0", children: [_jsx(Plus, { className: "w-4 h-4" }), _jsx("span", { children: "Inserisci" })] })] })] }), _jsxs("div", { className: "bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden", children: [_jsxs("div", { className: "p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/80", children: [_jsxs("div", { className: "flex items-center gap-2", children: [_jsx("span", { className: "text-xs font-bold text-slate-700 uppercase tracking-wider", children: "Elenco Congregazioni" }), _jsx("span", { className: "text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700", children: congregazioni.length })] }), congregazioni.length > 5 && (_jsx("input", { type: "text", value: searchFilter, onChange: (e) => setSearchFilter(e.target.value), placeholder: "Cerca congregazione...", className: "px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full sm:w-56" }))] }), visibleCongregazioni.length === 0 ? (_jsx("div", { className: "p-8 text-center text-xs text-slate-400 font-medium", children: congregazioni.length === 0
+    return (_jsxs("div", { className: "max-w-2xl mx-auto space-y-6", children: [_jsxs("div", { className: "bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4", children: [_jsxs("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-base font-black text-slate-900 uppercase tracking-wider", children: "Gestione Congregazioni" }), _jsx("p", { className: "text-xs text-slate-500 mt-0.5", children: "Inserisci nuove congregazioni, modificale o eliminale dalla circoscrizione." })] }), _jsxs("button", { type: "button", onClick: () => {
+                                    setEditingCongregazione(null);
+                                    setIsModalOpen(true);
+                                }, className: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer self-start sm:self-auto shrink-0 shadow-2xs", children: [_jsx(Plus, { className: "w-3.5 h-3.5 text-blue-600" }), _jsx("span", { children: "Nuova con dettagli" })] })] }), _jsxs("form", { onSubmit: handleAdd, className: "flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-slate-100", children: [_jsx("input", { type: "text", value: newNome, onChange: (e) => setNewNome(e.target.value), placeholder: "Nome nuova congregazione (es. Salerno Fratte)...", className: "flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 font-medium transition-all" }), _jsxs("button", { type: "submit", disabled: !newNome.trim(), className: "inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-500/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0", children: [_jsx(Plus, { className: "w-4 h-4" }), _jsx("span", { children: "Inserisci" })] })] })] }), _jsxs("div", { className: "bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden", children: [_jsxs("div", { className: "p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/80", children: [_jsxs("div", { className: "flex items-center gap-2", children: [_jsx("span", { className: "text-xs font-bold text-slate-700 uppercase tracking-wider", children: "Elenco Congregazioni" }), _jsx("span", { className: "text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700", children: congregazioni.length })] }), congregazioni.length > 3 && (_jsx("input", { type: "text", value: searchFilter, onChange: (e) => setSearchFilter(e.target.value), placeholder: "Cerca per nome, citt\u00E0, contatto...", className: "px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full sm:w-64" }))] }), visibleCongregazioni.length === 0 ? (_jsx("div", { className: "p-8 text-center text-xs text-slate-400 font-medium", children: congregazioni.length === 0
                             ? 'Nessuna congregazione presente. Inseriscine una dal modulo sopra.'
-                            : 'Nessuna congregazione corrisponde alla ricerca.' })) : (_jsx("div", { className: "divide-y divide-slate-100", children: visibleCongregazioni.map((c, index) => (_jsxs("div", { className: "p-4 flex items-center justify-between gap-3 hover:bg-slate-50/80 transition-colors", children: [_jsxs("div", { className: "flex items-center gap-3 min-w-0", children: [_jsx("span", { className: "w-7 h-7 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold flex items-center justify-center shrink-0", children: index + 1 }), _jsxs("div", { className: "min-w-0", children: [_jsx("span", { className: "text-sm font-bold text-slate-800 truncate block", children: c.nome }), c.citta && (_jsx("span", { className: "text-xs text-slate-500 block truncate", children: c.citta }))] })] }), _jsx("button", { type: "button", onClick: () => handleDelete(c.id, c.nome), className: "p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all cursor-pointer shrink-0", title: `Elimina ${c.nome}`, children: _jsx(Trash2, { className: "w-4 h-4" }) })] }, c.id))) }))] })] }));
+                            : 'Nessuna congregazione corrisponde alla ricerca.' })) : (_jsx("div", { className: "divide-y divide-slate-100", children: visibleCongregazioni.map((c, index) => (_jsxs("div", { className: "p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-slate-50/80 transition-colors group", children: [_jsxs("div", { className: "flex items-center gap-3 min-w-0 flex-1 cursor-pointer", onClick: () => handleEdit(c), title: `Clicca per modificare ${c.nome}`, children: [_jsx("span", { className: "w-7 h-7 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200 transition-colors", children: index + 1 }), _jsxs("div", { className: "min-w-0", children: [_jsx("span", { className: "text-sm font-bold text-slate-800 truncate block group-hover:text-blue-700 transition-colors", children: c.nome }), _jsxs("div", { className: "flex items-center gap-2 text-xs text-slate-500 truncate mt-0.5", children: [c.citta && _jsx("span", { className: "truncate", children: c.citta }), c.citta && c.contatto && _jsx("span", { children: "\u2022" }), c.contatto && _jsx("span", { className: "truncate", children: c.contatto }), (c.citta || c.contatto) && c.ultimaVisita && c.ultimaVisita !== 'Da definire' && _jsx("span", { children: "\u2022" }), c.ultimaVisita && c.ultimaVisita !== 'Da definire' && (_jsxs("span", { className: "text-[11px] text-slate-400 shrink-0", children: ["Ultima: ", c.ultimaVisita] }))] })] })] }), _jsxs("div", { className: "flex items-center gap-1 shrink-0", children: [_jsx("button", { type: "button", onClick: () => handleEdit(c), className: "p-2 rounded-xl text-slate-500 hover:text-blue-600 hover:bg-blue-50 border border-slate-200/60 hover:border-blue-200 transition-all cursor-pointer shrink-0 shadow-2xs", title: `Modifica ${c.nome}`, children: _jsx(Pencil, { className: "w-4 h-4" }) }), _jsx("button", { type: "button", onClick: () => handleDelete(c.id, c.nome), className: "p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all cursor-pointer shrink-0", title: `Elimina ${c.nome}`, children: _jsx(Trash2, { className: "w-4 h-4" }) })] })] }, c.id))) }))] }), _jsx(CongregazioneModal, { isOpen: isModalOpen, onClose: () => {
+                    setIsModalOpen(false);
+                    setEditingCongregazione(null);
+                }, onSave: handleSaveModal, onDelete: handleDeleteModal, editingCongregazione: editingCongregazione })] }));
 };
 // Appuntamenti Tab View (Formato Calendario Settimanale)
 export const AppuntamentiView = ({ congregazioni, settimane, appuntamenti, onSaveAppuntamento, onDeleteAppuntamento, initialSettimanaId, onJumpConsumed, }) => {

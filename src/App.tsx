@@ -34,7 +34,6 @@ import { AllCongregationsModal } from './components/AllCongregationsModal';
 import { SecurityPrivacyModal } from './components/SecurityPrivacyModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { SummaryCards } from './components/SummaryCards';
-import { S302AlertBanner } from './components/S302AlertBanner';
 import {
   CongregazioniView,
   AppuntamentiView,
@@ -335,9 +334,6 @@ export const App: React.FC = () => {
         <div className="mt-5">
           {currentTab === 'calendario' && (
             <div className="space-y-5">
-              {/* Banner S-302: visite del mese corrente +4 da inviare via email */}
-              <S302AlertBanner allSettimane={allSettimaneFlat} senderName={user.nome} />
-
               <SummaryCards
                 stats={computeKpiStats(settimane, congregazioni)}
                 nextSettimana={

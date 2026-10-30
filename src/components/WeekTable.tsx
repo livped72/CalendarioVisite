@@ -263,20 +263,36 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                   <td className="py-3 px-3 text-right pr-4 whitespace-nowrap relative">
                     <div className="flex items-center justify-end gap-1.5">
                       {isCong && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleDownloadSinglePdf(item, e)}
-                          disabled={isThisDownloading || isThisEmailing}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
-                          title={`Compila e scarica modello S-302 per ${item.dettagli}`}
-                        >
-                          {isThisDownloading ? (
-                            <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                          ) : (
-                            <FileDown className="w-3.5 h-3.5 text-blue-600" />
-                          )}
-                          <span>S-302</span>
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDownloadSinglePdf(item, e)}
+                            disabled={isThisDownloading || isThisEmailing}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 active:scale-95 disabled:opacity-50"
+                            title={`Scarica S-302 (PDF) per ${item.dettagli}`}
+                          >
+                            {isThisDownloading ? (
+                              <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                            ) : (
+                              <FileDown className="w-3.5 h-3.5 text-blue-600" />
+                            )}
+                            <span>S-302</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleEmailSinglePdf(item, e)}
+                            disabled={isThisEmailing || isThisDownloading}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-2xs active:scale-95 disabled:opacity-50"
+                            title={`Prepara email S-302 per ${item.dettagli}`}
+                          >
+                            {isThisEmailing ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Mail className="w-3.5 h-3.5" />
+                            )}
+                            <span>Email</span>
+                          </button>
+                        </>
                       )}
 
                       <button

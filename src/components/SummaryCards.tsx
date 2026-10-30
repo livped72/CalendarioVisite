@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Download, Mail, Loader2 } from 'lucide-react';
 import { KPIStats, Settimana } from '../types';
-import { downloadS302Pdf, emailS302Pdf, isWithin90Days } from '../lib/pdfGenerator';
+import { downloadS302Pdf, emailS302Pdf } from '../lib/pdfGenerator';
 
 interface SummaryCardsProps {
   stats: KPIStats;
@@ -19,10 +19,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEmailing, setIsEmailing] = useState(false);
 
-  const canDownloadS302 =
-    nextSettimana &&
-    nextSettimana.evento === 'congregazione' &&
-    isWithin90Days(nextSettimana.startDate);
+  const isCongregazioneNext = nextSettimana && nextSettimana.evento === 'congregazione';
 
   const handleDownloadS302 = async () => {
     if (!nextSettimana) return;
@@ -68,11 +65,6 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Prossima visita
               </span>
-              {canDownloadS302 && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                  S-302 entro 90 giorni
-                </span>
-              )}
             </div>
 
             <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5 tracking-tight leading-snug">
@@ -93,23 +85,20 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
           </div>
         </div>
 
-        {/* Riga inferiore: azioni S-302 */}
-        {canDownloadS302 && (
+        {/* Riga inferiore: azioni S-302 & Email */}
+        {isCongregazioneNext ? (
           <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
-            <span className="text-[11px] text-slate-500 font-medium mr-auto hidden sm:block">
-              Modulo S-302 disponibile per questa visita
-            </span>
             <button
               type="button"
               onClick={handleDownloadS302}
               disabled={isDownloading}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200/80 text-blue-700 hover:bg-blue-100 active:scale-95 text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-50"
               title="Scarica avviso S-302 compilato per questa visita"
             >
               {isDownloading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
               ) : (
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5 text-blue-600" />
               )}
               <span>Scarica S-302</span>
             </button>
@@ -118,8 +107,8 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               type="button"
               onClick={handleEmailS302}
               disabled={isEmailing || isDownloading}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-50"
-              title="Scarica PDF e apri email pre-compilata per invio"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50 active:scale-95"
+              title="Prepara email S-302"
             >
               {isEmailing ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -128,11 +117,16 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
               )}
               <span>Invia via Email</span>
             </button>
-          </div>
-        )}
 
-        {/* Azioni base quando non è periodo S-302 */}
-        {!canDownloadS302 && (
+            <button
+              type="button"
+              onClick={onPlanNextWeek}
+              className="ml-auto px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+            >
+              Modifica
+            </button>
+          </div>
+        ) : (
           <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
