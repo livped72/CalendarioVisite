@@ -127,6 +127,8 @@ export const WeekModal: React.FC<WeekModalProps> = ({
   const [note, setNote] = useState('');
   const [forceResetNumerazione, setForceResetNumerazione] = useState(false);
 
+  const [isManualCong, setIsManualCong] = useState(false);
+
   useEffect(() => {
     if (!isOpen) return;
     if (editingWeek) {
@@ -134,13 +136,17 @@ export const WeekModal: React.FC<WeekModalProps> = ({
       setForceResetNumerazione(!!editingWeek.resetNumerazione);
       if (editingWeek.evento === 'congregazione') {
         setIsCongregazione(true);
-        setSelectedCongregazione(editingWeek.dettagli || 'Da definire');
+        const congName = editingWeek.dettagli || 'Da definire';
+        setSelectedCongregazione(congName);
+        const isKnown = congName === 'Da definire' || congregazioni.some((c) => c.nome.toLowerCase() === congName.toLowerCase());
+        setIsManualCong(!isKnown && congName !== '');
         setAltroEvento('settimana_libera');
         setExtraDettaglio('');
       } else {
         setIsCongregazione(false);
         setAltroEvento(editingWeek.evento);
         setExtraDettaglio(editingWeek.dettagli !== '-' ? editingWeek.dettagli : '');
+        setIsManualCong(false);
       }
       setNote(editingWeek.note !== '-' ? editingWeek.note : '');
     } else {
@@ -167,6 +173,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
       setSelectedStartDate(nextDate.toISOString().slice(0, 10));
       setIsCongregazione(true);
       setSelectedCongregazione('Da definire');
+      setIsManualCong(false);
       setAltroEvento('settimana_libera');
       setExtraDettaglio('');
       setNote('');
@@ -241,22 +248,29 @@ export const WeekModal: React.FC<WeekModalProps> = ({
   const hasExtraDetail = ['assemblea_circoscrizione', 'congresso', 'evento_personalizzato'].includes(altroEvento);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs" onClick={onClose} />
 
-      <div className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-800">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80">
+      <form
+        onSubmit={handleSubmit}
+        className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-lg w-full flex flex-col max-h-[92dvh] sm:max-h-[88dvh] overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150 text-slate-800"
+      >
+        {/* Header - Fisso */}
+        <div className="flex-none flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-slate-100 bg-slate-50/90">
           <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">
             {editingWeek ? 'Modifica Settimana' : 'Aggiungi Settimana'}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 cursor-pointer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 cursor-pointer transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+        {/* Form Body - Scrollabile all'interno */}
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-3.5">
           {/* Periodo */}
           <div>
             <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
@@ -267,7 +281,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
               value={selectedStartDate}
               onChange={(e) => setSelectedStartDate(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-semibold"
+              className="w-full max-w-full box-border px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-semibold min-w-0"
             />
             {selectedStartDate && (
               <p className="text-xs text-slate-500 mt-1.5 ml-1">
@@ -276,83 +290,105 @@ export const WeekModal: React.FC<WeekModalProps> = ({
             )}
           </div>
 
-          {/* Tipo attività: 2 big buttons */}
-          <div className="space-y-2">
+          {/* Tipo attività: 2 pulsanti toggle */}
+          <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-600 uppercase">Tipo di Attività</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setIsCongregazione(true)}
-                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-extrabold uppercase transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl border text-xs font-extrabold uppercase transition-all cursor-pointer min-w-0 ${
                   isCongregazione
                     ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 ring-2 ring-blue-500/20 shadow-xs'
                     : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Building2 className="w-4 h-4 text-blue-600" />
-                <span>VISITA CONGREGAZIONE</span>
+                <Building2 className="w-4 h-4 text-blue-600 shrink-0" />
+                <span className="truncate">Visita Congregazione</span>
               </button>
               <button
                 type="button"
                 onClick={() => setIsCongregazione(false)}
-                className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-extrabold uppercase transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl border text-xs font-extrabold uppercase transition-all cursor-pointer min-w-0 ${
                   !isCongregazione
                     ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 ring-2 ring-blue-500/20 shadow-xs'
                     : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <CalendarDays className="w-4 h-4 text-blue-600" />
-                <span>ALTRO EVENTO</span>
+                <CalendarDays className="w-4 h-4 text-blue-600 shrink-0" />
+                <span className="truncate">Altro Evento</span>
               </button>
             </div>
           </div>
 
           {/* Congregation selector */}
           {isCongregazione ? (
-            <div className="space-y-2.5 p-4 bg-slate-50/80 rounded-2xl border border-slate-200">
-              <label className="block text-xs font-bold text-slate-700 uppercase">Nome Congregazione</label>
-              <select
-                value={selectedCongregazione}
-                onChange={(e) => setSelectedCongregazione(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900 font-bold"
-              >
-                <option value="Da definire">DA DEFINIRE</option>
-                {congregazioni.map((c) => (
-                  <option key={c.id} value={c.nome}>
-                    {c.nome} (Ultima: {c.ultimaVisita})
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                placeholder="Oppure inserisci un altro nome..."
-                value={selectedCongregazione}
-                onChange={(e) => setSelectedCongregazione(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 focus:outline-none focus:border-blue-500 placeholder-slate-400 font-semibold"
-              />
+            <div className="space-y-2 p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200">
+              <div className="flex items-center justify-between gap-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase">Nome Congregazione</label>
+                <button
+                  type="button"
+                  onClick={() => setIsManualCong(!isManualCong)}
+                  className="text-[11px] font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                >
+                  {isManualCong ? 'Scegli da elenco' : 'Scrivi a mano'}
+                </button>
+              </div>
+
+              {!isManualCong ? (
+                <select
+                  value={selectedCongregazione}
+                  onChange={(e) => {
+                    if (e.target.value === '__CUSTOM__') {
+                      setIsManualCong(true);
+                      setSelectedCongregazione('');
+                    } else {
+                      setSelectedCongregazione(e.target.value);
+                    }
+                  }}
+                  className="w-full max-w-full box-border px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-900 font-bold truncate min-w-0"
+                >
+                  <option value="Da definire">DA DEFINIRE</option>
+                  {congregazioni.map((c) => (
+                    <option key={c.id} value={c.nome}>
+                      {c.nome} {c.ultimaVisita ? `(Ultima: ${c.ultimaVisita})` : ''}
+                    </option>
+                  ))}
+                  <option value="__CUSTOM__">+ Altra congregazione (scrivi a mano)...</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Inserisci nome congregazione..."
+                  value={selectedCongregazione}
+                  onChange={(e) => setSelectedCongregazione(e.target.value)}
+                  autoFocus
+                  className="w-full max-w-full box-border px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder-slate-400 font-bold min-w-0"
+                />
+              )}
 
               {/* Box Numerazione Visita Calcolata */}
               {visitPrediction && (
-                <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-2 mt-2 shadow-2xs">
+                <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5 mt-2 shadow-2xs">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                       Numero Visita Calcolato
                     </span>
-                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-xs font-black shadow-2xs">
+                    <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-blue-600 text-white text-xs font-black shadow-2xs">
                       #{visitPrediction.numero}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
                     {visitPrediction.motivazione}
                   </p>
-                  <label className="flex items-center gap-2 pt-1.5 border-t border-slate-100 cursor-pointer">
+                  <label className="flex items-center gap-2 pt-1 border-t border-slate-100 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={forceResetNumerazione}
                       onChange={(e) => setForceResetNumerazione(e.target.checked)}
                       className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer accent-blue-600"
                     />
-                    <span className="text-xs font-semibold text-slate-700">
+                    <span className="text-[11px] font-semibold text-slate-700">
                       Riavvia la numerazione da 1 per questa visita
                     </span>
                   </label>
@@ -361,9 +397,9 @@ export const WeekModal: React.FC<WeekModalProps> = ({
             </div>
           ) : (
             /* Alternative events panel */
-            <div className="space-y-3 p-4 bg-slate-50/80 rounded-2xl border border-slate-200">
+            <div className="space-y-2.5 p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200">
               <label className="block text-xs font-bold text-slate-700 uppercase">Evento Sostitutivo</label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 {ALTRO_EVENTO_OPTIONS.map((opt, idx) => {
                   const isSelected = altroEvento === opt.tipo;
                   const Icon = opt.icon;
@@ -372,7 +408,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                   return (
                     <label
                       key={opt.tipo}
-                      className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                      className={`flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl border text-[11px] cursor-pointer transition-all min-w-0 ${
                         isLast ? 'col-span-2' : 'col-span-1'
                       } ${opt.bg} ${opt.border} ${opt.text} ${
                         isSelected
@@ -388,7 +424,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                         onChange={() => setAltroEvento(opt.tipo)}
                         className="sr-only"
                       />
-                      <Icon className="w-4 h-4 shrink-0" />
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span className="font-bold tracking-tight text-center leading-tight truncate">
                         {opt.label}
                       </span>
@@ -411,7 +447,7 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                       : altroEvento === 'congresso' ? 'es. Congresso 2026 – Roma'
                       : 'es. Visita Betel'
                     }
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 focus:outline-none focus:border-blue-500 placeholder-slate-400 font-semibold"
+                    className="w-full max-w-full box-border px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 focus:outline-none focus:border-blue-500 placeholder-slate-400 font-semibold min-w-0"
                   />
                 </div>
               )}
@@ -422,17 +458,50 @@ export const WeekModal: React.FC<WeekModalProps> = ({
           <div>
             <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Note</label>
             <textarea
-              rows={3}
+              rows={2}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="es. Portare il materiale..."
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 text-slate-900 resize-none placeholder-slate-400"
+              className="w-full max-w-full box-border px-3.5 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 text-slate-900 resize-none placeholder-slate-400 min-w-0"
             />
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100 flex-wrap gap-2">
+        {/* Footer - Fisso in basso, non esce mai dalla maschera */}
+        <div className="flex-none px-4 sm:px-6 py-3 border-t border-slate-100 bg-slate-50/95 flex flex-col gap-2">
+          {editingWeek && isCongregazione && (
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => downloadS302Pdf({
+                  ...editingWeek,
+                  dettagli: selectedCongregazione || editingWeek.dettagli,
+                  startDate: selectedStartDate || editingWeek.startDate,
+                })}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl cursor-pointer transition-colors"
+                title="Scarica il modulo S-302 compilato per questa visita"
+              >
+                <FileDown className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="truncate">Scarica S-302</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => emailS302Pdf({
+                  ...editingWeek,
+                  dettagli: selectedCongregazione || editingWeek.dettagli,
+                  startDate: selectedStartDate || editingWeek.startDate,
+                }, undefined, senderName)}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl cursor-pointer shadow-xs transition-colors"
+                title="Scarica il PDF e prepara l'email S-302"
+              >
+                <Mail className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Invia Email</span>
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-2">
+            <div>
               {editingWeek && onDelete && (
                 <button
                   type="button"
@@ -442,56 +511,31 @@ export const WeekModal: React.FC<WeekModalProps> = ({
                       onClose();
                     }
                   }}
-                  className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer"
+                  className="px-2.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer transition-colors"
                 >
                   Elimina
                 </button>
               )}
-              {editingWeek && isCongregazione && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => downloadS302Pdf({
-                      ...editingWeek,
-                      dettagli: selectedCongregazione || editingWeek.dettagli,
-                      startDate: selectedStartDate || editingWeek.startDate,
-                    })}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl cursor-pointer"
-                    title="Scarica il modulo S-302 compilato per questa visita"
-                  >
-                    <FileDown className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Scarica S-302</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => emailS302Pdf({
-                      ...editingWeek,
-                      dettagli: selectedCongregazione || editingWeek.dettagli,
-                      startDate: selectedStartDate || editingWeek.startDate,
-                    }, undefined, senderName)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl cursor-pointer shadow-sm"
-                    title="Scarica il PDF e prepara l'email S-302"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Invia Email</span>
-                  </button>
-                </>
-              )}
             </div>
-            <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl cursor-pointer">
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-3.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl cursor-pointer transition-colors"
+              >
                 Annulla
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm cursor-pointer"
+                className="px-5 py-1.5 text-xs font-bold uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-xs cursor-pointer transition-all"
               >
                 Salva
               </button>
             </div>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };
