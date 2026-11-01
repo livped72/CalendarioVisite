@@ -61,11 +61,17 @@ function computeKpiStats(
       ? settimaneTrascorseList.reduce((a, b) => a + b, 0) / settimaneTrascorseList.length
       : 0;
 
-  // Next future week
+  // Next future or current week
   const today = new Date().toISOString().slice(0, 10);
-  const prossima = [...settimane]
-    .filter((w) => w.startDate && w.startDate >= today)
-    .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
+  const currentWeek = settimane.find(
+    (w) => w.startDate && w.endDate && today >= w.startDate && today <= w.endDate
+  );
+  const prossima =
+    currentWeek ||
+    [...settimane]
+      .filter((w) => (w.endDate ? w.endDate >= today : Boolean(w.startDate && w.startDate >= today)))
+      .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''))[0] ||
+    settimane[0];
 
   return {
     settimaneProgrammate: visiteCong.length,
@@ -123,6 +129,23 @@ export const App: React.FC = () => {
     () => Object.values(allSettimaneMap).flat(),
     [allSettimaneMap]
   );
+
+  // ── Settimana attiva o prossima (per bacheca nella home) ──
+  const activeOrNextSettimana = useMemo(() => {
+    if (settimane.length === 0) return undefined;
+    const today = new Date().toISOString().slice(0, 10);
+    const current = settimane.find(
+      (w) => w.startDate && w.endDate && today >= w.startDate && today <= w.endDate
+    );
+    if (current) return current;
+
+    const upcoming = [...settimane]
+      .filter((w) => (w.endDate ? w.endDate >= today : Boolean(w.startDate && w.startDate >= today)))
+      .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''))[0];
+    if (upcoming) return upcoming;
+
+    return [...settimane].sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''))[0];
+  }, [settimane]);
 
   // ── Sync State ──
   const [isSyncing, setIsSyncing] = useState(false);
@@ -336,12 +359,14 @@ export const App: React.FC = () => {
             <div className="space-y-5">
               <SummaryCards
                 stats={computeKpiStats(settimane, congregazioni)}
-                nextSettimana={
-                  [...settimane]
-                    .filter((w) => w.startDate && w.startDate >= new Date().toISOString().slice(0, 10))
-                    .sort((a, b) => a.startDate.localeCompare(b.startDate))[0]
-                }
+                nextSettimana={activeOrNextSettimana}
+                settimane={settimane}
+                appuntamenti={appuntamenti}
+                congregazioni={congregazioni}
                 onPlanNextWeek={() => { setEditingWeek(null); setIsWeekModalOpen(true); }}
+                onSaveAppuntamento={handleSaveAppuntamento}
+                onDeleteAppuntamento={handleDeleteAppuntamento}
+                onNavigateToAppuntamenti={handleNavigateToSettimana}
                 senderName={user.nome}
               />
               <WeekTable
