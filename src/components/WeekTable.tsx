@@ -583,40 +583,40 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                         />
 
                         <div className="pl-2">
-                          {/* Riga 1a: Badge visita + Settimana + Data + badge In corso */}
-                          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                            {visitNum != null && (
-                              <span
-                                className={`inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-md text-white text-[10px] font-black shrink-0 ${getBadgeColor(
-                                  visitNum
-                                )}`}
-                                title={visitInfo?.motivazione || `Visita #${visitNum}`}
-                              >
-                                #{visitNum}
-                              </span>
-                            )}
+                          {/* Riga 1a: Badge visita + Data colorata + badge In corso */}
+                          {(() => {
+                            const mNum = item.startDate ? parseInt(item.startDate.split('-')[1], 10) : 11;
+                            const mc = MONTH_COLORS[mNum] || MONTH_COLORS[11];
+                            return (
+                              <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                                {visitNum != null && (
+                                  <span
+                                    className={`inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-md text-white text-[10px] font-black shrink-0 ${getBadgeColor(visitNum)}`}
+                                    title={visitInfo?.motivazione || `Visita #${visitNum}`}
+                                  >
+                                    #{visitNum}
+                                  </span>
+                                )}
 
-                            <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
-                              Sett. {weekNum}
-                            </span>
+                                <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg shrink-0 whitespace-nowrap ${mc.bg} text-white`}>
+                                  <CalendarDays className="w-3 h-3 opacity-80 shrink-0" />
+                                  <span>{formatMobilePeriodo(item.periodo)}</span>
+                                </span>
 
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
-                              <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
-                              <span>{formatMobilePeriodo(item.periodo)}</span>
-                            </span>
+                                {isCurrent && (
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                    In corso
+                                  </span>
+                                )}
 
-                            {isCurrent && (
-                              <span className="inline-flex items-center gap-1 text-[9px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
-                                In corso
-                              </span>
-                            )}
-
-                            {visitInfo?.isReset && (
-                              <span className="text-[9px] font-extrabold text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1 py-0.5 rounded shrink-0 whitespace-nowrap">
-                                Ciclo 1
-                              </span>
-                            )}
-                          </div>
+                                {visitInfo?.isReset && (
+                                  <span className="text-[9px] font-extrabold text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1 py-0.5 rounded shrink-0 whitespace-nowrap">
+                                    Ciclo 1
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
 
                           {/* Riga 1b: Nome Congregazione — subito sotto la data */}
                           <div
@@ -709,15 +709,18 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                       onClick={() => (onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item))}
                     >
                       <div className="flex items-center justify-between gap-1 flex-nowrap w-full">
-                        <div className="flex items-center gap-1.5 min-w-0 shrink flex-nowrap overflow-hidden">
-                          <span className="text-[10px] sm:text-[11px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
-                            Sett. {weekNum}
-                          </span>
+                        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                           {renderEventCell(item, true)}
-                          <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
-                            <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
-                            <span>{formatMobilePeriodo(item.periodo)}</span>
-                          </span>
+                          {(() => {
+                            const mNum = item.startDate ? parseInt(item.startDate.split('-')[1], 10) : 11;
+                            const mc = MONTH_COLORS[mNum] || MONTH_COLORS[11];
+                            return (
+                              <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg shrink-0 whitespace-nowrap ${mc.bg} text-white`}>
+                                <CalendarDays className="w-3 h-3 opacity-80 shrink-0" />
+                                <span>{formatMobilePeriodo(item.periodo)}</span>
+                              </span>
+                            );
+                          })()}
                           {isCurrent && (
                             <span className="inline-flex items-center gap-1 text-[9px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
                               In corso
