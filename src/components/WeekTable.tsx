@@ -509,24 +509,26 @@ export const WeekTable: React.FC<WeekTableProps> = ({
             <div key={group.key} className="space-y-2">
               {/* Intestazione Mese chiara e visibile a colpo d'occhio */}
               <div
-                className={`sticky top-0 z-20 px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center justify-between transition-all ${
+                className={`sticky top-0 z-20 px-3.5 py-2.5 rounded-2xl shadow-xs flex flex-col gap-1 transition-all ${
                   group.isCurrentMonth
                     ? 'bg-blue-700 text-white shadow-blue-500/20'
                     : 'bg-white border border-slate-200 text-slate-900'
                 }`}
               >
+                {/* Riga superiore: icona + nome mese + badge corrente */}
                 <div className="flex items-center gap-2">
-                  <CalendarDays className={`w-4 h-4 ${group.isCurrentMonth ? 'text-blue-200' : 'text-blue-600'}`} />
+                  <CalendarDays className={`w-4 h-4 shrink-0 ${group.isCurrentMonth ? 'text-blue-200' : 'text-blue-600'}`} />
                   <span className="text-xs sm:text-sm font-black uppercase tracking-wider">
                     {group.name} {group.year}
                   </span>
                   {group.isCurrentMonth && (
-                    <span className="px-2 py-0.5 rounded-md bg-white text-blue-700 text-[9px] font-black uppercase tracking-wider">
+                    <span className="ml-1 px-2 py-0.5 rounded-md bg-white text-blue-700 text-[9px] font-black uppercase tracking-wider shrink-0">
                       Mese Corrente
                     </span>
                   )}
                 </div>
-                <div className={`text-[11px] font-bold ${group.isCurrentMonth ? 'text-blue-100' : 'text-slate-500'}`}>
+                {/* Riga inferiore: conteggio settimane */}
+                <div className={`text-[11px] font-bold pl-6 ${group.isCurrentMonth ? 'text-blue-100' : 'text-slate-500'}`}>
                   {group.items.length} {group.items.length === 1 ? 'settimana' : 'settimane'} • {group.congCount} visite
                 </div>
               </div>
@@ -563,97 +565,95 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                         />
 
                         <div className="pl-2">
-                          {/* Riga 1: Badge Visita + Numero Settimana + Data + Azioni Rapide */}
-                          <div className="flex items-center justify-between gap-1 flex-nowrap w-full">
-                            <div className="flex items-center gap-1.5 min-w-0 shrink flex-nowrap overflow-hidden">
-                              {visitNum != null && (
-                                <span
-                                  className={`inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-md text-white text-[10px] sm:text-[11px] font-black shrink-0 ${getBadgeColor(
-                                    visitNum
-                                  )}`}
-                                  title={visitInfo?.motivazione || `Visita #${visitNum}`}
-                                >
-                                  #{visitNum}
-                                </span>
-                              )}
-
-                              <span className="text-[10px] sm:text-[11px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
-                                Sett. {weekNum}
+                          {/* Riga 1a: Badge visita + Settimana + Data + badge In corso */}
+                          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                            {visitNum != null && (
+                              <span
+                                className={`inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-md text-white text-[10px] font-black shrink-0 ${getBadgeColor(
+                                  visitNum
+                                )}`}
+                                title={visitInfo?.motivazione || `Visita #${visitNum}`}
+                              >
+                                #{visitNum}
                               </span>
+                            )}
 
-                              <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-700 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
-                                <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
-                                <span>{formatMobilePeriodo(item.periodo)}</span>
+                            <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
+                              Sett. {weekNum}
+                            </span>
+
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
+                              <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
+                              <span>{formatMobilePeriodo(item.periodo)}</span>
+                            </span>
+
+                            {isCurrent && (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                In corso
                               </span>
+                            )}
 
-                              {isCurrent && (
-                                <span className="inline-flex items-center gap-1 text-[9px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
-                                  In corso
-                                </span>
+                            {visitInfo?.isReset && (
+                              <span className="text-[9px] font-extrabold text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1 py-0.5 rounded shrink-0 whitespace-nowrap">
+                                Ciclo 1
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Riga 1b: Pulsanti azione — separati per evitare overflow su iPhone */}
+                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={(e) => handleDownloadSinglePdf(item, e)}
+                              disabled={isThisDownloading || isThisEmailing}
+                              className="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shrink-0"
+                              title="Scarica S-302 (PDF)"
+                            >
+                              {isThisDownloading ? (
+                                <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                              ) : (
+                                <FileDown className="w-3 h-3 text-blue-600" />
                               )}
+                              <span>S-302</span>
+                            </button>
 
-                              {visitInfo?.isReset && (
-                                <span className="text-[9px] font-extrabold text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1 py-0.2 rounded shrink-0 whitespace-nowrap">
-                                  Ciclo 1
-                                </span>
+                            <button
+                              type="button"
+                              onClick={(e) => handleEmailSinglePdf(item, e)}
+                              disabled={isThisEmailing || isThisDownloading}
+                              className="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50 shrink-0"
+                              title="Prepara email S-302"
+                            >
+                              {isThisEmailing ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Mail className="w-3 h-3" />
                               )}
-                            </div>
+                              <span>Email</span>
+                            </button>
 
-                            {/* Azioni compatte */}
-                            <div className="flex items-center gap-1 shrink-0 flex-nowrap">
+                            {onViewAppuntamenti && (
                               <button
                                 type="button"
-                                onClick={(e) => handleDownloadSinglePdf(item, e)}
-                                disabled={isThisDownloading || isThisEmailing}
-                                className="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shrink-0"
-                                title="Scarica S-302 (PDF)"
+                                onClick={() => onViewAppuntamenti(item.id)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
+                                title="Vedi appuntamenti della settimana"
                               >
-                                {isThisDownloading ? (
-                                  <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                                ) : (
-                                  <FileDown className="w-3 h-3 text-blue-600" />
-                                )}
-                                <span>S-302</span>
+                                <CalendarDays className="w-3.5 h-3.5" />
                               </button>
+                            )}
 
-                              <button
-                                type="button"
-                                onClick={(e) => handleEmailSinglePdf(item, e)}
-                                disabled={isThisEmailing || isThisDownloading}
-                                className="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50 shrink-0"
-                                title="Prepara email S-302"
-                              >
-                                {isThisEmailing ? (
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                ) : (
-                                  <Mail className="w-3 h-3" />
-                                )}
-                                <span>Email</span>
-                              </button>
-
-                              {onViewAppuntamenti && (
-                                <button
-                                  type="button"
-                                  onClick={() => onViewAppuntamenti(item.id)}
-                                  className="p-1.5 rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
-                                  title="Vedi appuntamenti della settimana"
-                                >
-                                  <CalendarDays className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onEditWeek(item);
-                                }}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
-                                title="Modifica settimana"
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEditWeek(item);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                              title="Modifica settimana"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
                           </div>
 
                           {/* Riga 2: Nome Congregazione in evidenza */}
