@@ -34,6 +34,22 @@ const BADGE_COLORS = [
   'bg-blue-500', 'bg-indigo-800', 'bg-cyan-800', 'bg-blue-900',
 ];
 
+/** Colori header mese — uno per ciascun mese dell'anno (1-12) */
+const MONTH_COLORS: Record<number, { bg: string; text: string; subtext: string; badge: string; badgeText: string }> = {
+  1:  { bg: 'bg-slate-700',   text: 'text-white', subtext: 'text-slate-300',   badge: 'bg-white', badgeText: 'text-slate-700' },
+  2:  { bg: 'bg-sky-700',     text: 'text-white', subtext: 'text-sky-200',     badge: 'bg-white', badgeText: 'text-sky-700'   },
+  3:  { bg: 'bg-emerald-700', text: 'text-white', subtext: 'text-emerald-200', badge: 'bg-white', badgeText: 'text-emerald-700' },
+  4:  { bg: 'bg-teal-700',    text: 'text-white', subtext: 'text-teal-200',    badge: 'bg-white', badgeText: 'text-teal-700'  },
+  5:  { bg: 'bg-cyan-700',    text: 'text-white', subtext: 'text-cyan-200',    badge: 'bg-white', badgeText: 'text-cyan-700'  },
+  6:  { bg: 'bg-amber-600',   text: 'text-white', subtext: 'text-amber-200',   badge: 'bg-white', badgeText: 'text-amber-700' },
+  7:  { bg: 'bg-orange-600',  text: 'text-white', subtext: 'text-orange-200',  badge: 'bg-white', badgeText: 'text-orange-700' },
+  8:  { bg: 'bg-rose-600',    text: 'text-white', subtext: 'text-rose-200',    badge: 'bg-white', badgeText: 'text-rose-700'  },
+  9:  { bg: 'bg-indigo-700',  text: 'text-white', subtext: 'text-indigo-200',  badge: 'bg-white', badgeText: 'text-indigo-700' },
+  10: { bg: 'bg-violet-700',  text: 'text-white', subtext: 'text-violet-200',  badge: 'bg-white', badgeText: 'text-violet-700' },
+  11: { bg: 'bg-blue-700',    text: 'text-white', subtext: 'text-blue-200',    badge: 'bg-white', badgeText: 'text-blue-700'  },
+  12: { bg: 'bg-slate-800',   text: 'text-white', subtext: 'text-slate-300',   badge: 'bg-white', badgeText: 'text-slate-700' },
+};
+
 export const WeekTable: React.FC<WeekTableProps> = ({
   settimane,
   onEditWeek,
@@ -508,30 +524,32 @@ export const WeekTable: React.FC<WeekTableProps> = ({
           groupedByMonth.map((group) => (
             <div key={group.key} className="space-y-2">
               {/* Intestazione Mese chiara e visibile a colpo d'occhio */}
-              <div
-                className={`sticky top-0 z-20 px-3.5 py-2.5 rounded-2xl shadow-xs flex flex-col gap-1 transition-all ${
-                  group.isCurrentMonth
-                    ? 'bg-blue-700 text-white shadow-blue-500/20'
-                    : 'bg-white border border-slate-200 text-slate-900'
-                }`}
-              >
-                {/* Riga superiore: icona + nome mese + badge corrente */}
-                <div className="flex items-center gap-2">
-                  <CalendarDays className={`w-4 h-4 shrink-0 ${group.isCurrentMonth ? 'text-blue-200' : 'text-blue-600'}`} />
-                  <span className="text-xs sm:text-sm font-black uppercase tracking-wider">
-                    {group.name} {group.year}
-                  </span>
-                  {group.isCurrentMonth && (
-                    <span className="ml-1 px-2 py-0.5 rounded-md bg-white text-blue-700 text-[9px] font-black uppercase tracking-wider shrink-0">
-                      Mese Corrente
-                    </span>
-                  )}
-                </div>
-                {/* Riga inferiore: conteggio settimane */}
-                <div className={`text-[11px] font-bold pl-6 ${group.isCurrentMonth ? 'text-blue-100' : 'text-slate-500'}`}>
-                  {group.items.length} {group.items.length === 1 ? 'settimana' : 'settimane'} • {group.congCount} visite
-                </div>
-              </div>
+              {(() => {
+                const monthNum = group.key ? parseInt(group.key.split('-')[1], 10) : 11;
+                const mc = MONTH_COLORS[monthNum] || MONTH_COLORS[11];
+                return (
+                  <div
+                    className={`sticky top-0 z-20 px-3.5 py-2.5 rounded-2xl shadow-xs flex flex-col gap-1 transition-all ${mc.bg}`}
+                  >
+                    {/* Riga superiore: icona + nome mese + badge corrente */}
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className={`w-4 h-4 shrink-0 ${mc.subtext}`} />
+                      <span className={`text-xs sm:text-sm font-black uppercase tracking-wider ${mc.text}`}>
+                        {group.name} {group.year}
+                      </span>
+                      {group.isCurrentMonth && (
+                        <span className={`ml-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider shrink-0 ${mc.badge} ${mc.badgeText}`}>
+                          Mese Corrente
+                        </span>
+                      )}
+                    </div>
+                    {/* Riga inferiore: conteggio settimane */}
+                    <div className={`text-[11px] font-bold pl-6 ${mc.subtext}`}>
+                      {group.items.length} {group.items.length === 1 ? 'settimana' : 'settimane'} • {group.congCount} visite
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Elenco card delle settimane del mese */}
               <div className="space-y-2">
@@ -600,8 +618,25 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                             )}
                           </div>
 
-                          {/* Riga 1b: Pulsanti azione — separati per evitare overflow su iPhone */}
-                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                          {/* Riga 1b: Nome Congregazione — subito sotto la data */}
+                          <div
+                            className="mt-1.5 cursor-pointer group/title flex items-center justify-between gap-2"
+                            onClick={() => (onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item))}
+                          >
+                            <div className="font-extrabold text-slate-900 text-sm sm:text-base leading-snug truncate group-hover/title:text-blue-700 transition-colors">
+                              {congName}
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover/title:text-blue-700 group-hover/title:translate-x-0.5 transition-all shrink-0" />
+                          </div>
+
+                          {item.note && item.note !== '-' && (
+                            <div className="text-[11px] text-slate-500 italic truncate mt-0.5">
+                              {item.note}
+                            </div>
+                          )}
+
+                          {/* Riga 1c: Pulsanti azione */}
+                          <div className="flex items-center gap-1 mt-2 flex-wrap border-t border-slate-100 pt-2">
                             <button
                               type="button"
                               onClick={(e) => handleDownloadSinglePdf(item, e)}
@@ -655,23 +690,6 @@ export const WeekTable: React.FC<WeekTableProps> = ({
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
                           </div>
-
-                          {/* Riga 2: Nome Congregazione in evidenza */}
-                          <div
-                            className="mt-1.5 cursor-pointer group/title flex items-center justify-between gap-2"
-                            onClick={() => (onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item))}
-                          >
-                            <div className="font-extrabold text-slate-900 text-sm sm:text-base leading-snug truncate group-hover/title:text-blue-700 transition-colors">
-                              {congName}
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover/title:text-blue-700 group-hover/title:translate-x-0.5 transition-all shrink-0" />
-                          </div>
-
-                          {item.note && item.note !== '-' && (
-                            <div className="text-[11px] text-slate-500 italic truncate mt-0.5">
-                              {item.note}
-                            </div>
-                          )}
                         </div>
                       </div>
                     );
