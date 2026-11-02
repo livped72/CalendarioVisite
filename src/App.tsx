@@ -318,9 +318,27 @@ export const App: React.FC = () => {
   /** ID settimana su cui il calendario deve scrollare/selezionare dopo navigazione da congregazione */
   const [jumpToSettimanaId, setJumpToSettimanaId] = useState<string | null>(null);
 
+  /** Trigger per far saltare tutti i sottocomponenti ad "oggi" */
+  const [todayTrigger, setTodayTrigger] = useState<number>(0);
+
   const handleNavigateToSettimana = (settimanaId?: string) => {
     setJumpToSettimanaId(settimanaId ?? null);
     setCurrentTab('appuntamenti');
+  };
+
+  /** Salta a oggi: corregge il semestre, triggera i sottocomponenti e scrolla */
+  const handleGoToToday = () => {
+    setPeriodo(currentAnnoSemestre());
+    setTodayTrigger((prev) => prev + 1);
+    // Scroll to the current-week row in WeekTable if visible
+    setTimeout(() => {
+      const currentEl =
+        document.getElementById('day-block-today') ||
+        document.querySelector('[data-current-week="true"]');
+      if (currentEl) {
+        currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 180);
   };
 
   // ── If not logged in, display AuthScreen ──
@@ -345,7 +363,7 @@ export const App: React.FC = () => {
           periodo={periodo}
           onPrev={() => setPeriodo((p) => prevPeriodo(p))}
           onNext={() => setPeriodo((p) => nextPeriodo(p))}
-          onToday={() => setPeriodo(currentAnnoSemestre())}
+          onToday={handleGoToToday}
           onNewWeek={() => { setEditingWeek(null); setIsWeekModalOpen(true); }}
           onOpenSecurity={() => setIsSecurityOpen(true)}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
@@ -368,6 +386,7 @@ export const App: React.FC = () => {
                 onDeleteAppuntamento={handleDeleteAppuntamento}
                 onNavigateToAppuntamenti={handleNavigateToSettimana}
                 senderName={user.nome}
+                todayTrigger={todayTrigger}
               />
               <WeekTable
                 settimane={settimane}
@@ -377,6 +396,7 @@ export const App: React.FC = () => {
                 visitNumberMap={visitNumberMap}
                 onViewAppuntamenti={handleNavigateToSettimana}
                 senderName={user.nome}
+                todayTrigger={todayTrigger}
               />
             </div>
           )}
@@ -402,6 +422,8 @@ export const App: React.FC = () => {
               onDeleteAppuntamento={handleDeleteAppuntamento}
               initialSettimanaId={jumpToSettimanaId || undefined}
               onJumpConsumed={() => setJumpToSettimanaId(null)}
+              onGoToToday={handleGoToToday}
+              todayTrigger={todayTrigger}
             />
           )}
 

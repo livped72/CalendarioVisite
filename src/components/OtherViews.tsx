@@ -268,6 +268,8 @@ export const AppuntamentiView: React.FC<{
   onDeleteAppuntamento: (id: string) => void;
   initialSettimanaId?: string;
   onJumpConsumed?: () => void;
+  onGoToToday?: () => void;
+  todayTrigger?: number;
 }> = ({
   congregazioni,
   settimane,
@@ -276,6 +278,8 @@ export const AppuntamentiView: React.FC<{
   onDeleteAppuntamento,
   initialSettimanaId,
   onJumpConsumed,
+  onGoToToday,
+  todayTrigger,
 }) => {
   return (
     <WeeklyCalendarView
@@ -286,12 +290,15 @@ export const AppuntamentiView: React.FC<{
       onDeleteAppuntamento={onDeleteAppuntamento}
       initialSettimanaId={initialSettimanaId}
       onJumpConsumed={onJumpConsumed}
+      onGoToToday={onGoToToday}
+      todayTrigger={todayTrigger}
     />
   );
 };
 
 /** Alias di retrocompatibilità */
 export const SituazioneVisiteView = AppuntamentiView;
+
 
 // Impostazioni Tab View
 export const ImpostazioniView: React.FC<{

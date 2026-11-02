@@ -4,10 +4,10 @@ import { ChevronLeft, ChevronRight, ChevronDown, Plus, Calendar, Clock, MapPin, 
 import { EventBadge } from './EventBadge';
 import { AppointmentModal } from './AppointmentModal';
 import { CalendarSyncModal } from './CalendarSyncModal';
-import { abbreviateMonths } from '../lib/dateUtils';
+import { abbreviateMonths, findWeekIndexForDate } from '../lib/dateUtils';
 const DAY_NAMES = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 const DAY_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-export const WeeklyCalendarView = ({ settimane, congregazioni, appuntamenti, onSaveAppuntamento, onDeleteAppuntamento, initialSettimanaId, onJumpConsumed, }) => {
+export const WeeklyCalendarView = ({ settimane, congregazioni, appuntamenti, onSaveAppuntamento, onDeleteAppuntamento, initialSettimanaId, onJumpConsumed, onGoToToday, todayTrigger, }) => {
     // Selected week index
     const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
     const [viewMode, setViewMode] = useState('calendar');
@@ -88,15 +88,28 @@ export const WeeklyCalendarView = ({ settimane, congregazioni, appuntamenti, onS
         }
     };
     const handleJumpToToday = () => {
-        const todayIso = new Date().toISOString().slice(0, 10);
-        const idx = settimane.findIndex((w) => w.startDate && w.endDate && todayIso >= w.startDate && todayIso <= w.endDate);
+        // Use the smart finder that handles Monday gaps and calendar-week overlaps
+        const idx = findWeekIndexForDate(settimane);
         if (idx >= 0) {
             setSelectedWeekIndex(idx);
         }
-        else {
-            setSelectedWeekIndex(0);
-        }
+        // Scroll today's day block into view after a brief paint delay
+        requestAnimationFrame(() => {
+            const todayEl = document.getElementById('day-block-today');
+            if (todayEl) {
+                todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+        // If parent provided a callback, also notify it
+        onGoToToday?.();
     };
+    // React to external todayTrigger (e.g., Header "Oggi" button)
+    useEffect(() => {
+        if (todayTrigger === undefined || todayTrigger === 0)
+            return;
+        handleJumpToToday();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [todayTrigger]);
     const openNewAppointment = (dateIso) => {
         setEditingApp(null);
         setModalDate(dateIso || weekDays[0]?.iso || new Date().toISOString().slice(0, 10));
@@ -119,7 +132,7 @@ export const WeeklyCalendarView = ({ settimane, congregazioni, appuntamenti, onS
                             const dayApps = appuntamenti
                                 .filter((a) => a.data === day.iso)
                                 .sort((a, b) => a.oraInizio.localeCompare(b.oraInizio));
-                            return (_jsxs("div", { className: `rounded-3xl border flex flex-col md:flex-row transition-all overflow-hidden ${day.isToday
+                            return (_jsxs("div", { id: day.isToday ? 'day-block-today' : undefined, "data-day": day.iso, className: `rounded-3xl border flex flex-col md:flex-row transition-all overflow-hidden ${day.isToday
                                     ? 'bg-white border-2 border-blue-500 ring-4 ring-blue-500/10 shadow-md'
                                     : 'bg-white border-slate-200 shadow-2xs hover:border-slate-300'}`, children: [_jsxs("div", { className: `p-3.5 sm:p-4 md:w-44 shrink-0 md:border-r border-b md:border-b-0 flex md:flex-col items-center md:items-start justify-between md:justify-start gap-2 ${day.isToday
                                             ? 'bg-blue-50/60 border-blue-200 text-blue-900'

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calendar,
   MapPin,
@@ -6,19 +6,20 @@ import {
   Mail,
   Loader2,
   CalendarDays,
+  CalendarCheck,
   Plus,
   Clock,
   Pencil,
-  LayoutGrid,
-  List,
   ExternalLink,
   ChevronLeft,
   ChevronRight,
   Info,
+  Tag,
 } from 'lucide-react';
 import { KPIStats, Settimana, Appuntamento, Congregazione } from '../types';
 import { downloadS302Pdf, emailS302Pdf } from '../lib/pdfGenerator';
 import { AppointmentModal } from './AppointmentModal';
+import { findWeekIndexForDate } from '../lib/dateUtils';
 
 export interface SummaryCardsProps {
   stats: KPIStats;
@@ -31,10 +32,24 @@ export interface SummaryCardsProps {
   onDeleteAppuntamento?: (id: string) => void;
   onNavigateToAppuntamenti?: (settimanaId?: string) => void;
   senderName?: string;
+  todayTrigger?: number;
 }
 
 const DAY_NAMES = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 const DAY_SHORT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+
+const CATEGORY_TAGS: Record<string, { label: string; badge: string }> = {
+  adunanza: { label: 'Adunanza', badge: 'bg-blue-50 text-blue-700 border-blue-200' },
+  servizio: { label: 'Servizio', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  anziani: { label: 'Anziani', badge: 'bg-purple-50 text-purple-700 border-purple-200' },
+  servitori: { label: 'Servitori', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+  pionieri: { label: 'Pionieri', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
+  pastorale: { label: 'Pastorale', badge: 'bg-rose-50 text-rose-700 border-rose-200' },
+  discorso: { label: 'Discorso', badge: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+  pranzo: { label: 'Pranzo', badge: 'bg-orange-50 text-orange-700 border-orange-200' },
+  personale: { label: 'Personale', badge: 'bg-slate-50 text-slate-700 border-slate-200' },
+  altro: { label: 'Altro', badge: 'bg-slate-50 text-slate-600 border-slate-200' },
+};
 
 export const SummaryCards: React.FC<SummaryCardsProps> = ({
   stats,
@@ -47,12 +62,20 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   onDeleteAppuntamento,
   onNavigateToAppuntamenti,
   senderName,
+  todayTrigger,
 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEmailing, setIsEmailing] = useState(false);
 
   // Selezione della settimana attiva visualizzata nel pannello
   const [selectedWeekId, setSelectedWeekId] = useState<string | null>(null);
+
+  // Se viene cliccato Oggi nel Header o nel genitore, resetta la settimana attiva a oggi
+  useEffect(() => {
+    if (todayTrigger) {
+      setSelectedWeekId(null);
+    }
+  }, [todayTrigger]);
 
   // Modal per creazione e modifica appuntamento
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
@@ -152,6 +175,32 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
     todayIso <= activeWeek.endDate
   );
 
+  // Raggruppa esclusivamente i giorni che contengono appuntamenti effettivamente in programma
+  const scheduledDays = useMemo(() => {
+    const map = new Map<string, Appuntamento[]>();
+    weekAppuntamenti.forEach((app) => {
+      const list = map.get(app.data) || [];
+      list.push(app);
+      map.set(app.data, list);
+    });
+
+    const sortedDates = Array.from(map.keys()).sort();
+    return sortedDates.map((dateIso) => {
+      const dayApps = (map.get(dateIso) || []).sort((a, b) => (a.oraInizio || '').localeCompare(b.oraInizio || ''));
+      const d = new Date(dateIso + 'T00:00:00');
+      const dayIndex = (d.getDay() + 6) % 7;
+      return {
+        iso: dateIso,
+        dayName: DAY_NAMES[dayIndex] || 'Giorno',
+        dayShort: DAY_SHORT[dayIndex] || '',
+        dayNumber: d.getDate(),
+        monthShort: d.toLocaleDateString('it-IT', { month: 'short' }),
+        isToday: dateIso === todayIso,
+        apps: dayApps,
+      };
+    });
+  }, [weekAppuntamenti, todayIso]);
+
   // Apertura modale nuovo appuntamento
   const handleAddAppointment = (dateIso?: string) => {
     setEditingApp(null);
@@ -221,6 +270,21 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                 aria-label="Settimana precedente"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const idx = findWeekIndexForDate(settimane);
+                  if (idx >= 0 && settimane[idx]) {
+                    setSelectedWeekId(settimane[idx].id);
+                  } else {
+                    setSelectedWeekId(null);
+                  }
+                }}
+                className="px-2 py-0.5 rounded-lg text-[11px] font-black text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors cursor-pointer"
+                title="Vai alla settimana corrente / Oggi"
+              >
+                Oggi
               </button>
               <span className="text-[10px] font-bold text-slate-600 px-1">
                 Sett. {activeWeekIndex + 1}/{settimane.length}
@@ -337,16 +401,16 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
           )}
         </div>
 
-        {/* ── SEZIONE BACHECA DEL CALENDARIO ── */}
+        {/* ── SEZIONE APPUNTAMENTI IN PROGRAMMA (SOLO APPUNTAMENTI, NON TUTTA LA SETTIMANA) ── */}
         <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-          {/* Header della bacheca con titolo, contatore eventi e bottoni di azione */}
+          {/* Header sezione */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0">
                 <CalendarDays className="w-3.5 h-3.5" />
               </div>
               <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <span>Bacheca del calendario</span>
+                <span>Appuntamenti in programma</span>
                 <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold">
                   {weekAppuntamenti.length} {weekAppuntamenti.length === 1 ? 'appuntamento' : 'appuntamenti'}
                 </span>
@@ -354,41 +418,11 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {/* Switcher Bacheca vs Elenco */}
-              <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs font-bold shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setBoardView('board')}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
-                    boardView === 'board'
-                      ? 'bg-white text-blue-700 shadow-2xs font-extrabold'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="Vista Bacheca Settimanale (7 colonne)"
-                >
-                  <LayoutGrid className="w-3 h-3" />
-                  <span>Bacheca</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBoardView('list')}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] ${
-                    boardView === 'list'
-                      ? 'bg-white text-blue-700 shadow-2xs font-extrabold'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                  title="Vista Elenco / Agenda"
-                >
-                  <List className="w-3 h-3" />
-                  <span>Elenco</span>
-                </button>
-              </div>
-
               {/* + Nuovo Appuntamento */}
               <button
                 type="button"
                 onClick={() => handleAddAppointment()}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
                 title="Aggiungi appuntamento a questa settimana"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -400,258 +434,153 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigateToAppuntamenti(activeWeek.id)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-blue-700 text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                  title="Visualizza e gestisci nel calendario completo"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-blue-700 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                  title="Visualizza tutti i 7 giorni nel calendario completo"
                 >
-                  <span className="hidden sm:inline">Calendario completo</span>
+                  <span>Calendario completo</span>
                   <ExternalLink className="w-3 h-3 text-slate-400" />
                 </button>
               )}
             </div>
           </div>
 
-          {/* Quick Day Chips per Mobile (nastro orizzontale) */}
-          <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
-            {weekDays.map((d) => {
-              const count = weekAppuntamenti.filter((a) => a.data === d.iso).length;
-              return (
+          {/* ── CONTENUTO: SOLO GLI APPUNTAMENTI IN PROGRAMMA ── */}
+          {scheduledDays.length === 0 ? (
+            /* Nessun appuntamento in programma */
+            <div className="bg-slate-50/70 border border-dashed border-slate-200/90 rounded-2xl p-6 sm:p-8 text-center flex flex-col items-center justify-center gap-2">
+              <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 text-blue-600 flex items-center justify-center shadow-2xs">
+                <CalendarCheck className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="text-sm font-bold text-slate-800 mt-1">
+                Nessun appuntamento in programma per questa visita
+              </div>
+              <div className="text-xs text-slate-500 max-w-md">
+                I programmi di adunanza, servizio di campo o visite pastorali compariranno qui.
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
                 <button
-                  key={d.iso}
                   type="button"
-                  onClick={() => {
-                    const el = document.getElementById(`day-col-${d.iso}`);
-                    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                  }}
-                  className={`shrink-0 px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition-all ${
-                    d.isToday
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                      : count > 0
-                      ? 'bg-blue-50 text-blue-800 border-blue-200'
-                      : 'bg-slate-50 text-slate-600 border-slate-200'
-                  }`}
+                  onClick={() => handleAddAppointment()}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
-                  <span>{d.dayShort} {d.dayNumber}</span>
-                  {count > 0 && (
-                    <span
-                      className={`w-4 h-4 rounded-full text-[9px] flex items-center justify-center font-black ${
-                        d.isToday ? 'bg-white text-blue-700' : 'bg-blue-600 text-white'
-                      }`}
-                    >
-                      {count}
-                    </span>
-                  )}
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Aggiungi appuntamento</span>
                 </button>
-              );
-            })}
-          </div>
-
-          {/* ── VISUALIZZAZIONE BACHECA 7 COLONNE ── */}
-          {boardView === 'board' ? (
-            <div className="flex lg:grid lg:grid-cols-7 gap-2.5 overflow-x-auto pb-2 pt-1 -mx-1 px-1 snap-x scroll-smooth">
-              {weekDays.map((day) => {
-                const dayApps = weekAppuntamenti
-                  .filter((a) => a.data === day.iso)
-                  .sort((a, b) => (a.oraInizio || '').localeCompare(b.oraInizio || ''));
-
-                return (
-                  <div
-                    key={day.iso}
-                    id={`day-col-${day.iso}`}
-                    className={`min-w-[155px] sm:min-w-[175px] lg:min-w-0 flex-1 shrink-0 snap-start rounded-2xl border flex flex-col transition-all p-2.5 ${
-                      day.isToday
-                        ? 'bg-blue-50/50 border-blue-400 ring-2 ring-blue-500/20 shadow-xs'
-                        : 'bg-slate-50/80 border-slate-200/90 hover:border-slate-300'
-                    }`}
+                {onNavigateToAppuntamenti && activeWeek && (
+                  <button
+                    type="button"
+                    onClick={() => onNavigateToAppuntamenti(activeWeek.id)}
+                    className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs cursor-pointer transition-all"
                   >
-                    {/* Header Giorno */}
-                    <div className="flex items-center justify-between gap-1 pb-2 border-b border-slate-200/70">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1">
-                          <span
-                            className={`text-[11px] font-black uppercase tracking-wider truncate ${
-                              day.isToday ? 'text-blue-700' : 'text-slate-600'
-                            }`}
-                          >
-                            {day.dayShort}
-                          </span>
-                          {day.isToday && (
-                            <span className="px-1.5 py-0.2 rounded bg-blue-600 text-white text-[9px] font-black uppercase">
-                              Oggi
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm font-black text-slate-900 mt-0.5 leading-none">
-                          {day.dayNumber}{' '}
-                          <span className="text-[11px] font-medium text-slate-400">{day.monthShort}</span>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleAddAppointment(day.iso)}
-                        className="w-6 h-6 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-500 hover:text-blue-600 flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
-                        title={`Aggiungi appuntamento a ${day.dayName} ${day.dayNumber}`}
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Schede Appuntamenti del Giorno */}
-                    <div className="space-y-2 pt-2 flex-1 flex flex-col justify-start">
-                      {dayApps.length === 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => handleAddAppointment(day.iso)}
-                          className="w-full min-h-[60px] flex-1 rounded-xl border border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 flex flex-col items-center justify-center gap-1 text-slate-300 hover:text-blue-600 transition-all p-2 cursor-pointer group/empty"
-                          title={`Aggiungi appuntamento per ${day.dayName}`}
-                        >
-                          <Plus className="w-3.5 h-3.5 text-slate-300 group-hover/empty:text-blue-600 transition-colors" />
-                          <span className="text-[10px] font-medium text-slate-400 group-hover/empty:text-blue-600">
-                            Nessun evento
-                          </span>
-                        </button>
-                      ) : (
-                        dayApps.map((app) => (
-                          <div
-                            key={app.id}
-                            onClick={() => handleEditAppointment(app)}
-                            className="p-2.5 rounded-xl border border-slate-200/90 bg-white hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group/card relative text-left"
-                            title="Clicca per visualizzare o modificare"
-                          >
-                            {/* Orario */}
-                            <div className="flex items-center justify-between gap-1 mb-1.5">
-                              <span className="inline-flex items-center gap-1 font-extrabold text-[10px] text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded-md">
-                                <Clock className="w-2.5 h-2.5 text-blue-600" />
-                                {app.oraInizio}
-                                {app.oraFine && ` - ${app.oraFine}`}
-                              </span>
-                              <Pencil className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                            </div>
-
-                            {/* Titolo */}
-                            <div className="font-extrabold text-slate-900 text-xs leading-snug group-hover/card:text-blue-700 transition-colors line-clamp-2">
-                              {app.titolo}
-                            </div>
-
-                            {/* Luogo */}
-                            {app.luogo && (
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-1.5 truncate">
-                                <MapPin className="w-2.5 h-2.5 text-blue-500 shrink-0" />
-                                <span className="truncate">{app.luogo}</span>
-                              </div>
-                            )}
-
-                            {/* Note */}
-                            {app.note && (
-                              <div className="text-[10px] text-slate-400 italic line-clamp-1 mt-1">
-                                {app.note}
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                    <span>Apri calendario</span>
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
-            /* ── VISUALIZZAZIONE ELENCO / AGENDA ── */
-            <div className="divide-y divide-slate-100 border border-slate-200/90 rounded-2xl bg-white overflow-hidden shadow-2xs">
-              {weekDays.map((day) => {
-                const dayApps = weekAppuntamenti
-                  .filter((a) => a.data === day.iso)
-                  .sort((a, b) => (a.oraInizio || '').localeCompare(b.oraInizio || ''));
-
-                return (
-                  <div
-                    key={day.iso}
-                    className={`p-3 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 ${
-                      day.isToday ? 'bg-blue-50/40' : 'hover:bg-slate-50/60'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 w-40 shrink-0">
-                      <div className="text-center w-10">
-                        <span className="block text-[10px] font-black uppercase text-blue-600">
-                          {day.dayShort}
+            /* Giorni con appuntamenti effettivamente pianificati */
+            <div className="space-y-4">
+              {scheduledDays.map((day) => (
+                <div
+                  key={day.iso}
+                  className={`rounded-2xl border p-3.5 sm:p-4 transition-all ${
+                    day.isToday
+                      ? 'bg-blue-50/30 border-blue-300 ring-2 ring-blue-500/10 shadow-xs'
+                      : 'bg-white border-slate-200/80 shadow-2xs'
+                  }`}
+                >
+                  {/* Intestazione del giorno con data e pulsante aggiungi */}
+                  <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-600" />
+                      <span className="text-xs sm:text-sm font-black text-slate-900 capitalize">
+                        {day.dayName} {day.dayNumber} {day.monthShort}
+                      </span>
+                      {day.isToday && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-blue-600 text-white text-[9px] font-black uppercase tracking-wider">
+                          Oggi
                         </span>
-                        <span className="block text-base font-black text-slate-900 leading-none">
-                          {day.dayNumber}
-                        </span>
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-xs font-bold text-slate-800 block truncate">
-                          {day.dayName}
-                        </span>
-                        {day.isToday && (
-                          <span className="inline-block px-1.5 py-0.2 rounded bg-blue-600 text-white text-[9px] font-black uppercase">
-                            Oggi
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      {dayApps.length === 0 ? (
-                        <span className="text-xs text-slate-400 italic">
-                          Nessun appuntamento in programma
-                        </span>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          {dayApps.map((app) => (
-                            <button
-                              key={app.id}
-                              type="button"
-                              onClick={() => handleEditAppointment(app)}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-xs text-left cursor-pointer transition-all"
-                            >
-                              <span className="inline-flex items-center gap-1 font-extrabold text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-md">
-                                <Clock className="w-2.5 h-2.5 text-blue-600" />
-                                {app.oraInizio}
-                              </span>
-                              <span className="text-xs font-bold text-slate-800">{app.titolo}</span>
-                              {app.luogo && (
-                                <span className="text-[10px] text-slate-400 hidden sm:inline">
-                                  • {app.luogo}
-                                </span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
                       )}
+                      <span className="text-[11px] font-bold text-slate-400">
+                        ({day.apps.length} {day.apps.length === 1 ? 'evento' : 'eventi'})
+                      </span>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => handleAddAppointment(day.iso)}
-                      className="self-end md:self-center p-1.5 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200 transition-all cursor-pointer"
-                      title={`Aggiungi a ${day.dayName}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-transparent hover:border-blue-200 transition-all cursor-pointer"
+                      title={`Aggiungi appuntamento a ${day.dayName} ${day.dayNumber}`}
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3 h-3" />
+                      <span className="hidden sm:inline">Aggiungi</span>
                     </button>
                   </div>
-                );
-              })}
-            </div>
-          )}
 
-          {/* Messaggio rapido se la settimana è vuota */}
-          {weekAppuntamenti.length === 0 && (
-            <div className="p-3 rounded-2xl bg-blue-50/50 border border-blue-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-blue-800">
-              <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-blue-600 shrink-0" />
-                <span className="text-[11px] sm:text-xs">
-                  Nessun appuntamento inserito per questa settimana di visita. Tocca un giorno per pianificare il programma.
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleAddAppointment()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shrink-0 transition-all shadow-xs cursor-pointer active:scale-95"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Aggiungi primo evento</span>
-              </button>
+                  {/* Griglia delle schede appuntamento del giorno */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    {day.apps.map((app) => {
+                      const tagInfo = CATEGORY_TAGS[app.categoria] || {
+                        label: app.categoria,
+                        badge: 'bg-slate-50 text-slate-700 border-slate-200',
+                      };
+
+                      return (
+                        <div
+                          key={app.id}
+                          onClick={() => handleEditAppointment(app)}
+                          className="p-3 rounded-xl border border-slate-200/90 bg-white hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group/card text-left flex flex-col justify-between"
+                          title="Tocca per visualizzare o modificare"
+                        >
+                          <div>
+                            {/* Riga superiore: Orario e Categoria */}
+                            <div className="flex items-center justify-between gap-1.5 mb-2">
+                              <span className="inline-flex items-center gap-1 font-black text-[11px] text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-md">
+                                <Clock className="w-3 h-3 text-blue-600" />
+                                {app.oraInizio}
+                                {app.oraFine && ` - ${app.oraFine}`}
+                              </span>
+
+                              <div className="flex items-center gap-1">
+                                {tagInfo.label && (
+                                  <span
+                                    className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${tagInfo.badge}`}
+                                  >
+                                    {tagInfo.label}
+                                  </span>
+                                )}
+                                <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                              </div>
+                            </div>
+
+                            {/* Titolo Appuntamento */}
+                            <div className="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug group-hover/card:text-blue-700 transition-colors">
+                              {app.titolo}
+                            </div>
+                          </div>
+
+                          {/* Dettagli: Luogo & Note */}
+                          {(app.luogo || app.note) && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
+                              {app.luogo && (
+                                <div className="flex items-center gap-1 text-[11px] text-slate-600 truncate">
+                                  <MapPin className="w-3 h-3 text-blue-500 shrink-0" />
+                                  <span className="truncate">{app.luogo}</span>
+                                </div>
+                              )}
+                              {app.note && (
+                                <div className="text-[10px] text-slate-400 italic line-clamp-1">
+                                  {app.note}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

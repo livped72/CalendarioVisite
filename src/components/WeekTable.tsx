@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Pencil,
   MoreVertical,
@@ -9,10 +9,11 @@ import {
   FileDown,
   Mail,
   Loader2,
+  CalendarCheck,
 } from 'lucide-react';
 import { Settimana } from '../types';
 import { EventBadge } from './EventBadge';
-import { abbreviateMonths } from '../lib/dateUtils';
+import { abbreviateMonths, getMonthInfoFromWeek, isWeekCurrent } from '../lib/dateUtils';
 import { downloadS302Pdf, emailS302Pdf } from '../lib/pdfGenerator';
 
 interface WeekTableProps {
@@ -24,6 +25,7 @@ interface WeekTableProps {
   /** Naviga al tab appuntamenti per questa settimana */
   onViewAppuntamenti?: (settimanaId: string) => void;
   senderName?: string;
+  todayTrigger?: number;
 }
 
 const BADGE_COLORS = [
@@ -40,20 +42,88 @@ export const WeekTable: React.FC<WeekTableProps> = ({
   visitNumberMap,
   onViewAppuntamenti,
   senderName,
+  todayTrigger,
 }) => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [emailingId, setEmailingId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'congregazioni' | 'altri'>('all');
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('all');
+
+  // Se Oggi viene premuto nell'Header o altrove, scrolla alla settimana corrente
+  useEffect(() => {
+    if (todayTrigger) {
+      setTimeout(() => {
+        const el = document.querySelector('[data-current-week="true"]');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 120);
+    }
+  }, [todayTrigger]);
 
   const congCount = settimane.filter((w) => w.evento === 'congregazione').length;
   const altriCount = settimane.length - congCount;
 
-  const displayItems = settimane.filter((w) => {
-    if (filterType === 'congregazioni') return w.evento === 'congregazione';
-    if (filterType === 'altri') return w.evento !== 'congregazione';
-    return true;
-  });
+  // Mesi univoci del semestre
+  const monthsInSemester = useMemo(() => {
+    const map = new Map<string, { key: string; name: string; year: number }>();
+    settimane.forEach((w) => {
+      const info = getMonthInfoFromWeek(w);
+      if (!map.has(info.monthKey)) {
+        map.set(info.monthKey, { key: info.monthKey, name: info.monthName, year: info.year });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key));
+  }, [settimane]);
+
+  const displayItems = useMemo(() => {
+    return settimane.filter((w) => {
+      if (filterType === 'congregazioni' && w.evento !== 'congregazione') return false;
+      if (filterType === 'altri' && w.evento === 'congregazione') return false;
+      if (selectedMonthFilter !== 'all') {
+        const info = getMonthInfoFromWeek(w);
+        if (info.monthKey !== selectedMonthFilter) return false;
+      }
+      return true;
+    });
+  }, [settimane, filterType, selectedMonthFilter]);
+
+  // Raggruppamento settimane per mese (per visualizzazione iPad & iPhone)
+  const groupedByMonth = useMemo(() => {
+    const groups: Array<{
+      key: string;
+      name: string;
+      year: number;
+      isCurrentMonth: boolean;
+      items: Settimana[];
+      congCount: number;
+    }> = [];
+
+    const currentMonthKey = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+
+    monthsInSemester.forEach((m) => {
+      if (selectedMonthFilter !== 'all' && selectedMonthFilter !== m.key) return;
+
+      const items = displayItems.filter((w) => {
+        const info = getMonthInfoFromWeek(w);
+        return info.monthKey === m.key;
+      });
+
+      if (items.length > 0) {
+        groups.push({
+          key: m.key,
+          name: m.name,
+          year: m.year,
+          isCurrentMonth: m.key === currentMonthKey,
+          items,
+          congCount: items.filter((w) => w.evento === 'congregazione').length,
+        });
+      }
+    });
+
+    return groups;
+  }, [monthsInSemester, displayItems, selectedMonthFilter]);
 
   const handleDownloadSinglePdf = async (item: Settimana, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -182,6 +252,49 @@ export const WeekTable: React.FC<WeekTableProps> = ({
         </div>
       </div>
 
+      {/* ── BARRA SELETTORE MESI RAPIDO PER IPAD, IPHONE E DESKTOP ── */}
+      {monthsInSemester.length > 1 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto px-4 py-2.5 bg-slate-100/70 border-b border-slate-200/80 no-scrollbar">
+          <span className="text-[10px] sm:text-[11px] font-black uppercase text-slate-400 shrink-0 mr-1">
+            Mese:
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedMonthFilter('all')}
+            className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              selectedMonthFilter === 'all'
+                ? 'bg-slate-900 text-white shadow-2xs'
+                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+            }`}
+          >
+            Tutti ({settimane.length})
+          </button>
+          {monthsInSemester.map((m) => {
+            const isCur = m.key === new Date().toISOString().slice(0, 7);
+            const isSel = selectedMonthFilter === m.key;
+            return (
+              <button
+                key={m.key}
+                type="button"
+                onClick={() => setSelectedMonthFilter(m.key)}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                  isSel
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : isCur
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                <span>{m.name} {m.year}</span>
+                {isCur && (
+                  <span className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white' : 'bg-blue-600'}`} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Desktop Table */}
       <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
@@ -202,9 +315,18 @@ export const WeekTable: React.FC<WeekTableProps> = ({
               const isCong = item.evento === 'congregazione';
               const isThisDownloading = downloadingId === item.id;
               const isThisEmailing = emailingId === item.id;
+              const isCurrent = isWeekCurrent(item.startDate, item.endDate);
 
               return (
-                <tr key={item.id} className="hover:bg-blue-50/40 transition-colors group">
+                <tr
+                  key={item.id}
+                  data-current-week={isCurrent ? "true" : undefined}
+                  className={`transition-colors group ${
+                    isCurrent
+                      ? 'bg-blue-50/70 border-l-4 border-l-blue-600 font-semibold'
+                      : 'hover:bg-blue-50/40'
+                  }`}
+                >
                   {/* Badge numerico */}
                   <td className="py-3 px-4 text-center">
                     {isCong && visitNum != null ? (
@@ -223,19 +345,26 @@ export const WeekTable: React.FC<WeekTableProps> = ({
 
                   {/* Periodo */}
                   <td className="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">
-                    {onViewAppuntamenti ? (
-                      <button
-                        type="button"
-                        onClick={() => onViewAppuntamenti(item.id)}
-                        className="group/cell inline-flex items-center gap-1.5 font-bold text-slate-900 hover:text-blue-600 transition-colors cursor-pointer"
-                        title="Vedi appuntamenti di questa settimana"
-                      >
-                        {abbreviateMonths(item.periodo)}
-                        <CalendarDays className="w-3.5 h-3.5 text-blue-600 opacity-0 group-hover/cell:opacity-100 transition-opacity shrink-0" />
-                      </button>
-                    ) : (
-                      abbreviateMonths(item.periodo)
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {isCurrent && (
+                        <span className="px-1.5 py-0.5 rounded bg-blue-600 text-white text-[9px] font-black uppercase tracking-wider">
+                          Oggi
+                        </span>
+                      )}
+                      {onViewAppuntamenti ? (
+                        <button
+                          type="button"
+                          onClick={() => onViewAppuntamenti(item.id)}
+                          className="group/cell inline-flex items-center gap-1.5 font-bold text-slate-900 hover:text-blue-600 transition-colors cursor-pointer"
+                          title="Vedi appuntamenti di questa settimana"
+                        >
+                          {abbreviateMonths(item.periodo)}
+                          <CalendarDays className="w-3.5 h-3.5 text-blue-600 opacity-0 group-hover/cell:opacity-100 transition-opacity shrink-0" />
+                        </button>
+                      ) : (
+                        abbreviateMonths(item.periodo)
+                      )}
+                    </div>
                   </td>
 
                   <td className="py-3 px-4 whitespace-nowrap">
@@ -369,201 +498,260 @@ export const WeekTable: React.FC<WeekTableProps> = ({
         </table>
       </div>
 
-      {/* ── MOBILE / SMARTPHONE & TABLET CARDS (COMPATTI, INTUITIVI, PANORAMICA COMPLETA) ── */}
-      <div className="lg:hidden p-2 sm:p-3.5 space-y-1.5 sm:space-y-2 bg-[#F8FAFC]">
-        {displayItems.length === 0 ? (
+      {/* ── MOBILE / SMARTPHONE & TABLET CARDS (ORGANIZZATI PER MESE E SETTIMANA) ── */}
+      <div className="lg:hidden p-2.5 sm:p-4 space-y-4 bg-[#F8FAFC]">
+        {groupedByMonth.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200">
             Nessuna settimana corrisponde al filtro selezionato.
           </div>
         ) : (
-          displayItems.map((item) => {
-            const visitInfo = getVisitInfo(item);
-            const visitNum = visitInfo?.numero;
-            const isCong = item.evento === 'congregazione';
-            const isThisDownloading = downloadingId === item.id;
-            const isThisEmailing = emailingId === item.id;
-            const congName = item.dettagli && item.dettagli !== '-' ? item.dettagli : 'Congregazione da definire';
+          groupedByMonth.map((group) => (
+            <div key={group.key} className="space-y-2">
+              {/* Intestazione Mese chiara e visibile a colpo d'occhio */}
+              <div
+                className={`sticky top-0 z-20 px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center justify-between transition-all ${
+                  group.isCurrentMonth
+                    ? 'bg-blue-700 text-white shadow-blue-500/20'
+                    : 'bg-white border border-slate-200 text-slate-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <CalendarDays className={`w-4 h-4 ${group.isCurrentMonth ? 'text-blue-200' : 'text-blue-600'}`} />
+                  <span className="text-xs sm:text-sm font-black uppercase tracking-wider">
+                    {group.name} {group.year}
+                  </span>
+                  {group.isCurrentMonth && (
+                    <span className="px-2 py-0.5 rounded-md bg-white text-blue-700 text-[9px] font-black uppercase tracking-wider">
+                      Mese Corrente
+                    </span>
+                  )}
+                </div>
+                <div className={`text-[11px] font-bold ${group.isCurrentMonth ? 'text-blue-100' : 'text-slate-500'}`}>
+                  {group.items.length} {group.items.length === 1 ? 'settimana' : 'settimane'} • {group.congCount} visite
+                </div>
+              </div>
 
-            if (isCong) {
-              return (
-                /* Card Visita Congregazione — Rigorosamente 2 Righe: Row 1 = Meta & Azioni, Row 2 = Congregazione */
-                <div
-                  key={item.id}
-                  className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs px-2.5 py-2 sm:p-3 transition-all relative overflow-hidden"
-                >
-                  {/* Bordo colorato verticale a sinistra */}
-                  <div
-                    className={`absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 ${
-                      visitNum != null ? getBadgeColor(visitNum) : 'bg-blue-600'
-                    }`}
-                  />
+              {/* Elenco card delle settimane del mese */}
+              <div className="space-y-2">
+                {group.items.map((item) => {
+                  const visitInfo = getVisitInfo(item);
+                  const visitNum = visitInfo?.numero;
+                  const isCong = item.evento === 'congregazione';
+                  const isThisDownloading = downloadingId === item.id;
+                  const isThisEmailing = emailingId === item.id;
+                  const congName = item.dettagli && item.dettagli !== '-' ? item.dettagli : 'Congregazione da definire';
+                  const isCurrent = isWeekCurrent(item.startDate, item.endDate);
+                  const weekNum = settimane.findIndex((w) => w.id === item.id) + 1;
 
-                  <div className="pl-1.5 sm:pl-2">
-                    {/* Riga 1: Badge Visita + Data + Azioni Rapide S-302 / Email / Modifica (NON VA MAI A CAPO) */}
-                    <div className="flex items-center justify-between gap-1 flex-nowrap w-full">
-                      <div className="flex items-center gap-1.5 min-w-0 shrink flex-nowrap overflow-hidden">
-                        {visitNum != null && (
-                          <span
-                            className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1 rounded text-white text-[10px] sm:text-[11px] font-black shrink-0 ${getBadgeColor(
-                              visitNum
-                            )}`}
-                            title={visitInfo?.motivazione || `Visita #${visitNum}`}
+                  if (isCong) {
+                    return (
+                      <div
+                        key={item.id}
+                        id={`week-card-${item.id}`}
+                        data-current-week={isCurrent ? "true" : undefined}
+                        className={`bg-white rounded-2xl border transition-all relative overflow-hidden px-3 py-2.5 sm:p-3.5 ${
+                          isCurrent
+                            ? 'border-2 border-blue-500 bg-blue-50/40 ring-4 ring-blue-500/10 shadow-sm'
+                            : 'border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs'
+                        }`}
+                      >
+                        {/* Bordo colorato verticale a sinistra */}
+                        <div
+                          className={`absolute left-0 top-0 bottom-0 w-1.5 ${
+                            isCurrent ? 'bg-blue-600' : visitNum != null ? getBadgeColor(visitNum) : 'bg-blue-500'
+                          }`}
+                        />
+
+                        <div className="pl-2">
+                          {/* Riga 1: Badge Visita + Numero Settimana + Data + Azioni Rapide */}
+                          <div className="flex items-center justify-between gap-1 flex-nowrap w-full">
+                            <div className="flex items-center gap-1.5 min-w-0 shrink flex-nowrap overflow-hidden">
+                              {visitNum != null && (
+                                <span
+                                  className={`inline-flex items-center justify-center min-w-[22px] h-5 px-1.5 rounded-md text-white text-[10px] sm:text-[11px] font-black shrink-0 ${getBadgeColor(
+                                    visitNum
+                                  )}`}
+                                  title={visitInfo?.motivazione || `Visita #${visitNum}`}
+                                >
+                                  #{visitNum}
+                                </span>
+                              )}
+
+                              <span className="text-[10px] sm:text-[11px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
+                                Sett. {weekNum}
+                              </span>
+
+                              <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-700 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
+                                <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
+                                <span>{formatMobilePeriodo(item.periodo)}</span>
+                              </span>
+
+                              {isCurrent && (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                  In corso
+                                </span>
+                              )}
+
+                              {visitInfo?.isReset && (
+                                <span className="text-[9px] font-extrabold text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1 py-0.2 rounded shrink-0 whitespace-nowrap">
+                                  Ciclo 1
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Azioni compatte */}
+                            <div className="flex items-center gap-1 shrink-0 flex-nowrap">
+                              <button
+                                type="button"
+                                onClick={(e) => handleDownloadSinglePdf(item, e)}
+                                disabled={isThisDownloading || isThisEmailing}
+                                className="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shrink-0"
+                                title="Scarica S-302 (PDF)"
+                              >
+                                {isThisDownloading ? (
+                                  <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+                                ) : (
+                                  <FileDown className="w-3 h-3 text-blue-600" />
+                                )}
+                                <span>S-302</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(e) => handleEmailSinglePdf(item, e)}
+                                disabled={isThisEmailing || isThisDownloading}
+                                className="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50 shrink-0"
+                                title="Prepara email S-302"
+                              >
+                                {isThisEmailing ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Mail className="w-3 h-3" />
+                                )}
+                                <span>Email</span>
+                              </button>
+
+                              {onViewAppuntamenti && (
+                                <button
+                                  type="button"
+                                  onClick={() => onViewAppuntamenti(item.id)}
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
+                                  title="Vedi appuntamenti della settimana"
+                                >
+                                  <CalendarDays className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEditWeek(item);
+                                }}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                                title="Modifica settimana"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Riga 2: Nome Congregazione in evidenza */}
+                          <div
+                            className="mt-1.5 cursor-pointer group/title flex items-center justify-between gap-2"
+                            onClick={() => (onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item))}
                           >
-                            #{visitNum}
-                          </span>
-                        )}
+                            <div className="font-extrabold text-slate-900 text-sm sm:text-base leading-snug truncate group-hover/title:text-blue-700 transition-colors">
+                              {congName}
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover/title:text-blue-700 group-hover/title:translate-x-0.5 transition-all shrink-0" />
+                          </div>
 
-                        <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
-                          <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
-                          <span>{formatMobilePeriodo(item.periodo)}</span>
-                        </span>
-
-                        {visitInfo?.isReset && (
-                          <span className="text-[9px] font-extrabold text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1 py-0.2 rounded shrink-0 whitespace-nowrap">
-                            Ciclo 1
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Azioni compatte per smartphone e tablet (Fisse su Riga 1, non vanno a capo) */}
-                      <div className="flex items-center gap-1 shrink-0 flex-nowrap">
-                        {/* Tap S-302 compatto */}
-                        <button
-                          type="button"
-                          onClick={(e) => handleDownloadSinglePdf(item, e)}
-                          disabled={isThisDownloading || isThisEmailing}
-                          className="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shrink-0"
-                          title="Scarica S-302 (PDF)"
-                        >
-                          {isThisDownloading ? (
-                            <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                          ) : (
-                            <FileDown className="w-3 h-3 text-blue-600" />
+                          {item.note && item.note !== '-' && (
+                            <div className="text-[11px] text-slate-500 italic truncate mt-0.5">
+                              {item.note}
+                            </div>
                           )}
-                          <span>S-302</span>
-                        </button>
-
-                        {/* Tap Invia Email compatto */}
-                        <button
-                          type="button"
-                          onClick={(e) => handleEmailSinglePdf(item, e)}
-                          disabled={isThisEmailing || isThisDownloading}
-                          className="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50 shrink-0"
-                          title="Prepara email S-302"
-                        >
-                          {isThisEmailing ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <Mail className="w-3 h-3" />
-                          )}
-                          <span>Email</span>
-                        </button>
-
-                        {onViewAppuntamenti && (
-                          <button
-                            type="button"
-                            onClick={() => onViewAppuntamenti(item.id)}
-                            className="p-1 rounded text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
-                            title="Vedi appuntamenti della settimana"
-                          >
-                            <CalendarDays className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditWeek(item);
-                          }}
-                          className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
-                          title="Modifica settimana"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
+                        </div>
                       </div>
-                    </div>
+                    );
+                  }
 
-                    {/* Riga 2: Nome Congregazione in evidenza — SEMPRE E SOLO SULLA SECONDA RIGA */}
+                  /* Card Altri Eventi */
+                  return (
                     <div
-                      className="mt-1 cursor-pointer group/title flex items-center justify-between gap-2"
+                      key={item.id}
+                      id={`week-card-${item.id}`}
+                      data-current-week={isCurrent ? "true" : undefined}
+                      className={`bg-white rounded-2xl border transition-all cursor-pointer px-3 py-2.5 sm:p-3.5 ${
+                        isCurrent
+                          ? 'border-2 border-blue-500 bg-blue-50/40 ring-4 ring-blue-500/10 shadow-sm'
+                          : 'border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs'
+                      }`}
                       onClick={() => (onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item))}
                     >
-                      <div className="font-bold text-slate-900 text-sm sm:text-base leading-snug truncate group-hover/title:text-blue-700 transition-colors">
-                        {congName}
+                      <div className="flex items-center justify-between gap-1 flex-nowrap w-full">
+                        <div className="flex items-center gap-1.5 min-w-0 shrink flex-nowrap overflow-hidden">
+                          <span className="text-[10px] sm:text-[11px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
+                            Sett. {weekNum}
+                          </span>
+                          {renderEventCell(item, true)}
+                          <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
+                            <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
+                            <span>{formatMobilePeriodo(item.periodo)}</span>
+                          </span>
+                          {isCurrent && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                              In corso
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          {onViewAppuntamenti && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onViewAppuntamenti(item.id);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
+                              title="Vedi appuntamenti dell'evento"
+                            >
+                              <CalendarDays className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditWeek(item);
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                            title="Modifica evento"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover/title:text-blue-700 group-hover/title:translate-x-0.5 transition-all shrink-0" />
+
+                      {item.dettagli && item.dettagli !== '-' && (
+                        <div className="font-semibold text-slate-800 text-xs sm:text-sm mt-1 truncate">
+                          {item.dettagli}
+                        </div>
+                      )}
+
+                      {item.note && item.note !== '-' && (
+                        <div className="text-[11px] text-slate-500 italic truncate mt-0.5">
+                          {item.note}
+                        </div>
+                      )}
                     </div>
-
-                    {/* Note se presenti */}
-                    {item.note && item.note !== '-' && (
-                      <div className="text-[11px] text-slate-500 italic truncate mt-0.5">
-                        {item.note}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            }
-
-            /* Card per Altri Eventi (Settimana Libera, Assemblea, Congresso, ecc.) */
-            return (
-              <div
-                key={item.id}
-                className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs px-2.5 py-2 sm:p-3 transition-all cursor-pointer"
-                onClick={() => (onViewAppuntamenti ? onViewAppuntamenti(item.id) : onEditWeek(item))}
-              >
-                <div className="flex items-center justify-between gap-1 flex-nowrap w-full">
-                  <div className="flex items-center gap-1.5 min-w-0 shrink flex-nowrap overflow-hidden">
-                    {renderEventCell(item, true)}
-                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-600 bg-slate-100/90 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
-                      <CalendarDays className="w-3 h-3 text-slate-500 shrink-0" />
-                      <span>{formatMobilePeriodo(item.periodo)}</span>
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0 flex-nowrap">
-                    {onViewAppuntamenti && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onViewAppuntamenti(item.id);
-                        }}
-                        className="p-1 rounded text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
-                        title="Vedi appuntamenti dell'evento"
-                      >
-                        <CalendarDays className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditWeek(item);
-                      }}
-                      className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
-                      title="Modifica evento"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {item.dettagli && item.dettagli !== '-' && (
-                  <div className="font-semibold text-slate-800 text-xs sm:text-sm mt-1 truncate">
-                    {item.dettagli}
-                  </div>
-                )}
-
-                {item.note && item.note !== '-' && (
-                  <div className="text-[11px] text-slate-500 italic truncate mt-0.5">
-                    {item.note}
-                  </div>
-                )}
+                  );
+                })}
               </div>
-            );
-          })
+            </div>
+          ))
         )}
       </div>
     </div>

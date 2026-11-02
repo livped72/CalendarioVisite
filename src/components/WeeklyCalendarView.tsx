@@ -18,7 +18,7 @@ import { Settimana, Congregazione, Appuntamento } from '../types';
 import { EventBadge } from './EventBadge';
 import { AppointmentModal } from './AppointmentModal';
 import { CalendarSyncModal } from './CalendarSyncModal';
-import { abbreviateMonths } from '../lib/dateUtils';
+import { abbreviateMonths, findWeekIndexForDate } from '../lib/dateUtils';
 
 interface WeeklyCalendarViewProps {
   settimane: Settimana[];
@@ -30,6 +30,10 @@ interface WeeklyCalendarViewProps {
   initialSettimanaId?: string;
   /** Callback chiamata dopo che il jump è stato consumato */
   onJumpConsumed?: () => void;
+  /** Callback esterna per il pulsante Oggi (es. dall'Header) */
+  onGoToToday?: () => void;
+  /** Trigger esterno per saltare ad oggi (incrementato dall'esterno) */
+  todayTrigger?: number;
 }
 
 const DAY_NAMES = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
@@ -43,6 +47,8 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
   onDeleteAppuntamento,
   initialSettimanaId,
   onJumpConsumed,
+  onGoToToday,
+  todayTrigger,
 }) => {
   // Selected week index
   const [selectedWeekIndex, setSelectedWeekIndex] = useState<number>(0);
@@ -133,16 +139,28 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
   };
 
   const handleJumpToToday = () => {
-    const todayIso = new Date().toISOString().slice(0, 10);
-    const idx = settimane.findIndex(
-      (w) => w.startDate && w.endDate && todayIso >= w.startDate && todayIso <= w.endDate
-    );
+    // Use the smart finder that handles Monday gaps and calendar-week overlaps
+    const idx = findWeekIndexForDate(settimane);
     if (idx >= 0) {
       setSelectedWeekIndex(idx);
-    } else {
-      setSelectedWeekIndex(0);
     }
+    // Scroll today's day block into view after a brief paint delay
+    requestAnimationFrame(() => {
+      const todayEl = document.getElementById('day-block-today');
+      if (todayEl) {
+        todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+    // If parent provided a callback, also notify it
+    onGoToToday?.();
   };
+
+  // React to external todayTrigger (e.g., Header "Oggi" button)
+  useEffect(() => {
+    if (todayTrigger === undefined || todayTrigger === 0) return;
+    handleJumpToToday();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todayTrigger]);
 
   const openNewAppointment = (dateIso?: string) => {
     setEditingApp(null);
@@ -343,6 +361,8 @@ export const WeeklyCalendarView: React.FC<WeeklyCalendarViewProps> = ({
               return (
                 <div
                   key={day.iso}
+                  id={day.isToday ? 'day-block-today' : undefined}
+                  data-day={day.iso}
                   className={`rounded-3xl border flex flex-col md:flex-row transition-all overflow-hidden ${
                     day.isToday
                       ? 'bg-white border-2 border-blue-500 ring-4 ring-blue-500/10 shadow-md'
